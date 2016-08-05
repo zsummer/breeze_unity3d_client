@@ -13,6 +13,31 @@ enum SessionStatus
     SS_WORKING,
     SS_CLOSED,
 }
+
+class ProtoHeader : IProtoObject
+{
+    public const int HeadLen = 4;
+    public int packLen;
+    public ushort reserve;
+    public ushort protoID;
+    public System.Collections.Generic.List<byte> __encode()
+    {
+        var ret = new System.Collections.Generic.List<byte>();
+        ret.AddRange(BaseProtoObject.encodeI32(packLen));
+        ret.AddRange(BaseProtoObject.encodeUI16(reserve));
+        ret.AddRange(BaseProtoObject.encodeUI16(protoID));
+        return ret;
+    }
+    public System.Int32 __decode(byte[] binData, ref System.Int32 pos)
+    {
+        packLen = BaseProtoObject.decodeI32(binData, ref pos);
+        reserve = BaseProtoObject.decodeUI16(binData, ref pos);
+        protoID = BaseProtoObject.decodeUI16(binData, ref pos);
+        return pos;
+    }
+}
+
+
 class Session
 {
     Socket _socket;
@@ -22,19 +47,30 @@ class Session
     bool _reconnect = true;
     float _lastConnectTime = 0.0f;
     const int MAX_BUFFER_SIZE = 200 * 1024;
+
+
+    string _encrypt;
+
+    RC4Encryption _rc4Send;
     private byte[] _sendBuffer;
     private int _sendBufferLen = 0;
+    private System.Collections.Generic.Queue<byte[]> _sendQue;
+
+    RC4Encryption _rc4Recv;
     private byte[] _recvBuffer;
     private int _recvBufferLen = 0;
+
     public Session()
     {
         _sendBuffer = new byte[MAX_BUFFER_SIZE];
         _recvBuffer = new byte[MAX_BUFFER_SIZE];
+        _sendQue = new System.Collections.Generic.Queue<byte[]>();
     }
-    public bool Init(string host, ushort port)
+    public bool Init(string host, ushort port, string encrypt)
     {
         try
         {
+            _encrypt = encrypt.Trim();
             host = host.Trim();
             if (host.Length == 0 || port == 0)
             {
@@ -89,9 +125,13 @@ class Session
 
         try
         {
+            _rc4Recv = new RC4Encryption();
+            _rc4Recv.makeSBox(_encrypt);
+            _rc4Send = new RC4Encryption();
+            _rc4Send.makeSBox(_encrypt);
             _status = SessionStatus.SS_CONNECTING;
             _socket = new Socket(_addr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            _socket.BeginConnect(_addr, _port, new AsyncCallback(onConnect), _socket);
+            _socket.BeginConnect(_addr, _port, new AsyncCallback(OnConnect), _socket);
         }
         catch (Exception e)
         {
@@ -99,7 +139,7 @@ class Session
             Debug.logger.Log(LogType.Error, "Session::Init had except. addr=" + _addr + ", port=" + _port + ",e=" + e);
         }
     }
-    public void onConnect(IAsyncResult result)
+    public void OnConnect(IAsyncResult result)
     {
         try
         {
@@ -120,11 +160,36 @@ class Session
         }
         catch (Exception e)
         {
-            _status = SessionStatus.SS_CLOSED;
             Debug.logger.Log(LogType.Error, "Session::onConnect had except. host=" + _addr + ", port=" + _port + ",e=" + e);
+            Close();
         }
     }
+    public void Send(byte[] data)
+    {
+        _sendQue.Enqueue(data);
+    }
+    public void SendProto(ushort protoID, Proto4z.IProtoObject proto)
+    {
+        ProtoHeader ph = new ProtoHeader();
+        ph.protoID = protoID;
+        ph.reserve = 0;
+        var bin = proto.__encode().ToArray();
+        ph.packLen = ProtoHeader.HeadLen + bin.Length;
+        var pack = ph.__encode();
+        pack.AddRange(bin);
+        Send(pack.ToArray());
+    }
 
+    public void OnRecv(ushort protoID, byte[] bin)
+    {
+        Debug.logger.Log("recv one pack len=" + bin.Length + ", protoID=" + protoID);
+        if (protoID == ClientAuthResp.getProtoID())
+        {
+            ClientAuthResp resp = new ClientAuthResp();
+            int offset = 0;
+            resp.__decode(bin, ref offset);
+        }
+    }
     public void Close(bool reconnect = false)
     {
         if (_status == SessionStatus.SS_CLOSED)
@@ -151,10 +216,11 @@ class Session
     {
         try
         {
+            //Debug.logger.Log("cur=" + Time.realtimeSinceStartup + ", last=" + _lastConnectTime);
             if (_status == SessionStatus.SS_INITED)
             {
                 //两次Connect间隔最短不能小于3秒  
-                if (Time.realtimeSinceStartup - _lastConnectTime > 3000)
+                if (Time.realtimeSinceStartup - _lastConnectTime > 3.0)
                 {
                     Connect();
                 }
@@ -163,7 +229,7 @@ class Session
             if (_status == SessionStatus.SS_CONNECTING)
             {
                 //Connect超过7秒还没成功就算超时.  
-                if (Time.realtimeSinceStartup - _lastConnectTime > 7000)
+                if (Time.realtimeSinceStartup - _lastConnectTime > 7.0)
                 {
                     Close(_reconnect);
                 }
@@ -191,13 +257,77 @@ class Session
                         Close();
                         return;
                     }
+                    if (_encrypt.Length > 0)
+                    {
+                        _rc4Recv.encryption(_recvBuffer, _recvBufferLen, ret);
+                    }
                     _recvBufferLen += ret;
                     //check message 
+                    int offset = 0;
+                    while (_recvBufferLen - offset >= ProtoHeader.HeadLen)
+                    {
+                        ProtoHeader ph = new ProtoHeader();
+                        ph.__decode(_recvBuffer, ref offset);
+                        if (ph.packLen <= _recvBufferLen - (offset - ProtoHeader.HeadLen))
+                        {
+                            var pack = new byte[ph.packLen - ProtoHeader.HeadLen];
+                            Array.Copy(_recvBuffer, offset, pack, 0,  ph.packLen - ProtoHeader.HeadLen);
+                            OnRecv(ph.protoID, pack);
+                            offset += (ph.packLen - ProtoHeader.HeadLen);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    if (offset > 0)
+                    {
+                        if (_recvBufferLen == offset)
+                        {
+                            _recvBufferLen = 0;
+                        }
+                        else
+                        {
+                            Array.Copy(_recvBuffer, offset, _recvBuffer, 0, _recvBufferLen - offset);
+                            _recvBufferLen -= offset;
+                        }
+                    }
+                    
                 } while (true);
             }
-            if (_sendBufferLen > 0)
+            //send 
+            if (_sendBufferLen > 0 || _sendQue.Count > 0)
             {
-
+                while (_sendQue.Count > 0)
+                {
+                    if (_sendQue.Peek().Length <= MAX_BUFFER_SIZE - _sendBufferLen)
+                    {
+                        var pack = _sendQue.Dequeue();
+                        pack.CopyTo(_sendBuffer, _sendBufferLen);
+                        if (_encrypt.Length > 0)
+                        {
+                            _rc4Send.encryption(_sendBuffer, _sendBufferLen, pack.Length);
+                        }
+                        _sendBufferLen += pack.Length;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                if (_sendBufferLen > 0) // conditional  when invalid pack 
+                {
+                    int ret = _socket.Send(_sendBuffer, 0, _sendBufferLen, SocketFlags.None);
+                    if (ret == _sendBufferLen)
+                    {
+                        _sendBufferLen = 0;
+                    }
+                    else if (ret > 0)
+                    {
+                        Array.Copy(_sendBuffer, ret, _sendBuffer, 0, _sendBufferLen - ret);
+                        _sendBufferLen -= ret;
+                    }
+                }
             }
             
         }
@@ -209,125 +339,28 @@ class Session
     }
 }
 
-class Client
-{
-    class NetHeader : IProtoObject
-    {
-        public uint packLen;
-        public ushort reserve;
-        public ushort protoID;
-        public System.Collections.Generic.List<byte> __encode()
-        {
-            var ret = new System.Collections.Generic.List<byte>();
-            ret.AddRange(BaseProtoObject.encodeUI32(packLen));
-            ret.AddRange(BaseProtoObject.encodeUI16(reserve));
-            ret.AddRange(BaseProtoObject.encodeUI16(protoID));
-            return ret;
-        }
-        public System.Int32 __decode(byte[] binData, ref System.Int32 pos)
-        {
-            packLen = BaseProtoObject.decodeUI32(binData, ref pos);
-            reserve = BaseProtoObject.decodeUI16(binData, ref pos);
-            protoID = BaseProtoObject.decodeUI16(binData, ref pos);
-            return pos;
-        }
-    }
-
-
-    public void Run()
-    {
-        RC4Encryption rc4Server = new RC4Encryption();
-        RC4Encryption rc4Client = new RC4Encryption();
-        rc4Server.makeSBox("zhangyawei");
-        rc4Client.makeSBox("zhangyawei");
-
-        IPAddress ip = IPAddress.Parse("127.0.0.1");
-        Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        try
-        {
-            IPAddress[] ips = Dns.GetHostEntry("baidu.com").AddressList;
-            clientSocket.Connect(new IPEndPoint(ip, 26001));
-            Debug.logger.Log("connect Success.");
-        }
-        catch
-        {
-            Debug.logger.Log("connect Failed");
-            return;
-        }
-        if(true)
-        {
-            ClientAuthReq req = new ClientAuthReq("test", "123");
-            var binData = req.__encode().ToArray();
-            //binData = rc4Client.encryption(binData, binData.Length());
-
-            var sendData = new System.Collections.Generic.List<byte>();
-
-            NetHeader head = new NetHeader();
-            head.packLen = (UInt32)(4 + 2 + 2 + binData.Length);
-            head.protoID = Proto4z.ClientAuthReq.getProtoID();
-            sendData.AddRange(head.__encode());
-            sendData.AddRange(binData);
-            clientSocket.Send(sendData.ToArray());
-
-            var recvBytes = new byte[2000];
-            uint curLen = 0;
-            uint needLen = 4 + 2 + 2; //暂时分两段读 后面要改buff接收提高效率 
-            uint recvLen = 0;
-            NetHeader recvHead = new NetHeader();
-            do
-            {
-                recvLen = (uint)clientSocket.Receive(recvBytes, (int)curLen, (int)needLen, System.Net.Sockets.SocketFlags.None);//第一段 
-                if (recvLen == 0)
-                {
-                    // remote close socket.
-                    return;
-                }
-                curLen += recvLen;
-                needLen -= recvLen;
-                if (needLen == 0 && curLen == 4 + 2 + 2) ////第一段 完成 
-                {
-                    int pos = 0;
-                    recvHead.__decode(recvBytes, ref pos);
-                    needLen = recvHead.packLen - 4 - 2 - 2; //设置第二段 
-                }
-                else if (needLen == 0) //第二段完成 
-                {
-                    if (recvHead.protoID == Proto4z.ClientAuthResp.getProtoID())
-                    {
-                        ClientAuthResp result = new ClientAuthResp();
-                        int pos = 4 + 2 + 2;
-                        result.__decode(recvBytes, ref pos);
-
-                        Debug.logger.Log("ClientAuthResp: account=" + result.account + ", token=" + result.token + ",retCode=" + result.retCode);
-                        int t = 0;
-                        t++;
-                    }
-                    else if(true) //other proto 
-                    {
-
-                    }
-                    break; //一个协议接收处理完毕后break 
-                }
-                recvLen = 0; 
-            } while (true);
-
-
-        } 
-
-    }
-}
-
-
 public class socketClient : MonoBehaviour
 {
-
-    void Start () {
-        Client client = new Client();
-        client.Run();
+    Session _client;
+    void Start ()
+    {
+        Debug.logger.Log("socketClient::Start ");
+        _client = new Session();
+        if (!_client.Init("127.0.0.1", 26001, ""))
+        {
+            //return;
+        }
+        
+        ClientAuthReq req = new ClientAuthReq("test", "123");
+        _client.SendProto(ClientAuthReq.protoID, req);
     }
    
 	// Update is called once per frame
-	void Update () {
-	
+	void Update ()
+    {
+        _client.Update();
 	}
+
+
+
 }

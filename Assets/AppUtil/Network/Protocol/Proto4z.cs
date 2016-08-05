@@ -74,14 +74,14 @@ namespace Proto4z
             }
         }
 
-        public void encryption(byte[] data, int length)
+        public void encryption(byte[] data, int offset, int length)
         {
             int x, y;
 
             x = _x;
             y = _y;
 
-            for (int i = 0; i < length; i++)
+            for (int i = offset; i < offset + length; i++)
             {
                 x = (byte)(x + 1);
                 int a = m_box[x];
