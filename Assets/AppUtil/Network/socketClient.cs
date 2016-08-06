@@ -5,6 +5,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
+
+
 enum SessionStatus
 {
     SS_UNINIT,
@@ -190,7 +192,7 @@ class Session
 
     public void OnRecv(ushort protoID, byte[] bin)
     {
-        Debug.logger.Log("recv one pack len=" + bin.Length + ", protoID=" + protoID);
+        Debug.logger.Log("recv one pack len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + Proto4z.Reflection.getProtoName(protoID));
         if (protoID == ClientAuthResp.getProtoID())
         {
             ClientAuthResp resp = new ClientAuthResp();
