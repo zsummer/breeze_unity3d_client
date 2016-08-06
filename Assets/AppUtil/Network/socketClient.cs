@@ -16,7 +16,7 @@ enum SessionStatus
 
 class ProtoHeader : IProtoObject
 {
-    public const int HeadLen = 4;
+    public const int HeadLen = 8;
     public int packLen;
     public ushort reserve;
     public ushort protoID;
@@ -168,17 +168,25 @@ class Session
     {
         _sendQue.Enqueue(data);
     }
-    public void SendProto(ushort protoID, Proto4z.IProtoObject proto)
+    public void  Send<Proto>(Proto proto) where Proto : Proto4z.IProtoObject
     {
         ProtoHeader ph = new ProtoHeader();
-        ph.protoID = protoID;
         ph.reserve = 0;
+        Type pType = proto.GetType();
+        var mi = pType.GetMethod("getProtoID");
+        if (mi == null)
+        {
+            Debug.logger.Log(LogType.Error, "Session::SendProto can not find method getProtoID. ");
+            return;
+        }
+        ph.protoID = (ushort)mi.Invoke(proto, null);
         var bin = proto.__encode().ToArray();
         ph.packLen = ProtoHeader.HeadLen + bin.Length;
         var pack = ph.__encode();
         pack.AddRange(bin);
         Send(pack.ToArray());
     }
+
 
     public void OnRecv(ushort protoID, byte[] bin)
     {
@@ -352,7 +360,7 @@ public class socketClient : MonoBehaviour
         }
         
         ClientAuthReq req = new ClientAuthReq("test", "123");
-        _client.SendProto(ClientAuthReq.protoID, req);
+        _client.Send(req);
     }
    
 	// Update is called once per frame

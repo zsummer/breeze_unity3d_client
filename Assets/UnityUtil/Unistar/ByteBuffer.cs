@@ -1,7 +1,5 @@
 ﻿using System;
 
-using System;
-
 public class ByteBuffer
 {
 	//字节缓存区
