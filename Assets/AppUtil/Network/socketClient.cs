@@ -161,7 +161,7 @@ class Session
         catch (Exception e)
         {
             Debug.logger.Log(LogType.Error, "Session::onConnect had except. host=" + _addr + ", port=" + _port + ",e=" + e);
-            Close();
+            Close(_reconnect);
         }
     }
     public void Send(byte[] data)
@@ -204,6 +204,7 @@ class Session
         {
             return;
         }
+        _reconnect = reconnect;
         _recvBufferLen = 0;
         _sendBufferLen = 0;
         if(_socket != null)
@@ -262,7 +263,7 @@ class Session
                     if (ret <= 0)
                     {
                         Debug.logger.Log(LogType.Error, "!!!Unintended!!! remote closed socket. host=" + _addr + ", port=" + _port + ", status =" + _status);
-                        Close();
+                        Close(_reconnect);
                         return;
                     }
                     if (_encrypt.Length > 0)
@@ -342,7 +343,7 @@ class Session
         catch (Exception e)
         {
             Debug.logger.Log(LogType.Error, "Session::Update Receive or Send had except. host=" + _addr + ", port=" + _port + ",e=" + e);
-            Close();
+            Close(_reconnect);
         }
     }
 }
