@@ -192,13 +192,41 @@ class Session
 
     public void OnRecv(ushort protoID, byte[] bin)
     {
-        Debug.logger.Log("recv one pack len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + Proto4z.Reflection.getProtoName(protoID));
-        if (protoID == ClientAuthResp.getProtoID())
+        string protoName = Proto4z.Reflection.getProtoName(protoID);
+        Debug.logger.Log("recv one pack len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
+
+        try
         {
-            ClientAuthResp resp = new ClientAuthResp();
+            var typeInfo = Type.GetType("Proto4z." + protoName);
+            if (typeInfo == null)
+            {
+                Debug.logger.Log(LogType.Error, "not found reflection type info. len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
+                return;
+            }
+            
+            var methodInfo = typeInfo.GetMethod("__decode");
+            if (methodInfo == null)
+            {
+                Debug.logger.Log(LogType.Error, "not found reflection method info. len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
+                return;
+            }
+            var inst = Activator.CreateInstance(typeInfo);
             int offset = 0;
-            resp.__decode(bin, ref offset);
+            methodInfo.Invoke(inst, new object[] { bin, offset });
+
+            if (protoID == ClientAuthResp.getProtoID())
+            {
+                ClientAuthResp resp = inst as ClientAuthResp;
+                var account = resp.account;
+            }
         }
+        catch (Exception)
+        {
+            Debug.logger.Log(LogType.Error, "exception. len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
+            throw;
+        }
+
+
     }
     public void Close(bool reconnect = false)
     {
