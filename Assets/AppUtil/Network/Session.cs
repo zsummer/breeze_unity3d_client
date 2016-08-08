@@ -178,7 +178,7 @@ class Session
         var mi = pType.GetMethod("getProtoID");
         if (mi == null)
         {
-            Debug.logger.Log(LogType.Error, "Session::SendProto can not find method getProtoID. ");
+            Debug.logger.Log(LogType.Error, "Session::Send can not find method getProtoID. ");
             return;
         }
         ph.protoID = (ushort)mi.Invoke(proto, null);
@@ -213,12 +213,7 @@ class Session
             var inst = Activator.CreateInstance(typeInfo);
             int offset = 0;
             methodInfo.Invoke(inst, new object[] { bin, offset });
-
-            if (protoID == ClientAuthResp.getProtoID())
-            {
-                ClientAuthResp resp = inst as ClientAuthResp;
-                var account = resp.account;
-            }
+            Unistar.Singleton.getInstance<Dispatcher>().TriggerEvent(protoName, new object[] { inst });
         }
         catch (Exception)
         {
@@ -378,28 +373,3 @@ class Session
     }
 }
 
-public class socketClient : MonoBehaviour
-{
-    Session _client;
-    void Start ()
-    {
-        Debug.logger.Log("socketClient::Start ");
-        _client = new Session();
-        if (!_client.Init("127.0.0.1", 26001, ""))
-        {
-            //return;
-        }
-        
-        ClientAuthReq req = new ClientAuthReq("test", "123");
-        _client.Send(req);
-    }
-   
-	// Update is called once per frame
-	void Update ()
-    {
-        _client.Update();
-	}
-
-
-
-}
