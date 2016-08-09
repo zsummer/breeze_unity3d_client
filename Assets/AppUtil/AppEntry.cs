@@ -2,7 +2,6 @@
 
 using UnityEngine;
 using System.Collections;
-using Unistar;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
@@ -11,14 +10,15 @@ public class AppEntry : MonoBehaviour{
 	[RuntimeInitializeOnLoadMethod]
 	static void Initialize()
 	{
-		Debug.Log( "RuntimeInitializeOnLoadMethod" );
-		GameObject appEntry = Instantiate (Resources.Load<Object> ("AppEntry")) as GameObject;
-		appEntry.name = "AppEntry";
-		appEntry.SetActive (true);
+		Debug.logger.Log( "RuntimeInitializeOnLoadMethod" );
+        Facade.Init();
+        Facade.GetSingleton<NetController>();
+// 		GameObject appEntry = Instantiate (Resources.Load<Object> ("AppEntry")) as GameObject;
+// 		appEntry.name = "AppEntry";
+// 		appEntry.SetActive (true);
 	}
 
 	void Awake() {
-		Singleton.m_Container = this.gameObject;
 		AppManager.commonConfig = this.GetComponent<AppCommonConfig> ();
 	}
 

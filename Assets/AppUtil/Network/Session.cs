@@ -48,6 +48,7 @@ class Session
     ushort _port;
     bool _reconnect = true;
     float _lastConnectTime = 0.0f;
+    float _lastRecvTime = 0.0f;
     const int MAX_BUFFER_SIZE = 200 * 1024;
 
 
@@ -159,6 +160,7 @@ class Session
             socket.EndConnect(result);
             socket.Blocking = false;
             _status = SessionStatus.SS_WORKING;
+            Facade.GetSingleton<Dispatcher>().TriggerEvent("SessionConnected", new object[] { this });
         }
         catch (Exception e)
         {
@@ -194,7 +196,7 @@ class Session
     {
         string protoName = Proto4z.Reflection.getProtoName(protoID);
         Debug.logger.Log("recv one pack len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
-
+        _lastRecvTime = Time.realtimeSinceStartup;
         try
         {
             var typeInfo = Type.GetType("Proto4z." + protoName);
@@ -213,7 +215,7 @@ class Session
             var inst = Activator.CreateInstance(typeInfo);
             int offset = 0;
             methodInfo.Invoke(inst, new object[] { bin, offset });
-            Unistar.Singleton.getInstance<Dispatcher>().TriggerEvent(protoName, new object[] { inst });
+            Facade.GetSingleton<Dispatcher>().TriggerEvent(protoName, new object[] { inst });
         }
         catch (Exception)
         {
@@ -232,6 +234,7 @@ class Session
         _reconnect = reconnect;
         _recvBufferLen = 0;
         _sendBufferLen = 0;
+        _sendQue.Clear();
         if(_socket != null)
         {
             _socket.Close();
@@ -274,6 +277,13 @@ class Session
             {
                 return;
             }
+
+            if (Time.realtimeSinceStartup - _lastRecvTime > 60)
+            {
+                Close(_reconnect);
+                return;
+            }
+
             //Receive 每帧只读取一次, 每次都尽可能去读满缓冲.  
             if (_recvBufferLen < MAX_BUFFER_SIZE)
             {

@@ -4,11 +4,17 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using Unistar;
+
 
 public  class Dispatcher : MonoBehaviour
 {
     System.Collections.Generic.Dictionary<string, Delegate> _routing = new System.Collections.Generic.Dictionary<string, Delegate>();
+    void Awake()
+    {
+        Debug.Log("Awake Dispatcher.");
+        DontDestroyOnLoad(gameObject);
+    }
+
     public void AddListener(string method, Delegate dlg)
     {
         if (_routing.ContainsKey(method))
