@@ -11,9 +11,23 @@ public class Facade: MonoBehaviour
     public static void Init()
     {
         Debug.Log("Init Facade.");
+
         _singletons = new System.Collections.Generic.Dictionary<string, object>();
-        _facade = new GameObject();
+        if (_facade != null)
+        {
+            return;
+        }
+        _facade = Resources.Load<GameObject>("Facade");
+        if (_facade == null)
+        {
+            _facade = new GameObject();
+        }
+        else
+        {
+           _facade = Instantiate(_facade);
+        }
         _facade.name = "Facade";
+        _facade.SetActive(true);
         _facade.AddComponent(typeof(Facade));
     }
     void Awake()
@@ -29,6 +43,7 @@ public class Facade: MonoBehaviour
 
     void Update()
     {
+        Debug.Log("Facade Update");
     }
 
     void OnApplicationQuit()
@@ -47,13 +62,18 @@ public class Facade: MonoBehaviour
 	{
         if (!ContainsSingleton(name))
         {
-            var typeInfo = Type.GetType(name);
-            if (typeInfo == null)
+            var obj = _facade.GetComponent(name);
+            if (obj == null)
             {
-                Debug.LogWarning("not found type " + name);
-                return null;
+                var typeInfo = Type.GetType(name);
+                if (typeInfo == null)
+                {
+                    Debug.LogWarning("not found type " + name);
+                    return null;
+                }
+                obj = _facade.AddComponent(Type.GetType(name));
             }
-            _singletons.Add(name, _facade.AddComponent(Type.GetType(name)));
+            _singletons.Add(name, obj);
         }
         return _singletons[name];
 	}

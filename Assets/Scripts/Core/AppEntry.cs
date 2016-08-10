@@ -13,9 +13,6 @@ public class AppEntry : MonoBehaviour{
 		Debug.logger.Log( "RuntimeInitializeOnLoadMethod" );
         Facade.Init();
         Facade.GetSingleton<NetController>();
-// 		GameObject appEntry = Instantiate (Resources.Load<Object> ("AppEntry")) as GameObject;
-// 		appEntry.name = "AppEntry";
-// 		appEntry.SetActive (true);
 	}
 
 	void Awake() {
