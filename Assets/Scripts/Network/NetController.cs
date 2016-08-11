@@ -5,11 +5,13 @@ using System;
 public class NetController : MonoBehaviour {
 
     Session _client;
+    string _account;
+    string _passwd;
     void Awake()
     {
         Debug.Log("Awake NetController.");
         DontDestroyOnLoad(gameObject);
-        Facade.GetSingleton<Dispatcher>().AddListener("Login", (System.Action<string, ushort>)Login);
+        Facade.GetSingleton<Dispatcher>().AddListener("Login", (System.Action<string, ushort, string, string>)Login);
         Facade.GetSingleton<Dispatcher>().AddListener("SessionConnected", (System.Action<Session>)OnConnected);
         Facade.GetSingleton<Dispatcher>().AddListener("ClientAuthResp", (System.Action<ClientAuthResp>)OnClientAuthResp);
         Facade.GetSingleton<Dispatcher>().AddListener("CreateAvatarResp", (System.Action<CreateAvatarResp>)OnCreateAvatarResp);
@@ -19,24 +21,24 @@ public class NetController : MonoBehaviour {
     void Start()
     {
         Debug.logger.Log("NetController::Start ");
-        Facade.GetSingleton<Dispatcher>().TriggerEvent("Login", new object[] { "127.0.0.1", (ushort)26001 });
     }
 
-    void Login(string host, ushort port)
+    void Login(string host, ushort port, string account, string pwd)
     {
         if (_client != null)
         {
             _client.Close(false);
         }
+        _account = account;
+        _passwd = pwd;
         _client = new Session();
         _client.Init(host, port, "");
-        
     }
     void OnConnected(Session session)
     {
         if (_client == session)
         {
-            _client.Send(new ClientAuthReq("test", "123"));
+            _client.Send(new ClientAuthReq(_account, _passwd));
         }
     }
 
@@ -51,7 +53,7 @@ public class NetController : MonoBehaviour {
         Debug.logger.Log("NetController::OnClientAuthResp account=" + account);
         if (resp.previews.Count == 0)
         {
-            _client.Send(new CreateAvatarReq("", "test1"));
+            _client.Send(new CreateAvatarReq("", _account));
         }
         else
         {
@@ -79,6 +81,13 @@ public class NetController : MonoBehaviour {
         }
         Debug.logger.Log("NetController::AttachAvatarResp ");
         PingPongSend();
+
+        var login = GameObject.Find("LoginUI");
+        if (login != null)
+        {
+            GameObject.Destroy(login);
+        }
+
     }
 
     void OnPingPongResp(PingPongResp resp)
