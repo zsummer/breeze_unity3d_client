@@ -12,8 +12,20 @@ public class AppEntry : MonoBehaviour{
 	{
 		Debug.logger.Log( "RuntimeInitializeOnLoadMethod" );
         Facade.Init();
-        Facade.GetSingleton<NetController>();
-	}
+       
+
+        UnityEngine.EventSystems.EventSystem eventSys = GameObject.FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
+        if (eventSys == null)
+        {
+            GameObject o = new GameObject("EventSystem");
+            o.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            o.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+        }
+
+
+
+
+    }
 
 	void Awake() {
 		AppManager.commonConfig = this.GetComponent<AppCommonConfig> ();

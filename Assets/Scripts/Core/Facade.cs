@@ -43,7 +43,7 @@ public class Facade: MonoBehaviour
 
     void Update()
     {
-        Debug.Log("Facade Update");
+        //Debug.Log("Facade Update");
     }
 
     void OnApplicationQuit()
