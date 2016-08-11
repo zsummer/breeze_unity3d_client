@@ -4,8 +4,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 public class Input : MonoBehaviour, ISelectHandler, IDeselectHandler
 {
-    GameObject _placeholder;
-    GameObject _inputText;
+    Transform _placeholder;
+    Transform _inputText;
 	// Use this for initialization
 	void Start ()
     {
@@ -14,11 +14,11 @@ public class Input : MonoBehaviour, ISelectHandler, IDeselectHandler
         {
             if (ts.gameObject.name == "Placeholder")
             {
-                _placeholder = ts.gameObject;
+                _placeholder = ts;
             }
             else if (ts.gameObject.name == "Text")
             {
-                _inputText = ts.gameObject;
+                _inputText = ts;
             }
         }
     }
@@ -32,14 +32,14 @@ public class Input : MonoBehaviour, ISelectHandler, IDeselectHandler
     {
         if (_placeholder)
         {
-            _placeholder.SetActive(false);
+            _placeholder.gameObject.SetActive(false);
         }
     }
     public void OnDeselect(BaseEventData eventData)
     {
         if (_placeholder)
         {
-            _placeholder.SetActive(true);
+            _placeholder.gameObject.SetActive(true);
         }
     }
 
