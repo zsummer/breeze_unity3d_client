@@ -9,8 +9,18 @@ public class Login : MonoBehaviour {
     public Button _loginButton;
     public InputField _accountInput;
     public InputField _passwdInput;
+    public RawImage _img;
     void Start ()
     {
+        if (PlayerPrefs.GetString("account") != null)
+        {
+            _accountInput.text = PlayerPrefs.GetString("account");
+        }
+        if (PlayerPrefs.GetString("passwd") != null)
+        {
+            _passwdInput.text = PlayerPrefs.GetString("passwd");
+        }
+
         _accountInput.onValueChanged.AddListener(delegate (string text)
         {
             if (text.Length > 0)
@@ -45,6 +55,9 @@ public class Login : MonoBehaviour {
             {
                 return;
             }
+
+            PlayerPrefs.SetString("account", _accountInput.text);
+            PlayerPrefs.SetString("passwd", _passwdInput.text);
             Facade.GetSingleton<Dispatcher>().TriggerEvent("Login", new object[] { "127.0.0.1", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim() });
         });
 	}

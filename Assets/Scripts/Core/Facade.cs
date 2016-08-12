@@ -17,7 +17,7 @@ public class Facade: MonoBehaviour
         {
             return;
         }
-        _facade = Resources.Load<GameObject>("Facade");
+        _facade = Resources.Load<GameObject>("Prefabs/Facade");
         if (_facade == null)
         {
             _facade = new GameObject();
