@@ -22,6 +22,7 @@ class ProtoHeader : IProtoObject
     public int packLen;
     public ushort reserve;
     public ushort protoID;
+
     public System.Collections.Generic.List<byte> __encode()
     {
         var ret = new System.Collections.Generic.List<byte>();
@@ -63,6 +64,12 @@ class Session
     private byte[] _recvBuffer;
     private int _recvBufferLen = 0;
 
+
+    public Delegate _onClosed;
+    public Delegate _onBeginConnect;
+    public Delegate _onEndConnect;
+
+    System.Collections.Generic.Queue<Delegate> _asyns = new System.Collections.Generic.Queue<Delegate>();
     public Session()
     {
         _sendBuffer = new byte[MAX_BUFFER_SIZE];
@@ -135,6 +142,10 @@ class Session
             _status = SessionStatus.SS_CONNECTING;
             _socket = new Socket(_addr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _socket.BeginConnect(_addr, _port, new AsyncCallback(OnConnect), _socket);
+            if (_onBeginConnect != null)
+            {
+                _onBeginConnect.DynamicInvoke(null);
+            }
         }
         catch (Exception e)
         {
@@ -160,12 +171,21 @@ class Session
             socket.EndConnect(result);
             socket.Blocking = false;
             _status = SessionStatus.SS_WORKING;
-            Facade.GetSingleton<Dispatcher>().TriggerEvent("SessionConnected", new object[] { this });
+            
+            if (_onEndConnect != null)
+            {
+                _asyns.Enqueue((System.Action)delegate () { _onEndConnect.DynamicInvoke(new object[] { true }); });
+            }
         }
         catch (Exception e)
         {
             Debug.logger.Log(LogType.Error, "Session::onConnect had except. host=" + _addr + ", port=" + _port + ",e=" + e);
-            Close(_reconnect);
+            if (_onEndConnect != null)
+            {
+                _asyns.Enqueue((System.Action)delegate () { _onEndConnect.DynamicInvoke(new object[] { false }); });
+            }
+            _asyns.Enqueue((System.Action)delegate () { Close(_reconnect); });
+
         }
     }
     public void Send(byte[] data)
@@ -248,11 +268,32 @@ class Session
         {
             _status = SessionStatus.SS_CLOSED;
         }
+        if (_onClosed != null)
+        {
+            _onClosed.DynamicInvoke(null);
+        }
     }
     public void Update()
     {
         try
         {
+            while (_asyns.Count > 0)
+            {
+                var dele = _asyns.Dequeue();
+                dele.DynamicInvoke(null);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Session run Async queue error. e=" + e);
+        }
+
+        try
+        {
+            if (_status == SessionStatus.SS_UNINIT)
+            {
+                return;
+            }
             //Debug.logger.Log("cur=" + Time.realtimeSinceStartup + ", last=" + _lastConnectTime);
             if (_status == SessionStatus.SS_INITED)
             {
@@ -283,7 +324,14 @@ class Session
                 Close(_reconnect);
                 return;
             }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Session run Async queue error. e=" + e);
+        }
 
+        try
+        {
             //Receive 每帧只读取一次, 每次都尽可能去读满缓冲.  
             if (_recvBufferLen < MAX_BUFFER_SIZE)
             {
@@ -339,6 +387,13 @@ class Session
                     
                 } while (true);
             }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Session run Async queue error. e=" + e);
+        }
+        try
+        {
             //send 
             if (_sendBufferLen > 0 || _sendQue.Count > 0)
             {

@@ -100,7 +100,7 @@ namespace Proto4z
 
     }
 
-    interface IProtoObject
+    public interface IProtoObject
     {
         System.Collections.Generic.List<byte> __encode();
         int __decode(byte[] binData, ref int pos);

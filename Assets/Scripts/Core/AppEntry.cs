@@ -12,7 +12,9 @@ public class AppEntry : MonoBehaviour{
 	{
 		Debug.logger.Log( "RuntimeInitializeOnLoadMethod" );
         Facade.Init();
-       
+        Facade.GetSingleton<Dispatcher>();
+        Facade.GetSingleton<NetController>();
+        
 
         UnityEngine.EventSystems.EventSystem eventSys = GameObject.FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
         if (eventSys == null)

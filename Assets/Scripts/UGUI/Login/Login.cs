@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
-
+using Proto4z;
 
 public class Login : MonoBehaviour {
 
@@ -9,9 +9,10 @@ public class Login : MonoBehaviour {
     public Button _loginButton;
     public InputField _accountInput;
     public InputField _passwdInput;
-    public RawImage _img;
+    public Image _busyTips;
     void Start ()
     {
+        _busyTips.gameObject.SetActive(false);
         if (PlayerPrefs.GetString("account") != null)
         {
             _accountInput.text = PlayerPrefs.GetString("account");
@@ -45,8 +46,8 @@ public class Login : MonoBehaviour {
         });
 
 
-        _loginButton.onClick.AddListener(delegate () {
-            Facade.GetSingleton<NetController>();
+        _loginButton.onClick.AddListener(delegate () 
+        {
             if (_accountInput.text.Trim().Length > 15 || _accountInput.text.Trim().Length < 2)
             {
                 return;
@@ -58,7 +59,15 @@ public class Login : MonoBehaviour {
 
             PlayerPrefs.SetString("account", _accountInput.text);
             PlayerPrefs.SetString("passwd", _passwdInput.text);
-            Facade.GetSingleton<Dispatcher>().TriggerEvent("Login", new object[] { "127.0.0.1", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim() });
+
+            Facade.GetSingleton<NetController>().SetMainSessionDelegate(
+                null,
+                delegate (){ _busyTips.gameObject.SetActive(true); },
+                delegate (bool sus){
+                    _busyTips.gameObject.SetActive(false);
+                });
+            Facade.GetSingleton<NetController>().Login("127.0.0.1", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
+            _busyTips.gameObject.SetActive(true);
         });
 	}
 	

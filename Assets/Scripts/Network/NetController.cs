@@ -2,17 +2,20 @@
 using Proto4z;
 using System.Collections;
 using System;
-public class NetController : MonoBehaviour {
+public class NetController : MonoBehaviour
+{
 
     Session _client;
     string _account;
     string _passwd;
+    Delegate _onClosed;
+    Delegate _onBeginConnect;
+    Delegate _onEndConnect;
     void Awake()
     {
         Debug.Log("Awake NetController.");
         DontDestroyOnLoad(gameObject);
-        Facade.GetSingleton<Dispatcher>().AddListener("Login", (System.Action<string, ushort, string, string>)Login);
-        Facade.GetSingleton<Dispatcher>().AddListener("SessionConnected", (System.Action<Session>)OnConnected);
+        
         Facade.GetSingleton<Dispatcher>().AddListener("ClientAuthResp", (System.Action<ClientAuthResp>)OnClientAuthResp);
         Facade.GetSingleton<Dispatcher>().AddListener("CreateAvatarResp", (System.Action<CreateAvatarResp>)OnCreateAvatarResp);
         Facade.GetSingleton<Dispatcher>().AddListener("AttachAvatarResp", (System.Action<AttachAvatarResp>)OnAttachAvatarResp);
@@ -21,28 +24,47 @@ public class NetController : MonoBehaviour {
     void Start()
     {
         Debug.logger.Log("NetController::Start ");
+        
+        
     }
 
-    void Login(string host, ushort port, string account, string pwd)
+    public void Login(string host, ushort port, string account, string pwd)
     {
-        if (_client != null)
-        {
-            _client.Close(false);
-        }
         _account = account;
         _passwd = pwd;
+        if (_client != null)
+        {
+            _client.Close();
+        }
         _client = new Session();
+        _client._onClosed = _onClosed;
+        _client._onBeginConnect = _onBeginConnect;
+        _client._onEndConnect = (Action<bool>)OnEndConnect;
         _client.Init(host, port, "");
+        
     }
-    void OnConnected(Session session)
+    public void OnEndConnect(bool isOK)
     {
-        if (_client == session)
+        if (isOK)
         {
             _client.Send(new ClientAuthReq(_account, _passwd));
+            if (_onEndConnect != null)
+            {
+                _onEndConnect.DynamicInvoke(isOK);
+            }
         }
     }
-
-    void OnClientAuthResp(ClientAuthResp resp)
+    public void SetMainSessionDelegate(Action onClosed, Action onBeginConnect, Action<bool> onEndConnect)
+    {
+        _onClosed = onClosed;
+        _onBeginConnect = onBeginConnect;
+        _onEndConnect = onEndConnect;
+    }
+    public void Send<T>(T proto) where T : Proto4z.IProtoObject
+    {
+        _client.Send(proto);
+    }
+        void OnClientAuthResp(ClientAuthResp resp)
     {
         var account = resp.account;
         if (resp.retCode != (ushort)ERROR_CODE.EC_SUCCESS)
