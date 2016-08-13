@@ -107,7 +107,7 @@ public class NetController : MonoBehaviour
         var login = GameObject.Find("LoginUI");
         if (login != null)
         {
-            GameObject.Destroy(login);
+            login.SetActive(false);
         }
 
     }

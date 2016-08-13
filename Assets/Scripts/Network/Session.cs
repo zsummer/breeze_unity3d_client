@@ -127,6 +127,7 @@ class Session
     {
         Debug.logger.Log("Session::Connect addr=" + _addr + ", port=" + _port);
         _lastConnectTime = Time.realtimeSinceStartup;
+        _lastRecvTime = Time.realtimeSinceStartup;
         if (_status != SessionStatus.SS_INITED)
         {
             Debug.logger.Log(LogType.Error, "BeginConnect Session status error. addr=" + _addr + ", port=" + _port +", status =" + _status);
@@ -149,7 +150,12 @@ class Session
         }
         catch (Exception e)
         {
-            _status = SessionStatus.SS_CLOSED;
+            _status = SessionStatus.SS_INITED;
+            if (_socket != null)
+            {
+                _socket.Close();
+                _socket = null;
+            }
             Debug.logger.Log(LogType.Error, "Session::Init had except. addr=" + _addr + ", port=" + _port + ",e=" + e);
         }
     }
