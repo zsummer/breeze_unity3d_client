@@ -60,11 +60,6 @@ public class Facade: MonoBehaviour
 	}
 	public static object GetSingleton (string name)
 	{
-        if (name == "NetController")
-        {
-            int a = 1;
-
-        }
         if (!ContainsSingleton(name))
         {
             var obj = _facade.GetComponent(name);
