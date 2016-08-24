@@ -61,11 +61,9 @@ public class Login : MonoBehaviour {
             PlayerPrefs.SetString("passwd", _passwdInput.text);
 
             Facade.GetSingleton<NetController>().SetMainSessionDelegate(
-                null,
+                delegate () { _busyTips.gameObject.SetActive(false); },
                 delegate (){ _busyTips.gameObject.SetActive(true); },
-                delegate (bool sus){
-                    _busyTips.gameObject.SetActive(false);
-                });
+                delegate (bool sus){ _busyTips.gameObject.SetActive(false);});
             Facade.GetSingleton<NetController>().Login("127.0.0.1", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
             _busyTips.gameObject.SetActive(true);
         });

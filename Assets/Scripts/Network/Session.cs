@@ -47,7 +47,7 @@ class Session
     SessionStatus _status = SessionStatus.SS_UNINIT;
     IPAddress _addr;
     ushort _port;
-    bool _reconnect = true;
+    int _reconnect = 0;
     float _lastConnectTime = 0.0f;
     float _lastRecvTime = 0.0f;
     const int MAX_BUFFER_SIZE = 200 * 1024;
@@ -177,7 +177,7 @@ class Session
             socket.EndConnect(result);
             socket.Blocking = false;
             _status = SessionStatus.SS_WORKING;
-            
+            _reconnect = 5;
             if (_onEndConnect != null)
             {
                 _asyns.Enqueue((System.Action)delegate () { _onEndConnect.DynamicInvoke(new object[] { true }); });
@@ -190,7 +190,7 @@ class Session
             {
                 _asyns.Enqueue((System.Action)delegate () { _onEndConnect.DynamicInvoke(new object[] { false }); });
             }
-            _asyns.Enqueue((System.Action)delegate () { Close(_reconnect); });
+            _asyns.Enqueue((System.Action)delegate () { Close(); });
 
         }
     }
@@ -251,13 +251,17 @@ class Session
 
 
     }
-    public void Close(bool reconnect = false)
+    public void Close()
     {
         if (_status == SessionStatus.SS_CLOSED)
         {
             return;
         }
-        _reconnect = reconnect;
+        if (_reconnect > 0 )
+        {
+            _reconnect--;
+        }
+        
         _recvBufferLen = 0;
         _sendBufferLen = 0;
         _sendQue.Clear();
@@ -266,7 +270,7 @@ class Session
             _socket.Close();
             _socket = null;
         }
-        if (reconnect && _status != SessionStatus.SS_UNINIT)
+        if (_reconnect > 0 && _status != SessionStatus.SS_UNINIT)
         {
             _status = SessionStatus.SS_INITED;
         }
@@ -315,7 +319,7 @@ class Session
                 //Connect超过7秒还没成功就算超时.  
                 if (Time.realtimeSinceStartup - _lastConnectTime > 7.0)
                 {
-                    Close(_reconnect);
+                    Close();
                 }
                 return;
             }
@@ -327,7 +331,7 @@ class Session
 
             if (Time.realtimeSinceStartup - _lastRecvTime > 60)
             {
-                Close(_reconnect);
+                Close();
                 return;
             }
         }
@@ -352,7 +356,7 @@ class Session
                     if (ret <= 0)
                     {
                         Debug.logger.Log(LogType.Error, "!!!Unintended!!! remote closed socket. host=" + _addr + ", port=" + _port + ", status =" + _status);
-                        Close(_reconnect);
+                        Close();
                         return;
                     }
                     if (_encrypt.Length > 0)
@@ -439,7 +443,7 @@ class Session
         catch (Exception e)
         {
             Debug.logger.Log(LogType.Error, "Session::Update Receive or Send had except. host=" + _addr + ", port=" + _port + ",e=" + e);
-            Close(_reconnect);
+            Close();
         }
     }
 }
