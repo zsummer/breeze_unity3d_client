@@ -61,11 +61,13 @@ public class Facade: MonoBehaviour
             GameObject.Destroy(_avatar.gameObject);
             _avatar = null;
         }
+
         _avatar = GameObject.Find("jing_ling_nv_001_ty").transform;
         if (_avatar == null)
         {
             Debug.Log("not found avatar");
         }
+
     }
 
 	public static bool ContainsSingleton(string name)
