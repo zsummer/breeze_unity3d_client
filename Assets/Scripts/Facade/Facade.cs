@@ -6,6 +6,7 @@ using UnityEngine;
 public class Facade: MonoBehaviour
 {
 	public static GameObject _facade = null;
+    public static Transform _avatar = null;
     private static System.Collections.Generic.Dictionary<string, object> _singletons;
 
     public static void Init()
@@ -53,6 +54,19 @@ public class Facade: MonoBehaviour
         _facade = null;
     }
 
+    public static void CreateAvatar(string modlename)
+    {
+        if (_avatar != null)
+        {
+            GameObject.Destroy(_avatar.gameObject);
+            _avatar = null;
+        }
+        _avatar = GameObject.Find("jing_ling_nv_001_ty").transform;
+        if (_avatar == null)
+        {
+            Debug.Log("not found avatar");
+        }
+    }
 
 	public static bool ContainsSingleton(string name)
 	{

@@ -5,7 +5,8 @@ using System.Collections;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
-public class AppEntry : MonoBehaviour{
+public class AppEntry : MonoBehaviour
+{
 
 	[RuntimeInitializeOnLoadMethod]
 	static void Initialize()
@@ -14,7 +15,7 @@ public class AppEntry : MonoBehaviour{
         Facade.Init();
         Facade.GetSingleton<Dispatcher>();
         Facade.GetSingleton<NetController>();
-        
+        Facade.GetSingleton<ModelMgr>();
 
         UnityEngine.EventSystems.EventSystem eventSys = GameObject.FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
         if (eventSys == null)
@@ -24,9 +25,7 @@ public class AppEntry : MonoBehaviour{
             o.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
         }
 
-
-
-
+        Facade.CreateAvatar("");
     }
 
 	void Awake() {
