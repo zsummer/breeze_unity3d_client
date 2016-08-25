@@ -177,7 +177,7 @@ class Session
             socket.EndConnect(result);
             socket.Blocking = false;
             _status = SessionStatus.SS_WORKING;
-            _reconnect = 5;
+            _reconnect = 50;
             if (_onEndConnect != null)
             {
                 _asyns.Enqueue((System.Action)delegate () { _onEndConnect.DynamicInvoke(new object[] { true }); });

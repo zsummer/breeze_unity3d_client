@@ -46,11 +46,11 @@ public class ChatUI : MonoBehaviour
         {
             if (item.channelID == (ushort)ChatChannelEnum.CC_WORLD)
             {
-                buf += "<color=red>[世界]</color>:来自玩家<color=blue>[" + item.sourceName + "]的发言: </color> "; 
+                buf += "<color=red>[世界]</color>:来自玩家<color=blue>[" + item.sourceName + "]</color>的发言: "; 
             }
             else if (item.channelID == (ushort)ChatChannelEnum.CC_PRIVATE)
             {
-                buf += "<color=yellow>[私聊]</color>:来自玩家<color=blue>[" + item.sourceName + "]的发言: </color> ";
+                buf += "<color=yellow>[私聊]</color>:来自玩家<color=blue>[" + item.sourceName + "]</color>的发言: ";
             }
             else if (item.channelID == (ushort)ChatChannelEnum.CC_SYSTEM)
             {

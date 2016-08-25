@@ -7,8 +7,11 @@ public class BusyTips : MonoBehaviour {
     public float _speed = 7.0f;
 	void Start ()
     {
-	    
-	}
+        Facade.GetSingleton<NetController>().SetMainSessionDelegate(
+    delegate () { gameObject.SetActive(false); },
+    delegate () { gameObject.SetActive(true); },
+    delegate (bool sus) { gameObject.SetActive(false); });
+    }
 	
 	// Update is called once per frame
 	void Update ()
