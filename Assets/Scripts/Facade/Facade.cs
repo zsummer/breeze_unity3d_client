@@ -7,6 +7,7 @@ public class Facade: MonoBehaviour
 {
 	public static GameObject _facade = null;
     public static Transform _avatar = null;
+    public static UInt64 _avatarID = 0;
     private static System.Collections.Generic.Dictionary<string, object> _singletons;
 
     public static void Init()
@@ -70,13 +71,14 @@ public class Facade: MonoBehaviour
 
     }
 
-	public static bool ContainsSingleton(string name)
-	{
-        return _facade != null && _singletons != null && _singletons.ContainsKey(name);
-	}
+
 	public static object GetSingleton (string name)
 	{
-        if (!ContainsSingleton(name))
+        if (_facade == null || _singletons == null)
+        {
+            return null;
+        }
+        if (!_singletons.ContainsKey(name))
         {
             var obj = _facade.GetComponent(name);
             if (obj == null)
@@ -102,7 +104,11 @@ public class Facade: MonoBehaviour
 
 	public static void RemoveSingleton(string name)
 	{
-        if (ContainsSingleton(name))
+        if (_facade == null || _singletons == null)
+        {
+            return ;
+        }
+        if (_singletons.ContainsKey(name))
         {
             UnityEngine.Object.Destroy((UnityEngine.Object)(_singletons[name]));
             _singletons.Remove(name);

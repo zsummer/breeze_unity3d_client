@@ -101,6 +101,7 @@ public class NetController : MonoBehaviour
             Debug.logger.Log(LogType.Error, "NetController::AttachAvatarResp ");
             return;
         }
+        Facade._avatarID = resp.avatarID;
         Debug.logger.Log("NetController::AttachAvatarResp ");
         PingPongSend();
 

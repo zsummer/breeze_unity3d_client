@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine.UI;
 using Proto4z;
 
-public class Login : MonoBehaviour {
+public class LoginUI : MonoBehaviour {
 
     // Use this for initialization
     public Button _loginButton;
