@@ -6,16 +6,18 @@ public class NetController : MonoBehaviour
 {
 
     Session _client;
+    public SessionStatus ClientStatus { get { return _client == null ?  SessionStatus.SS_UNINIT: _client.Status; } }
     string _account;
     string _passwd;
-    Delegate _onClosed;
-    Delegate _onBeginConnect;
-    Delegate _onEndConnect;
+    GameObject _busyTips;
+    GameObject _chatPanel;
+
     void Awake()
     {
         Debug.Log("Awake NetController.");
         DontDestroyOnLoad(gameObject);
-        
+        _busyTips = GameObject.Find("BusyTips");
+        _chatPanel = GameObject.Find("ChatUI");
         Facade.GetSingleton<Dispatcher>().AddListener("ClientAuthResp", (System.Action<ClientAuthResp>)OnClientAuthResp);
         Facade.GetSingleton<Dispatcher>().AddListener("CreateAvatarResp", (System.Action<CreateAvatarResp>)OnCreateAvatarResp);
         Facade.GetSingleton<Dispatcher>().AddListener("AttachAvatarResp", (System.Action<AttachAvatarResp>)OnAttachAvatarResp);
@@ -37,29 +39,19 @@ public class NetController : MonoBehaviour
             _client.Close();
         }
         _client = new Session();
-        _client._onClosed = _onClosed;
-        _client._onBeginConnect = _onBeginConnect;
-        _client._onEndConnect = (Action<bool>)OnEndConnect;
+        _client._onConnect = (Action)OnConnect;
         _client.Init(host, port, "");
         
     }
-    public void OnEndConnect(bool isOK)
+    public void OnConnect()
     {
-        if (isOK)
+        _client.Send(new ClientAuthReq(_account, _passwd));
+        if (_chatPanel !=null && !_chatPanel.activeSelf)
         {
-            _client.Send(new ClientAuthReq(_account, _passwd));
-            if (_onEndConnect != null)
-            {
-                _onEndConnect.DynamicInvoke(isOK);
-            }
+            _chatPanel.SetActive(true);
         }
     }
-    public void SetMainSessionDelegate(Action onClosed, Action onBeginConnect, Action<bool> onEndConnect)
-    {
-        _onClosed = onClosed;
-        _onBeginConnect = onBeginConnect;
-        _onEndConnect = onEndConnect;
-    }
+
     public void Send<T>(T proto) where T : Proto4z.IProtoObject
     {
         _client.Send(proto);
@@ -133,7 +125,28 @@ public class NetController : MonoBehaviour
         {
             _client.Update();
         }
-        
+        if (_busyTips != null)
+        {
+            if (_client != null)
+            {
+                if (_client.Status == SessionStatus.SS_CONNECTING || _client.Status == SessionStatus.SS_INITING)
+                {
+                    if (!_busyTips.activeSelf)
+                    {
+                        _busyTips.SetActive(true);
+                    }
+                }
+                else if (_busyTips.activeSelf)
+                {
+                    _busyTips.SetActive(false);
+                }
+            }
+            else if (_busyTips.activeSelf)
+            {
+                _busyTips.SetActive(false);
+            }
+
+        }
     }
 
 }

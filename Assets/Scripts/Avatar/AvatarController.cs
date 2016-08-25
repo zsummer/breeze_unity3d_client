@@ -18,6 +18,10 @@ public class AvatarController : MonoBehaviour {
 
     void FixedUpdate()
     {
+        if (Facade._avatarID == 0)
+        {
+            return;
+        }
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
         Vector3 velocity = new Vector3(0, 0, v);

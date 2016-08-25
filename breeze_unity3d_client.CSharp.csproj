@@ -87,6 +87,7 @@
     <Compile Include="Assets\Scripts\Network\Session.cs" />
     <Compile Include="Assets\Scripts\UGUI\Chat\ChatUI.cs" />
     <Compile Include="Assets\Scripts\UGUI\Login\LoginUI.cs" />
+    <Compile Include="Assets\Scripts\UGUI\MainUI.cs" />
     <Compile Include="Assets\Scripts\UGUI\Tips\BusyTips.cs" />
   </ItemGroup>
   <ItemGroup>

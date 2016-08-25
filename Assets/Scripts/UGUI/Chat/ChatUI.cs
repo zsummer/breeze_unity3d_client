@@ -10,6 +10,7 @@ public class ChatUI : MonoBehaviour
 	// Use this for initialization
 	void Start ()
     {
+        gameObject.SetActive(false);
         Facade.GetSingleton<Dispatcher>().AddListener("ChatResp", (System.Action<ChatResp>)OnChatResp);
         _inputField.onEndEdit.AddListener(delegate (string msg)
         {

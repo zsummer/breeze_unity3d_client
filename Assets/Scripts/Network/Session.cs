@@ -7,9 +7,10 @@ using System.Threading;
 
 
 
-enum SessionStatus
+public enum SessionStatus
 {
     SS_UNINIT,
+    SS_INITING,
     SS_INITED,
     SS_CONNECTING,
     SS_WORKING,
@@ -45,6 +46,9 @@ class Session
 {
     Socket _socket;
     SessionStatus _status = SessionStatus.SS_UNINIT;
+    public SessionStatus  Status{get{return _status;}}
+    public Action _onConnect;
+
     IPAddress _addr;
     ushort _port;
     int _reconnect = 0;
@@ -65,9 +69,7 @@ class Session
     private int _recvBufferLen = 0;
 
 
-    public Delegate _onClosed;
-    public Delegate _onBeginConnect;
-    public Delegate _onEndConnect;
+
 
     System.Collections.Generic.Queue<Delegate> _asyns = new System.Collections.Generic.Queue<Delegate>();
     public Session()
@@ -75,27 +77,14 @@ class Session
         _sendBuffer = new byte[MAX_BUFFER_SIZE];
         _recvBuffer = new byte[MAX_BUFFER_SIZE];
         _sendQue = new System.Collections.Generic.Queue<byte[]>();
+
     }
-    public bool Init(string host, ushort port, string encrypt)
+
+    public void OnGetDNS(IAsyncResult result)
     {
         try
         {
-            _encrypt = encrypt.Trim();
-            host = host.Trim();
-            if (host.Length == 0 || port == 0)
-            {
-                Debug.logger.Log(LogType.Error, "Session::Init Session param error. host=" + host + ", port=" + port + ", status=" + _status);
-                return false;
-            }
-            if (_status != SessionStatus.SS_UNINIT)
-            {
-                Debug.logger.Log(LogType.Error, "Session::Init Session status error. host=" + host + ", port=" + port + ", status=" + _status);
-                return false;
-            }
-            _status = SessionStatus.SS_INITED;
-            _addr = null;
-            _port = port;
-            IPAddress[] addrs = Dns.GetHostEntry(host).AddressList;
+            IPAddress[] addrs = Dns.EndGetHostEntry(result).AddressList;
             foreach (var addr in addrs)
             {
                 if (_addr == null ||
@@ -111,16 +100,50 @@ class Session
             if (_addr == null)
             {
                 _status = SessionStatus.SS_UNINIT;
-                Debug.logger.Log(LogType.Error, "Session::Init can't resolve host. host=" + host + ", port=" + port);
-                return false;
+                Debug.logger.Log(LogType.Error, "Session::OnGetDNS can't resolve host.");
+                return;
             }
+            _status = SessionStatus.SS_INITED;
+            Debug.logger.Log(LogType.Log, "Session::OnGetDNS resolve dns=" + _addr);
         }
         catch (Exception e)
         {
             _status = SessionStatus.SS_UNINIT;
-            Debug.logger.Log(LogType.Error, "Session::Init had except. host=" + host + ", port=" + port + ",e=" + e);
+            Debug.logger.Log(LogType.Error, "Session::OnGetDNS had except. e=" + e);
+        }
+    }
+    public bool Init(string host, ushort port, string encrypt)
+    {
+        _encrypt = encrypt.Trim();
+        host = host.Trim();
+        if (host.Length == 0 || port == 0)
+        {
+            Debug.logger.Log(LogType.Error, "Session::Init Session param error. host=" + host + ", port=" + port + ", status=" + _status);
             return false;
         }
+        if (_status != SessionStatus.SS_UNINIT)
+        {
+            Debug.logger.Log(LogType.Error, "Session::Init Session status error. host=" + host + ", port=" + port + ", status=" + _status);
+            return false;
+        }
+        _status = SessionStatus.SS_INITING;
+        _addr = null;
+        _port = port;
+
+        do
+        {
+            if (IPAddress.TryParse(host, out _addr))
+            {
+                if (_addr != null)
+                {
+                    _status = SessionStatus.SS_INITED;
+                    _addr = IPAddress.Parse(host);
+                    break;
+                }
+            }
+            Dns.BeginGetHostEntry(host, new AsyncCallback(OnGetDNS), this);
+        }
+        while (false);
         return true;
     }
     public void Connect()
@@ -142,11 +165,9 @@ class Session
             _rc4Send.makeSBox(_encrypt);
             _status = SessionStatus.SS_CONNECTING;
             _socket = new Socket(_addr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            _socket.Blocking = false;
             _socket.BeginConnect(_addr, _port, new AsyncCallback(OnConnect), _socket);
-            if (_onBeginConnect != null)
-            {
-                _onBeginConnect.DynamicInvoke(null);
-            }
+
         }
         catch (Exception e)
         {
@@ -164,7 +185,8 @@ class Session
         try
         {
             Socket socket = result.AsyncState as Socket;
-            if(socket != _socket )
+            socket.EndConnect(result);
+            if (socket != _socket )
             {
                 Debug.logger.Log(LogType.Warning, "Session::onConnect _socket not AsyncState. host=" + _addr + ", port=" + _port + ", status =" + _status);
                 return;
@@ -174,24 +196,18 @@ class Session
                 Debug.logger.Log(LogType.Warning, "Session::onConnect status error . host=" + _addr + ", port=" + _port + ", status =" + _status);
                 return;
             }
-            socket.EndConnect(result);
-            socket.Blocking = false;
+            Debug.Log("Session::onConnect connected. host=" + _addr + ", port=" + _port );
             _status = SessionStatus.SS_WORKING;
             _reconnect = 50;
-            if (_onEndConnect != null)
+            if (_onConnect != null)
             {
-                _asyns.Enqueue((System.Action)delegate () { _onEndConnect.DynamicInvoke(new object[] { true }); });
+                _asyns.Enqueue(_onConnect);
             }
         }
         catch (Exception e)
         {
             Debug.logger.Log(LogType.Error, "Session::onConnect had except. host=" + _addr + ", port=" + _port + ",e=" + e);
-            if (_onEndConnect != null)
-            {
-                _asyns.Enqueue((System.Action)delegate () { _onEndConnect.DynamicInvoke(new object[] { false }); });
-            }
             _asyns.Enqueue((System.Action)delegate () { Close(); });
-
         }
     }
     public void Send(byte[] data)
@@ -277,10 +293,6 @@ class Session
         else
         {
             _status = SessionStatus.SS_CLOSED;
-        }
-        if (_onClosed != null)
-        {
-            _onClosed.DynamicInvoke(null);
         }
     }
     public void Update()

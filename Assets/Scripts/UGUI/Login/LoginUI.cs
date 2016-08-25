@@ -9,10 +9,8 @@ public class LoginUI : MonoBehaviour {
     public Button _loginButton;
     public InputField _accountInput;
     public InputField _passwdInput;
-    public Image _busyTips;
     void Start ()
     {
-        _busyTips.gameObject.SetActive(false);
         if (PlayerPrefs.GetString("account") != null)
         {
             _accountInput.text = PlayerPrefs.GetString("account");
@@ -59,10 +57,7 @@ public class LoginUI : MonoBehaviour {
 
             PlayerPrefs.SetString("account", _accountInput.text);
             PlayerPrefs.SetString("passwd", _passwdInput.text);
-
-
-            Facade.GetSingleton<NetController>().Login("127.0.0.1", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
-            _busyTips.gameObject.SetActive(true);
+            Facade.GetSingleton<NetController>().Login("120.92.228.245", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
         });
 	}
 	
