@@ -66,6 +66,8 @@
     <Compile Include="Assets\Media\Scripts\GameMapObjs.cs" />
     <Compile Include="Assets\Media\Scripts\OptimizeStaticEffect.cs" />
     <Compile Include="Assets\Media\Scripts\SmoothFollow.cs" />
+    <Compile Include="Assets\Scripts\Avatar\AvatarController.cs" />
+    <Compile Include="Assets\Scripts\Avatar\ModelMgr.cs" />
     <Compile Include="Assets\Scripts\Common\ByteBuffer.cs" />
     <Compile Include="Assets\Scripts\Config\AppCommonConfig.cs" />
     <Compile Include="Assets\Scripts\Config\AppDataManager.cs" />
