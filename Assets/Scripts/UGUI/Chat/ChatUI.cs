@@ -12,19 +12,18 @@ public class ChatUI : MonoBehaviour
     {
         gameObject.SetActive(false);
         Facade.GetSingleton<Dispatcher>().AddListener("ChatResp", (System.Action<ChatResp>)OnChatResp);
+
+
         _inputField.onEndEdit.AddListener(delegate (string msg)
         {
+            string text = msg;
+            _inputField.text = "";
+            Debug.Log("onEndEdit" + text);
             if (Facade._avatarID != 0 && msg.Length > 0)
             {
-                _inputField.text = "";
+                //_inputField.ActivateInputField();
                 Facade.GetSingleton<NetController>().Send<ChatReq>(new ChatReq((ushort)ChatChannelEnum.CC_WORLD, 0, msg));
-                _inputField.ActivateInputField();
             }
-            else
-            {
-                _inputField.text = "";
-            }
-            
         });
     }
 
