@@ -30,7 +30,11 @@ public class SmoothFollow : MonoBehaviour
         {
             target = Facade._avatar;
         }
-        Vector3 targetPos = target.position + target.forward * 20.0f  + target.up*30.0f;
+        if (target == null)
+        {
+            return;
+        }
+        Vector3 targetPos = target.position - target.forward * 20.0f  + target.up*30.0f;
         transform.position = Vector3.Lerp(transform.position, targetPos, Time.fixedDeltaTime * 3.0f);
         transform.LookAt(target);
     }
