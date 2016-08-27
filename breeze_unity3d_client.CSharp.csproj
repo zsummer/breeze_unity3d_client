@@ -13,11 +13,13 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile></CompilerResponseFile>
+    <CompilerResponseFile>
+    </CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>5.3.5f1</UnityVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -61,14 +63,21 @@
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEditor.iOS.Extensions.Xcode">
+      <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.iOS.Extensions.Common">
+      <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Common.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Media\Scripts\GameMapObjs.cs" />
-    <Compile Include="Assets\Media\Scripts\OptimizeStaticEffect.cs" />
-    <Compile Include="Assets\Media\Scripts\SmoothFollow.cs" />
     <Compile Include="Assets\Scripts\Avatar\AvatarController.cs" />
+    <Compile Include="Assets\Scripts\Avatar\GameMapObjs.cs" />
     <Compile Include="Assets\Scripts\Avatar\ModelMgr.cs" />
+    <Compile Include="Assets\Scripts\Avatar\OptimizeStaticEffect.cs" />
+    <Compile Include="Assets\Scripts\Avatar\SmoothFollow.cs" />
     <Compile Include="Assets\Scripts\Common\ByteBuffer.cs" />
+    <Compile Include="Assets\Scripts\Common\Utls.cs" />
     <Compile Include="Assets\Scripts\Config\AppCommonConfig.cs" />
     <Compile Include="Assets\Scripts\Config\AppDataManager.cs" />
     <Compile Include="Assets\Scripts\Facade\AppEntry.cs" />
