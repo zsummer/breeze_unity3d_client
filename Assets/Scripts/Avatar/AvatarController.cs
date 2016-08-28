@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
-public class AvatarController : MonoBehaviour {
+public class AvatarController : MonoBehaviour
+{
 
     private AnimationState idle;
     private AnimationState runned;
@@ -13,7 +14,6 @@ public class AvatarController : MonoBehaviour {
         runned = anim["walk"];
         idle.wrapMode = WrapMode.Loop;
         runned.wrapMode = WrapMode.Loop;
-
     }
 
     void FixedUpdate()
