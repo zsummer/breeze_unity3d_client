@@ -36,7 +36,7 @@ public class AvatarController : MonoBehaviour
 
 	void MoveControl()
 	{
-		if (_moving == MoveType.MT_IDLE || _moving == MoveType.MT_HANDLE) 
+		if (true) 
 		{
 			float h = Input.GetAxis("Horizontal");
 			float v = Input.GetAxis("Vertical");

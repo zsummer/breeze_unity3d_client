@@ -1,7 +1,7 @@
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2008
-
-Project("{DE209AC4-FB2B-A09B-858D-D3A2D7A21233}") = "breeze_unity3d_client", "Assembly-CSharp.csproj", "{DF7AD48C-F067-A2AA-C668-5466756F8328}"
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "breeze_unity3d_client.CSharp", "breeze_unity3d_client.CSharp.csproj", "{5890D9CE-D564-79C5-F157-709655EC3FE9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,15 +9,12 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DF7AD48C-F067-A2AA-C668-5466756F8328}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DF7AD48C-F067-A2AA-C668-5466756F8328}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DF7AD48C-F067-A2AA-C668-5466756F8328}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DF7AD48C-F067-A2AA-C668-5466756F8328}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5890D9CE-D564-79C5-F157-709655EC3FE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5890D9CE-D564-79C5-F157-709655EC3FE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5890D9CE-D564-79C5-F157-709655EC3FE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5890D9CE-D564-79C5-F157-709655EC3FE9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Assembly-CSharp.csproj
 	EndGlobalSection
 EndGlobal
