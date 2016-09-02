@@ -64,11 +64,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Avatar\AvatarController.cs" />
+    <Compile Include="Assets\Scripts\Avatar\ControlStick.cs" />
     <Compile Include="Assets\Scripts\Avatar\GameMapObjs.cs" />
     <Compile Include="Assets\Scripts\Avatar\ModelMgr.cs" />
     <Compile Include="Assets\Scripts\Avatar\OptimizeStaticEffect.cs" />
     <Compile Include="Assets\Scripts\Avatar\SmoothFollow.cs" />
-    <Compile Include="Assets\Scripts\Avatar\TouchController.cs" />
     <Compile Include="Assets\Scripts\Common\ByteBuffer.cs" />
     <Compile Include="Assets\Scripts\Common\Utls.cs" />
     <Compile Include="Assets\Scripts\Config\AppCommonConfig.cs" />
