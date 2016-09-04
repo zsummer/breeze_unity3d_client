@@ -55,8 +55,8 @@ public class AvatarController : MonoBehaviour
             var cdis = Vector3.Distance(transform.position, target);
             if (mdis < cdis)
             {
-                Debug.DrawLine(transform.position, target, Color.red, 1.2f);
-                Debug.DrawLine(transform.position, transform.forward*10+ transform.position, Color.yellow, 1.2f);
+                Debug.DrawLine(transform.position + transform.up * 0.3f, target+transform.up* 0.3f, Color.red, 1.2f);
+                Debug.DrawLine(transform.position + transform.up * 0.3f, transform.forward*10+ transform.position + transform.up * 0.3f, Color.yellow, 1.2f);
 
                 var dir = target - transform.position;
                 var euler = Vector3.Angle(dir, Vector3.forward);
