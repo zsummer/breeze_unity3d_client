@@ -23,28 +23,50 @@ public class ControlStick : MonoBehaviour
     Vector3 _targetPos; // 
     Camera _mainCamera;
 
-    public Image image1;
-    public Image image2;
-    bool isPress = false;
+    public Image strick;
+    Vector3 _originStrick;
+    bool _isStrick = false;
 
     void Start ()
     {
         _mainCamera = Camera.main;
         _event = UnityEngine.EventSystems.EventSystem.current;
         instance = this;
-        Init();
 	}
-    void Init()
+    void BeginStrick(Vector3 position)
     {
-        image2.transform.position = image1.transform.position;
-        var color = image1.color;
-        color.a = 10;
-        image1.color = color;
-        image2.color = image1.color;
+        _isStrick = true;
+        _originStrick = position;
+        strick.gameObject.SetActive(true);
+        strick.transform.position = position;
     }
-	
-	// Update is called once per frame
-	void Update ()
+    void EndStrick()
+    {
+        _isStrick = false;
+        strick.gameObject.SetActive(false);
+    }
+    void CheckStrick(Vector3 position)
+    {
+        var dis = Vector3.Distance(position, _originStrick);
+        if (dis < 0.1f)
+        {
+            _moveType = MoveType.MT_IDLE;
+            return;
+        }
+        if (dis > 60)
+        {
+            position = _originStrick + (position - _originStrick) * (60 / dis);
+        }
+        _targetPos = (position - _originStrick);
+        _targetPos.z = _targetPos.y;
+        _targetPos.y = 0;
+        _moveType = MoveType.MT_HANDLE;
+        strick.transform.position = position;
+        
+    }
+
+    // Update is called once per frame
+    void Update ()
     {
         if (Facade._avatarID == 0)
         {
@@ -84,11 +106,18 @@ public class ControlStick : MonoBehaviour
                     _moveType = MoveType.MT_TARGET;
                 }
             }
-            else
+            else if (true)
             {
-
+                BeginStrick(Input.mousePosition);
             }
         }
-
+        if (Input.GetMouseButtonUp(0))
+        {
+            EndStrick();
+        }
+        if (_isStrick)
+        {
+            CheckStrick(Input.mousePosition);
+        }
     }
 }
