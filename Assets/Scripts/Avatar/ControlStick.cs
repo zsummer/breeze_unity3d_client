@@ -101,7 +101,7 @@ public class ControlStick : MonoBehaviour
                 Physics.Raycast(ray, out hit3D, 100);
                 if (hit3D.transform != null && hit3D.transform.name == "Terrain")
                 {
-                    Debug.Log(hit3D.transform.gameObject.name);
+                    Debug.Log(hit3D.transform.gameObject.name + _targetPos);
                     _targetPos = hit3D.point;
                     _moveType = MoveType.MT_TARGET;
                 }

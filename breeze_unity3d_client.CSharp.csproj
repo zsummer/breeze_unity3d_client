@@ -58,12 +58,6 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
@@ -99,22 +93,22 @@
     <Compile Include="Assets\Scripts\UGUI\Tips\BusyTips.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Media\Shader\Additive Turbulence.shader" />
-    <None Include="Assets\Media\Shader\Alpha Blended Turbulence.shader" />
-    <None Include="Assets\Media\Shader\Distortion.shader" />
-    <None Include="Assets\Media\Shader\Energy Ball.shader" />
-    <None Include="Assets\Media\Shader\Flow Light.shader" />
-    <None Include="Assets\Media\Shader\SM_2sided_transparent.shader" />
-    <None Include="Assets\Media\Shader\SM_Outline.shader" />
-    <None Include="Assets\Media\Shader\SM_TransparentRim.shader" />
-    <None Include="Assets\Media\Shader\Trail Additive Turbulence.shader" />
-    <None Include="Assets\Media\Shader\VertexLit.shader" />
-    <None Include="Assets\Media\Shader\fyShader\fyAdditive.shader" />
-    <None Include="Assets\Media\Shader\fyShader\fyAdditiveSequence.shader" />
-    <None Include="Assets\Media\Shader\fyShader\fyAlpha.shader" />
-    <None Include="Assets\Media\Shader\fyShader\fyAlphaSequence.shader" />
-    <None Include="Assets\Media\Shader\fyShader\fyReplace.shader" />
-    <None Include="Assets\Media\Shader\fyShader\fyReplaceSequence.shader" />
+    <None Include="Assets\Resources\Shader\Additive Turbulence.shader" />
+    <None Include="Assets\Resources\Shader\Alpha Blended Turbulence.shader" />
+    <None Include="Assets\Resources\Shader\Distortion.shader" />
+    <None Include="Assets\Resources\Shader\Energy Ball.shader" />
+    <None Include="Assets\Resources\Shader\Flow Light.shader" />
+    <None Include="Assets\Resources\Shader\SM_2sided_transparent.shader" />
+    <None Include="Assets\Resources\Shader\SM_Outline.shader" />
+    <None Include="Assets\Resources\Shader\SM_TransparentRim.shader" />
+    <None Include="Assets\Resources\Shader\Trail Additive Turbulence.shader" />
+    <None Include="Assets\Resources\Shader\VertexLit.shader" />
+    <None Include="Assets\Resources\Shader\fyShader\fyAdditive.shader" />
+    <None Include="Assets\Resources\Shader\fyShader\fyAdditiveSequence.shader" />
+    <None Include="Assets\Resources\Shader\fyShader\fyAlpha.shader" />
+    <None Include="Assets\Resources\Shader\fyShader\fyAlphaSequence.shader" />
+    <None Include="Assets\Resources\Shader\fyShader\fyReplace.shader" />
+    <None Include="Assets\Resources\Shader\fyShader\fyReplaceSequence.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

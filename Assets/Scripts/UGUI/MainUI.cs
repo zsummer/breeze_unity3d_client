@@ -18,20 +18,6 @@ public class MainUI : MonoBehaviour
     void Update()
     {
 
-        if (Input.GetButtonDown("Fire1"))
-        {
-            if (_event.IsPointerOverGameObject())
-            {
-                Vector3 pos = Input.mousePosition;
-                Debug.Log("UGUI down." + pos);
-            }
-            else
-            {
-                Vector3 pos = Input.mousePosition;
-                Debug.Log("3d down." + pos);
-            }
-
-        }
 
     }
 }
