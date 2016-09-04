@@ -53,11 +53,11 @@ public class ControlStick : MonoBehaviour
             _moveType = MoveType.MT_IDLE;
             return;
         }
-        if (dis > 60)
+        if (dis > 40)
         {
-            position = _originStrick + (position - _originStrick) * (60 / dis);
+            position = _originStrick + (position - _originStrick) * (40 / dis);
         }
-        _targetPos = (position - _originStrick);
+        _targetPos = (position - _originStrick)/5;
         _targetPos.z = _targetPos.y;
         _targetPos.y = 0;
         _moveType = MoveType.MT_HANDLE;
@@ -68,7 +68,7 @@ public class ControlStick : MonoBehaviour
     // Update is called once per frame
     void Update ()
     {
-        if (Facade._avatarID == 0)
+        if (Facade.AvatarMode == null || Facade.AvatarInfo == null)
         {
             if (_moveType != MoveType.MT_IDLE)
             {

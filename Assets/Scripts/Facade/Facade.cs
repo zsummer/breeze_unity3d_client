@@ -1,15 +1,21 @@
 ﻿using System;
 using UnityEngine;
 
+
 //外观类
 //所有单例从该类中引出
 public class Facade: MonoBehaviour
 {
-	public static GameObject _facade = null;
-    public static Transform _avatar = null;
-    public static UInt64 _avatarID = 0;
-    private static System.Collections.Generic.Dictionary<string, object> _singletons;
+	
+    public static Transform AvatarMode { get { return _avatarMode; } set { _avatarMode = value; } }
+    public static Proto4z.AvatarBaseInfo AvatarInfo { get { return _avatarInfo; } set { _avatarInfo = value; } }
 
+    static GameObject _facade = null;
+    static Transform _avatarMode = null;
+    static Proto4z.AvatarBaseInfo _avatarInfo = null;
+    private static System.Collections.Generic.Dictionary<string, object> _singletons;
+    
+    
     public static void Init()
     {
         Debug.Log("Init Facade.");
@@ -55,16 +61,25 @@ public class Facade: MonoBehaviour
         _facade = null;
     }
 
-    public static void CreateAvatar(string modlename)
+    public static void CreateAvatar()
     {
-        if (_avatar != null)
+        if (_avatarMode != null)
         {
-            GameObject.Destroy(_avatar.gameObject);
-            _avatar = null;
+            GameObject.Destroy(_avatarMode.gameObject);
+            _avatarMode = null;
+        }
+        string name;
+        if (_avatarInfo.modeID == 0)
+        {
+            name = "jing_ling_nv_001_ty";
+        }
+        else
+        {
+            name = "jing_ling_nv_001_ty";
         }
 
-        _avatar = GameObject.Find("jing_ling_nv_001_ty").transform;
-        if (_avatar == null)
+        _avatarMode = GameObject.Find(name).transform;
+        if (_avatarMode == null)
         {
             Debug.Log("not found avatar");
         }

@@ -24,7 +24,7 @@ public class AppEntry : MonoBehaviour
             o.AddComponent<UnityEngine.EventSystems.EventSystem>();
             o.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
         }
-        Facade.CreateAvatar("");
+        
 
 
         

@@ -90,10 +90,16 @@ public class NetController : MonoBehaviour
     {
         if (resp.retCode != (ushort)ERROR_CODE.EC_SUCCESS )
         {
-            Debug.logger.Log(LogType.Error, "NetController::AttachAvatarResp ");
+            Debug.LogError("NetController::AttachAvatarResp ");
             return;
         }
-        Facade._avatarID = resp.avatarID;
+        if (Facade.AvatarInfo != null)
+        {
+            Debug.LogError("NetController::AttachAvatarResp alread had attach");
+            return;
+        }
+        Facade.AvatarInfo = resp.baseInfo;
+        Facade.CreateAvatar();
         Debug.logger.Log("NetController::AttachAvatarResp ");
         PingPongSend();
 

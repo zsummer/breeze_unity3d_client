@@ -13,9 +13,9 @@ public class SmoothFollow : MonoBehaviour
 
      void FixedUpdate()
      {
-        if (target == null && Facade._avatar != null)
+        if (target == null && Facade.AvatarMode != null)
         {
-            target = Facade._avatar;
+            target = Facade.AvatarMode;
         }
         if (target == null)
         {

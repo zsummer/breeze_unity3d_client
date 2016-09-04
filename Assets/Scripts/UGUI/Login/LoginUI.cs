@@ -7,8 +7,11 @@ public class LoginUI : MonoBehaviour {
 
     // Use this for initialization
     public Button _loginButton;
+    public Toggle _devTonggle;
     public InputField _accountInput;
     public InputField _passwdInput;
+
+    private float _lastClickLogin = 0;
     void Start ()
     {
         if (PlayerPrefs.GetString("account") != null)
@@ -43,7 +46,7 @@ public class LoginUI : MonoBehaviour {
             }
         });
 
-
+ 
         _loginButton.onClick.AddListener(delegate () 
         {
             if (_accountInput.text.Trim().Length > 15 || _accountInput.text.Trim().Length < 2)
@@ -54,10 +57,29 @@ public class LoginUI : MonoBehaviour {
             {
                 return;
             }
+            float now = Time.realtimeSinceStartup;
+            if (now - _lastClickLogin < 1f)
+            {
+                return;
+            }
+            _lastClickLogin = now;
+            if (_devTonggle == null)
+            {
+                Debug.LogWarning("why tonggle is null?");
+                return;
+            }
 
             PlayerPrefs.SetString("account", _accountInput.text);
             PlayerPrefs.SetString("passwd", _passwdInput.text);
-            Facade.GetSingleton<NetController>().Login("120.92.228.245", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
+            if (_devTonggle.isOn)
+            {
+                Facade.GetSingleton<NetController>().Login("127.0.0.1", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
+            }
+            else
+            {
+                Facade.GetSingleton<NetController>().Login("120.92.228.245", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
+            }
+
         });
 	}
 	

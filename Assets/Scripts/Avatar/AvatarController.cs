@@ -31,7 +31,7 @@ public class AvatarController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (Facade._avatarID == 0 || ControlStick.instance == null)
+        if (Facade.AvatarMode == null || ControlStick.instance == null)
         {
             return;
         }
