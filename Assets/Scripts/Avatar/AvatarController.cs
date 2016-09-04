@@ -55,14 +55,21 @@ public class AvatarController : MonoBehaviour
             var cdis = Vector3.Distance(transform.position, target);
             if (mdis < cdis)
             {
-                Debug.DrawLine(transform.position, target, Color.red);
-                Debug.DrawRay(transform.position, target, Color.red);
+                Debug.DrawLine(transform.position, target, Color.red, 1.2f);
+                Debug.DrawLine(transform.position, transform.forward*10+ transform.position, Color.yellow, 1.2f);
+
+                var dir = target - transform.position;
+                var euler = Vector3.Angle(dir, Vector3.forward);
+                if (dir.x < 0f)
+                {
+                    euler = 360f - euler;
+                }
+                var targetRotation = Quaternion.Euler(0, euler, 0);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 3);
+
                 var rat = mdis / cdis;
                 transform.localPosition += (target - transform.position) * rat;
-                transform.LookAt(target);
-                //var targetRotation = Quaternion.FromToRotation(transform.position, target);
-                //transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime*3);
-                
+               // transform.LookAt(target);
             }
             else
             {
