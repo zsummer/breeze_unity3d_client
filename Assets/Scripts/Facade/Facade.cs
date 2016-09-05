@@ -25,7 +25,7 @@ public class Facade: MonoBehaviour
         {
             return;
         }
-        _facade = Resources.Load<GameObject>("Prefabs/Facade");
+        _facade = Resources.Load<GameObject>("Facade");
         if (_facade == null)
         {
             _facade = new GameObject();
@@ -105,27 +105,6 @@ public class Facade: MonoBehaviour
         Rigidbody rd = obj.GetComponent<Rigidbody>();
         rd.freezeRotation = true;
         _avatarMode = obj.transform;
-
-
-        var ui = GameObject.Find("SkillButtons");
-        if (ui == null)
-        {
-            //Prefabs/Guis/SkillButtons/
-            var skillButtonsRes = Resources.Load<GameObject>("SkillButtons");
-            if (skillButtonsRes != null)
-            {
-                obj = Instantiate(skillButtonsRes);
-                obj.transform.SetParent(GameObject.Find("UGUI").transform);
-//                obj.transform.position = new Vector3(-149, 148, 0);
-                //obj.transform.position = Vector3.zero;
-
-                obj.SetActive(true);
-            }
-            else
-            {
-                Debug.LogError("can't Instantiate [Prefabs/Guis/SkillButtons/SkillButtons].");
-            }
-        }
     }
 
 

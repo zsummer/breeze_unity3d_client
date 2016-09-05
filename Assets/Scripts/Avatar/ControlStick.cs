@@ -16,8 +16,8 @@ public class ControlStick : MonoBehaviour
     bool _isStrick = false;
 
     AvatarController _control;
-    Button _changeModel;
-    Button _attackButton;
+
+    Transform _skillButtons = null;
     void Start ()
     {
         _mainCamera = Camera.main;
@@ -92,13 +92,25 @@ public class ControlStick : MonoBehaviour
             }
             return;
         }
-        if (_changeModel == null || _attackButton == null)
+        if (_skillButtons == null)
         {
-            _changeModel = GameObject.Find("ChangeModelSkill").GetComponent<Button>();
-            _changeModel.onClick.AddListener(delegate () { ChangeAvatarModel(); });
-            _attackButton = GameObject.Find("AttackSkill").GetComponent<Button>();
-            _attackButton.onClick.AddListener(delegate () { AvatarAttack(); });
+            var skillButtonsRes = Resources.Load<GameObject>("Guis/SkillButtons/SkillButtons");
+            if (skillButtonsRes != null)
+            {
+                _skillButtons = Instantiate(skillButtonsRes).transform;
+                _skillButtons.SetParent(GameObject.Find("UGUI").transform, false);
+                _skillButtons.gameObject.SetActive(true);
+                _skillButtons.Find("ChangeModelSkill").GetComponent<Button>().onClick.AddListener(delegate () { ChangeAvatarModel(); });
+                _skillButtons.Find("AttackSkill").GetComponent<Button>().onClick.AddListener(delegate () { AvatarAttack(); });
+
+            }
+            else
+            {
+                Debug.LogError("can't Instantiate [Prefabs/Guis/SkillButtons/SkillButtons].");
+            }
         }
+
+
         if (true)
         {
             float h = Input.GetAxis("Horizontal");
