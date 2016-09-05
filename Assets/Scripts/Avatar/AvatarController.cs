@@ -26,7 +26,7 @@ public class AvatarController : MonoBehaviour
 	Camera _mainCamera;
 
 
-	public float _speed = 7.0f;
+	public float _speed = 12.0f;
 
 	void Start ()
     {

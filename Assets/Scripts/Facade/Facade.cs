@@ -71,8 +71,9 @@ public class Facade: MonoBehaviour
             quat = _avatarMode.rotation;
             GameObject.Destroy(_avatarMode.gameObject);
             _avatarMode = null;
-        }
 
+        }
+        
         string name = Facade.GetSingleton<ModelMgr>().GetModelName(modelID);
         if (name == null)
         {
@@ -100,7 +101,7 @@ public class Facade: MonoBehaviour
         }
         obj.AddComponent<AvatarController>();
         obj.transform.position = spawnpoint;
-        obj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+        obj.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
         obj.transform.rotation = quat;
         Rigidbody rd = obj.GetComponent<Rigidbody>();
         rd.freezeRotation = true;
