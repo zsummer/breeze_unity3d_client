@@ -2,13 +2,24 @@
 using System.Collections;
 using System;
 
+public enum MoveType
+{
+    MT_IDLE,
+    MT_HANDLE,
+    MT_TARGET,
+}
 
 
 public class AvatarController : MonoBehaviour
 {
+    public Vector3 targetPos { get { return _targetPos; } set { _targetPos = value; } }
+    public MoveType moveType { get { return _moveType; } set { _moveType = value; } }
+    MoveType _moveType = MoveType.MT_IDLE;
+    Vector3 _targetPos;
 
-    private AnimationState idle;
-    private AnimationState runned;
+    private AnimationState _free;
+    private AnimationState _runned;
+    private AnimationState _attack;
     private Animation anim;
 
 
@@ -20,34 +31,34 @@ public class AvatarController : MonoBehaviour
 	void Start ()
     {
         anim = GetComponent<Animation>();
-        idle = anim["idle"];
-        runned = anim["walk"];
-        idle.wrapMode = WrapMode.Loop;
-        runned.wrapMode = WrapMode.Loop;
+        _free = anim["free"];
+        _runned = anim["walk"];
+        _attack = anim["attack"];
+        _free.wrapMode = WrapMode.Loop;
+        _runned.wrapMode = WrapMode.Loop;
 		_mainCamera = Camera.main;
     }
 
-
+    public void CrossAttack()
+    {
+        anim.CrossFade(_attack.name);
+    }
 
     void FixedUpdate()
     {
-        if (Facade.AvatarMode == null || ControlStick.instance == null)
-        {
-            return;
-        }
-
-		if (ControlStick.instance.moveType == MoveType.MT_IDLE && anim.IsPlaying(runned.name)) 
+		if (_moveType == MoveType.MT_IDLE && (anim.IsPlaying(_runned.name) || !anim.isPlaying)) 
 		{
-			anim.CrossFade(idle.name, 0.2f);
+			anim.CrossFade(_free.name, 0.2f);
 		}
-		if (ControlStick.instance.moveType != MoveType.MT_IDLE) 
+
+		if (_moveType != MoveType.MT_IDLE) 
 		{
-			if (!anim.IsPlaying(runned.name))
+			if (anim.IsPlaying(_free.name) || !anim.isPlaying)
 			{
-				anim.CrossFade(runned.name, 0.2f);
+				anim.CrossFade(_runned.name, 0.2f);
 			}
-            Vector3 target = ControlStick.instance.targetPos;
-            if (ControlStick.instance.moveType == MoveType.MT_HANDLE)
+            Vector3 target = _targetPos;
+            if (_moveType == MoveType.MT_HANDLE)
             {
                 target = transform.position + target;
             }
@@ -57,7 +68,7 @@ public class AvatarController : MonoBehaviour
             }
             var mdis = _speed * Time.fixedDeltaTime;
             var cdis = Vector3.Distance(transform.position, target);
-            if (mdis < cdis) //动作影响坐标   
+            if (mdis < cdis)    
             {
                 
                 Debug.DrawLine(transform.position + transform.up * 0.3f, target+transform.up* 0.3f, Color.red, 1.2f);
@@ -82,7 +93,7 @@ public class AvatarController : MonoBehaviour
             else
             {
                 transform.position = target;
-                ControlStick.instance.moveType = MoveType.MT_IDLE;
+                _moveType = MoveType.MT_IDLE;
             }
 
         }

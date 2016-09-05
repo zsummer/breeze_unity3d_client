@@ -17,6 +17,8 @@ public class AppEntry : MonoBehaviour
         Facade.GetSingleton<NetController>();
         Facade.GetSingleton<ModelMgr>();
 
+
+
         UnityEngine.EventSystems.EventSystem eventSys = GameObject.FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
         if (eventSys == null)
         {

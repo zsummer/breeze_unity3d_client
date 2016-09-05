@@ -61,48 +61,71 @@ public class Facade: MonoBehaviour
         _facade = null;
     }
 
-    public static void CreateAvatar()
+    public static void CreateAvatar(int modelID)
     {
+        Vector3 spawnpoint = new Vector3(-63.37f, -13.198f, 73.3f);
+        Quaternion quat = new Quaternion();
         if (_avatarMode != null)
         {
+            spawnpoint = _avatarMode.position;
+            quat = _avatarMode.rotation;
             GameObject.Destroy(_avatarMode.gameObject);
             _avatarMode = null;
         }
-        string name;
-        if (_avatarInfo.modeID == 0)
+
+        string name = Facade.GetSingleton<ModelMgr>().GetModelName(modelID);
+        if (name == null)
         {
             name = "jing_ling_nv_001_ty";
         }
-        else
-        {
-            name = "jing_ling_nan_001_ty";
-        }
-        if (true)
-        {
 
-            var obj = Instantiate(Resources.Load<GameObject>("Character/Model/" + name));
-            if (obj == null)
-            {
-                Debug.LogError("model[jing_ling_nan_002_ty] not found");
-            }
-            obj.AddComponent<Rigidbody>();
-            obj.AddComponent<CapsuleCollider>();
+        var res = Resources.Load<GameObject>("Character/Model/" + name);
+        if (res == null)
+        {
+            Debug.LogError("can't load resouce model [" + name + "].");
+            return;
+        }
+        var obj = Instantiate(res);
+        if (obj == null)
+        {
+            Debug.LogError("can't Instantiate model[" + name + "].");
+            return;
+        }
+
+        obj.AddComponent<Rigidbody>();
+        obj.AddComponent<CapsuleCollider>();
+        if (obj.GetComponent<Animation>() == null)
+        {
             obj.AddComponent<Animation>();
-            obj.AddComponent<AvatarController>();
-            obj.transform.position = new Vector3(-63.37f, -13.198f, 73.3f);
-            obj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
-
-
-            Rigidbody rd = obj.GetComponent<Rigidbody>();
-            rd.freezeRotation = true;
-            _avatarMode = obj.transform;
         }
-        //_avatarMode = GameObject.Find(name).transform;
-        if (_avatarMode == null)
+        obj.AddComponent<AvatarController>();
+        obj.transform.position = spawnpoint;
+        obj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+        obj.transform.rotation = quat;
+        Rigidbody rd = obj.GetComponent<Rigidbody>();
+        rd.freezeRotation = true;
+        _avatarMode = obj.transform;
+
+
+        var ui = GameObject.Find("SkillButtons");
+        if (ui == null)
         {
-            Debug.Log("not found avatar");
-        }
+            //Prefabs/Guis/SkillButtons/
+            var skillButtonsRes = Resources.Load<GameObject>("SkillButtons");
+            if (skillButtonsRes != null)
+            {
+                obj = Instantiate(skillButtonsRes);
+                obj.transform.SetParent(GameObject.Find("UGUI").transform);
+//                obj.transform.position = new Vector3(-149, 148, 0);
+                //obj.transform.position = Vector3.zero;
 
+                obj.SetActive(true);
+            }
+            else
+            {
+                Debug.LogError("can't Instantiate [Prefabs/Guis/SkillButtons/SkillButtons].");
+            }
+        }
     }
 
 

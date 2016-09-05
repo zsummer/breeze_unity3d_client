@@ -2,37 +2,29 @@
 using System.Collections;
 using UnityEngine.UI;
 using System;
-
-public enum MoveType
-{
-    MT_IDLE,
-    MT_HANDLE,
-    MT_TARGET,
-}
+using Proto4z;
 
 
 public class ControlStick : MonoBehaviour
 {
-    public Vector3 targetPos { get { return _targetPos; } }
-    public MoveType moveType { get { return _moveType; } set { _moveType = value; } }
-
-    public static ControlStick instance;
 
     UnityEngine.EventSystems.EventSystem _event;
-    MoveType _moveType = MoveType.MT_IDLE;
-    Vector3 _targetPos; // 
     Camera _mainCamera;
 
     public Image strick;
     Vector3 _originStrick;
     bool _isStrick = false;
 
+    AvatarController _control;
+    Button _changeModel;
+    Button _attackButton;
     void Start ()
     {
         _mainCamera = Camera.main;
         _event = UnityEngine.EventSystems.EventSystem.current;
-        instance = this;
-	}
+        Facade.GetSingleton<Dispatcher>().AddListener("ChangeModeIDResp", (Action<ChangeModeIDResp>)OnChangeModeIDResp);
+
+    }
     void BeginStrick(Vector3 position)
     {
         _isStrick = true;
@@ -45,50 +37,80 @@ public class ControlStick : MonoBehaviour
         _isStrick = false;
         strick.gameObject.SetActive(false);
     }
+    void ChangeAvatarModel()
+    {
+        Facade.GetSingleton<NetController>().Send<ChangeModeIDReq>(new ChangeModeIDReq(Facade.GetSingleton<ModelMgr>().GetNextModelID(Facade.AvatarInfo.modeID)));
+    }
+    void AvatarAttack()
+    {
+        _control.CrossAttack();
+    }
+    void OnChangeModeIDResp(ChangeModeIDResp resp)
+    {
+        if (resp.retCode == (ushort)ERROR_CODE.EC_SUCCESS)
+        {
+            Facade.CreateAvatar(resp.modeID);
+        }
+    }
     void CheckStrick(Vector3 position)
     {
         var dis = Vector3.Distance(position, _originStrick);
         if (dis < 0.1f)
         {
-            _moveType = MoveType.MT_IDLE;
+            _control.moveType = MoveType.MT_IDLE;
             return;
         }
         if (dis > 40)
         {
             position = _originStrick + (position - _originStrick) * (40 / dis);
         }
-        _targetPos = (position - _originStrick)/5;
-        _targetPos.z = _targetPos.y;
-        _targetPos.y = 0;
-        _moveType = MoveType.MT_HANDLE;
+        var pos = (position - _originStrick) / 5;
+        pos.z = pos.y;
+        pos.y = 0;
+        _control.targetPos = pos;
+        _control.moveType = MoveType.MT_HANDLE;
         strick.transform.position = position;
         
     }
 
     // Update is called once per frame
-    void Update ()
+    void FixedUpdate()
     {
+        if (_control == null && Facade.AvatarMode != null)
+        {
+            _control = Facade.AvatarMode.gameObject.GetComponent<AvatarController>();
+        }
+        if (_control == null)
+        {
+            return;
+        }
         if (Facade.AvatarMode == null || Facade.AvatarInfo == null)
         {
-            if (_moveType != MoveType.MT_IDLE)
+            if (_control.moveType != MoveType.MT_IDLE)
             {
-                _moveType = MoveType.MT_IDLE;
+                _control.moveType = MoveType.MT_IDLE;
             }
             return;
         }
-
+        if (_changeModel == null || _attackButton == null)
+        {
+            _changeModel = GameObject.Find("ChangeModelSkill").GetComponent<Button>();
+            _changeModel.onClick.AddListener(delegate () { ChangeAvatarModel(); });
+            _attackButton = GameObject.Find("AttackSkill").GetComponent<Button>();
+            _attackButton.onClick.AddListener(delegate () { AvatarAttack(); });
+        }
         if (true)
         {
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
             if (Math.Abs(h) > 0.1 || Math.Abs(v) > 0.1)
             {
-                _targetPos = new Vector3(h, 0, v) * 10;
-                _moveType = MoveType.MT_HANDLE;
+                _control.targetPos = new Vector3(h, 0, v) * 10;
+                _control.moveType = MoveType.MT_HANDLE;
             }
-            if (_moveType == MoveType.MT_HANDLE && Math.Abs(h) < 0.1 && Math.Abs(v) < 0.1)
+            if (_control.moveType == MoveType.MT_HANDLE && Math.Abs(h) < 0.1 && Math.Abs(v) < 0.1)
             {
-                _moveType = MoveType.MT_IDLE;
+                _control.moveType = MoveType.MT_IDLE;
             }
         }
 
@@ -101,15 +123,19 @@ public class ControlStick : MonoBehaviour
                 Physics.Raycast(ray, out hit3D, 100);
                 if (hit3D.transform != null && hit3D.transform.name == "Terrain")
                 {
-                    Debug.Log(hit3D.transform.gameObject.name + _targetPos);
-                    _targetPos = hit3D.point;
-                    _moveType = MoveType.MT_TARGET;
+                    Debug.Log(hit3D.transform.gameObject.name + _control.targetPos);
+                    _control.targetPos = hit3D.point;
+                    _control.moveType = MoveType.MT_TARGET;
                 }
             }
-            else if (true)
+            else if (RectTransformUtility.RectangleContainsScreenPoint((transform as RectTransform), new Vector2(Input.mousePosition.x, Input.mousePosition.y)))
             {
                 BeginStrick(Input.mousePosition);
             }
+        }
+        if (Input.GetMouseButtonUp(1))
+        {
+            ChangeAvatarModel();
         }
         if (Input.GetMouseButtonUp(0))
         {

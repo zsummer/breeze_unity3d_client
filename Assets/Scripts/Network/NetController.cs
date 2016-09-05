@@ -21,13 +21,12 @@ public class NetController : MonoBehaviour
         Facade.GetSingleton<Dispatcher>().AddListener("ClientAuthResp", (System.Action<ClientAuthResp>)OnClientAuthResp);
         Facade.GetSingleton<Dispatcher>().AddListener("CreateAvatarResp", (System.Action<CreateAvatarResp>)OnCreateAvatarResp);
         Facade.GetSingleton<Dispatcher>().AddListener("AttachAvatarResp", (System.Action<AttachAvatarResp>)OnAttachAvatarResp);
+        Facade.GetSingleton<Dispatcher>().AddListener("AvatarBaseInfoNotice", (System.Action<AvatarBaseInfoNotice>)OnAvatarBaseInfoNotice);
         Facade.GetSingleton<Dispatcher>().AddListener("PingPongResp", (System.Action<PingPongResp>)OnPingPongResp);
     }
     void Start()
     {
         Debug.logger.Log("NetController::Start ");
-        
-        
     }
 
     public void Login(string host, ushort port, string account, string pwd)
@@ -99,7 +98,7 @@ public class NetController : MonoBehaviour
             return;
         }
         Facade.AvatarInfo = resp.baseInfo;
-        Facade.CreateAvatar();
+        Facade.CreateAvatar(resp.baseInfo.modeID);
         Debug.logger.Log("NetController::AttachAvatarResp ");
         PingPongSend();
 
@@ -111,13 +110,19 @@ public class NetController : MonoBehaviour
 
     }
 
+    void OnAvatarBaseInfoNotice(AvatarBaseInfoNotice resp)
+    {
+        Debug.logger.Log("NetController::AvatarBaseInfoNotice " + resp.baseInfo.userName);
+        if (resp.baseInfo.avatarID == Facade.AvatarInfo.avatarID)
+        {
+            Facade.AvatarInfo = resp.baseInfo;
+        }
+    }
     void OnPingPongResp(PingPongResp resp)
     {
-        Debug.logger.Log("NetController::PingPongResp " + resp.msg);
+        //Debug.logger.Log("NetController::PingPongResp " + resp.msg);
         Invoke("PingPongSend", 5.0f);
-        
     }
-
     void PingPongSend()
     {
         _client.Send(new PingPongReq("curtime=" + Time.realtimeSinceStartup));
