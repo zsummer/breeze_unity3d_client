@@ -112,7 +112,7 @@ public class NetController : MonoBehaviour
 
     void OnAvatarBaseInfoNotice(AvatarBaseInfoNotice resp)
     {
-        Debug.logger.Log("NetController::AvatarBaseInfoNotice " + resp.baseInfo.userName);
+        Debug.logger.Log("NetController::AvatarBaseInfoNotice " + resp.baseInfo.avatarName);
         if (resp.baseInfo.avatarID == Facade.AvatarInfo.avatarID)
         {
             Facade.AvatarInfo = resp.baseInfo;
