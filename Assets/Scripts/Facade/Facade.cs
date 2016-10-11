@@ -9,10 +9,13 @@ public class Facade: MonoBehaviour
 	
     public static Transform AvatarMode { get { return _avatarMode; } set { _avatarMode = value; } }
     public static Proto4z.AvatarBaseInfo AvatarInfo { get { return _avatarInfo; } set { _avatarInfo = value; } }
+	public static Proto4z.SceneGroupInfo GroupInfo { get { return _groupInfo; } set { _groupInfo = value; } }
 
     static GameObject _facade = null;
     static Transform _avatarMode = null;
     static Proto4z.AvatarBaseInfo _avatarInfo = null;
+	static Proto4z.SceneGroupInfo _groupInfo = null;
+
     private static System.Collections.Generic.Dictionary<string, object> _singletons;
     
     
