@@ -209,21 +209,26 @@ public class NetController : MonoBehaviour
 
 	void OnSceneGroupGetStatusResp(SceneGroupGetStatusResp resp)
 	{
-	}
-	void OnSceneGroupEnterSceneResp(SceneGroupEnterSceneResp resp)
+        Debug.Log(resp);
+    }
+    void OnSceneGroupEnterSceneResp(SceneGroupEnterSceneResp resp)
 	{
+        Debug.Log(resp);
 	}
 	void OnSceneGroupCancelEnterResp(SceneGroupCancelEnterResp resp)
 	{
-	}
-	void OnSceneGroupCreateResp(SceneGroupCreateResp resp)
+        Debug.Log(resp);
+    }
+    void OnSceneGroupCreateResp(SceneGroupCreateResp resp)
 	{
-	}
-	void OnSceneGroupLeaveResp(SceneGroupLeaveResp resp)
+        Debug.Log(resp);
+    }
+    void OnSceneGroupLeaveResp(SceneGroupLeaveResp resp)
 	{
-	}
+        Debug.Log(resp);
+    }
 
-	void OnExitScene()
+    void OnExitScene()
 	{
 		if (Facade.GroupInfo == null) 
 		{
