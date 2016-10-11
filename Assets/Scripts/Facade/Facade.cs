@@ -109,6 +109,7 @@ public class Facade: MonoBehaviour
         Rigidbody rd = obj.GetComponent<Rigidbody>();
         rd.freezeRotation = true;
         _avatarMode = obj.transform;
+        Debug.Log("create avatar");
     }
 
 

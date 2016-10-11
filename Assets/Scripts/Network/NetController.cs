@@ -138,7 +138,7 @@ public class NetController : MonoBehaviour
 		}
         Facade.AvatarInfo = resp.baseInfo;
 		_client.Send (new SceneGroupGetStatusReq ());
-        Facade.CreateAvatar(resp.baseInfo.modeID);
+
         Debug.logger.Log("NetController::AttachAvatarResp ");
         PingPongSend();
 
@@ -167,35 +167,26 @@ public class NetController : MonoBehaviour
 			&& Facade.GroupInfo.sceneStatus != (UInt16)SceneState.SCENE_STATE_WAIT
 			&& notice.groupInfo.sceneStatus == (UInt16)SceneState.SCENE_STATE_WAIT) 
 		{
-			var scene = Resources.Load<GameObject>("Battle/Battle");
-			if (scene != null)
-			{
-				_scene = Instantiate(scene).transform;
-				_scene.gameObject.SetActive(true);
-				_sceneSession = new Session ();
-				_sceneSession.Init (notice.groupInfo.host, notice.groupInfo.port, "");
-				_sceneSession.Connect ();
-				var token = "";
-                foreach (var m in notice.groupInfo.members) 
+            _sceneSession = new Session();
+            _sceneSession.Init(notice.groupInfo.host, notice.groupInfo.port, "");
+            
+            var token = "";
+            foreach (var m in notice.groupInfo.members)
+            {
+                if (m.Key == Facade.AvatarInfo.avatarID)
                 {
-                    if (m.Key == Facade.AvatarInfo.avatarID) 
-                    {
-                        token = m.Value.token;
-                    }
+                    token = m.Value.token;
                 }
-                if (token == null) 
-                {
-                    Debug.LogError("");
-                }
-                _sceneSession._onConnect = (Action)delegate ()
-                { 
-                    _sceneSession.Send(new Proto4z.AttachSceneReq(Facade.AvatarInfo.avatarID, notice.groupInfo.sceneID, token));
-                };
-			}
-			else
-			{
-				Debug.LogError("can't Instantiate [Prefabs/Guis/SelectScene/SelectScene].");
-			}
+            }
+            if (token == null)
+            {
+                Debug.LogError("");
+            }
+            _sceneSession._onConnect = (Action)delegate ()
+            {
+                _sceneSession.Send(new Proto4z.AttachSceneReq(Facade.AvatarInfo.avatarID, notice.groupInfo.sceneID, token));
+            };
+            _sceneSession.Connect();
 		}
 
 		Facade.GroupInfo = notice.groupInfo;
@@ -285,6 +276,21 @@ public class NetController : MonoBehaviour
     void OnSceneSectionNotice(SceneSectionNotice notice)
     {
         Debug.Log(notice);
+        if (_scene != null)
+        {
+            GameObject.Destroy(_scene.gameObject);
+        }
+        var scene = Resources.Load<GameObject>("Battle/Battle");
+        if (scene != null)
+        {
+            Debug.Log("create scene");
+            _scene = Instantiate(scene).transform;
+            _scene.gameObject.SetActive(true);
+        }
+        else
+        {
+            Debug.LogError("can't Instantiate [Prefabs/Guis/SelectScene/SelectScene].");
+        }
     }
     void OnSceneRefreshNotice(SceneRefreshNotice notice)
     {
@@ -293,6 +299,10 @@ public class NetController : MonoBehaviour
     void OnAddEntityNotice(AddEntityNotice notice)
     {
         Debug.Log(notice);
+        foreach (var entity in notice.entitys)
+        {
+            Facade.CreateAvatar(entity.baseInfo.modeID);
+        }
     }
     void OnRemoveEntityNotice(RemoveEntityNotice notice)
     {
