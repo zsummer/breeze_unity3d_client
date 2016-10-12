@@ -148,7 +148,28 @@ public class NetController : MonoBehaviour
             login.SetActive(false);
         }
     }
-
+    void CreateSceneSession(ulong avatarID,  Proto4z.SceneGroupInfo groupInfo)
+    {
+        _sceneSession = new Session();
+        _sceneSession.Init(groupInfo.host, groupInfo.port, "");
+        var token = "";
+        foreach (var m in groupInfo.members)
+        {
+            if (m.Key == avatarID)
+            {
+                token = m.Value.token;
+            }
+        }
+        if (token == null)
+        {
+            Debug.LogError("");
+        }
+        _sceneSession._onConnect = (Action)delegate ()
+        {
+            _sceneSession.Send(new Proto4z.AttachSceneReq(avatarID, groupInfo.sceneID, token));
+        };
+        _sceneSession.Connect();
+    }
 	void OnSceneGroupInfoNotice(SceneGroupInfoNotice notice)
 	{
         Debug.Log(notice);
@@ -167,27 +188,8 @@ public class NetController : MonoBehaviour
 			&& Facade.GroupInfo.sceneStatus != (UInt16)SceneState.SCENE_STATE_WAIT
 			&& notice.groupInfo.sceneStatus == (UInt16)SceneState.SCENE_STATE_WAIT) 
 		{
-            _sceneSession = new Session();
-            _sceneSession.Init(notice.groupInfo.host, notice.groupInfo.port, "");
-            
-            var token = "";
-            foreach (var m in notice.groupInfo.members)
-            {
-                if (m.Key == Facade.AvatarInfo.avatarID)
-                {
-                    token = m.Value.token;
-                }
-            }
-            if (token == null)
-            {
-                Debug.LogError("");
-            }
-            _sceneSession._onConnect = (Action)delegate ()
-            {
-                _sceneSession.Send(new Proto4z.AttachSceneReq(Facade.AvatarInfo.avatarID, notice.groupInfo.sceneID, token));
-            };
-            _sceneSession.Connect();
-		}
+            CreateSceneSession(Facade.AvatarInfo.avatarID, notice.groupInfo);
+        }
 
 		Facade.GroupInfo = notice.groupInfo;
 		Debug.Log (notice);
@@ -239,7 +241,7 @@ public class NetController : MonoBehaviour
 		{
 			return;
 		}
-		if (Facade.GroupInfo.sceneStatus != (ushort)SceneState.SCENE_STATE_NONE) 
+		if (Facade.GroupInfo.sceneStatus != (ushort)SceneState.SCENE_STATE_NONE && Facade.GroupInfo.sceneType != (ushort)SceneType.SCENE_HOME) 
 		{
 			return;
 		}
@@ -247,8 +249,15 @@ public class NetController : MonoBehaviour
 		{
 			return;
 		}
-        _client.Send (new Proto4z.SceneGroupEnterSceneReq ((ushort)SceneType.SCENE_HOME, 0));
-	}
+        if (Facade.GroupInfo.sceneStatus == (ushort)SceneState.SCENE_STATE_ACTIVE)
+        {
+            CreateSceneSession(Facade.AvatarInfo.avatarID, Facade.GroupInfo);
+        }
+        else
+        {
+            _client.Send(new Proto4z.SceneGroupEnterSceneReq((ushort)SceneType.SCENE_HOME, 0));
+        }
+    }
 	void OnArenaScene()
 	{
 	}
@@ -280,7 +289,7 @@ public class NetController : MonoBehaviour
         {
             GameObject.Destroy(_scene.gameObject);
         }
-        var scene = Resources.Load<GameObject>("Battle/Battle");
+        var scene = Resources.Load<GameObject>("Scene/Home");
         if (scene != null)
         {
             Debug.Log("create scene");
