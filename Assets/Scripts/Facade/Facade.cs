@@ -4,21 +4,20 @@ using UnityEngine;
 
 //外观类
 //所有单例从该类中引出
+
+
 public class Facade: MonoBehaviour
 {
-	
-    public static Transform AvatarMode { get { return _avatarMode; } set { _avatarMode = value; } }
-    public static Proto4z.AvatarBaseInfo AvatarInfo { get { return _avatarInfo; } set { _avatarInfo = value; } }
-	public static Proto4z.SceneGroupInfo GroupInfo { get { return _groupInfo; } set { _groupInfo = value; } }
-
-    static GameObject _facade = null;
-    static Transform _avatarMode = null;
-    static Proto4z.AvatarBaseInfo _avatarInfo = null;
-	static Proto4z.SceneGroupInfo _groupInfo = null;
+    
+    public static MainUI _mainUI = null;
+    public static Proto4z.SceneGroupInfo _groupInfo = null;
+    public static Proto4z.AvatarBaseInfo _avatarInfo = null;
+    public static ulong _entityID = 0;
+    public static GameScene _gameScene = null;
 
     private static System.Collections.Generic.Dictionary<string, object> _singletons;
-    
-    
+    private static GameObject _facade = null;
+
     public static void Init()
     {
         Debug.Log("Facade Init");
@@ -55,53 +54,6 @@ public class Facade: MonoBehaviour
         _facade = null;
     }
 
-    public static void CreateAvatar(int modelID)
-    {
-        Vector3 spawnpoint = new Vector3(-63.37f, -13.198f, 73.3f);
-        Quaternion quat = new Quaternion();
-        if (_avatarMode != null)
-        {
-            spawnpoint = _avatarMode.position;
-            quat = _avatarMode.rotation;
-            GameObject.Destroy(_avatarMode.gameObject);
-            _avatarMode = null;
-
-        }
-        
-        string name = Facade.GetSingleton<ModelMgr>().GetModelName(modelID);
-        if (name == null)
-        {
-            name = "jing_ling_nv_001_ty";
-        }
-
-        var res = Resources.Load<GameObject>("Character/Model/" + name);
-        if (res == null)
-        {
-            Debug.LogError("can't load resouce model [" + name + "].");
-            return;
-        }
-        var obj = Instantiate(res);
-        if (obj == null)
-        {
-            Debug.LogError("can't Instantiate model[" + name + "].");
-            return;
-        }
-
-        obj.AddComponent<Rigidbody>();
-        obj.AddComponent<CapsuleCollider>();
-        if (obj.GetComponent<Animation>() == null)
-        {
-            obj.AddComponent<Animation>();
-        }
-        obj.AddComponent<AvatarController>();
-        obj.transform.position = spawnpoint;
-        obj.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
-        obj.transform.rotation = quat;
-        Rigidbody rd = obj.GetComponent<Rigidbody>();
-        rd.freezeRotation = true;
-        _avatarMode = obj.transform;
-        Debug.Log("create avatar");
-    }
 
 
 	public static object GetSingleton (string name)

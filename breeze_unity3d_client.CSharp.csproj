@@ -68,14 +68,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Resources\Guis\BusyTips\BusyTips.cs" />
+    <Compile Include="Assets\Resources\Guis\ChatUI\ChatUI.cs" />
+    <Compile Include="Assets\Resources\Guis\LoginUI\LoginUI.cs" />
+    <Compile Include="Assets\Resources\Guis\TouchPanel\TouchPanel.cs" />
     <Compile Include="Assets\Scripts\Dict\AppCommonConfig.cs" />
+    <Compile Include="Assets\Scripts\Dict\ModelDict.cs" />
     <Compile Include="Assets\Scripts\Facade\Dispatcher.cs" />
     <Compile Include="Assets\Scripts\Facade\Facade.cs" />
     <Compile Include="Assets\Scripts\Facade\GameEntry.cs" />
-    <Compile Include="Assets\Scripts\MainUI\Chat\ChatUI.cs" />
-    <Compile Include="Assets\Scripts\MainUI\Login\LoginUI.cs" />
-    <Compile Include="Assets\Scripts\MainUI\MainUI.cs" />
-    <Compile Include="Assets\Scripts\MainUI\Tips\BusyTips.cs" />
+    <Compile Include="Assets\Scripts\Facade\GameScene.cs" />
+    <Compile Include="Assets\Scripts\Facade\MainUI.cs" />
     <Compile Include="Assets\Scripts\Protocol\Proto4z.cs" />
     <Compile Include="Assets\Scripts\Protocol\ProtoClient.cs" />
     <Compile Include="Assets\Scripts\Protocol\ProtoCommon.cs" />
@@ -84,10 +87,7 @@
     <Compile Include="Assets\Scripts\Protocol\ProtoSceneClient.cs" />
     <Compile Include="Assets\Scripts\Protocol\ProtoSceneCommon.cs" />
     <Compile Include="Assets\Scripts\Protocol\ProtoSceneServer.cs" />
-    <Compile Include="Assets\Scripts\Scene\AvatarController.cs" />
-    <Compile Include="Assets\Scripts\Scene\ControlStick.cs" />
-    <Compile Include="Assets\Scripts\Scene\GameMapObjs.cs" />
-    <Compile Include="Assets\Scripts\Scene\ModelMgr.cs" />
+    <Compile Include="Assets\Scripts\Scene\EntityModel.cs" />
     <Compile Include="Assets\Scripts\Scene\OptimizeStaticEffect.cs" />
     <Compile Include="Assets\Scripts\Scene\SmoothFollow.cs" />
     <Compile Include="Assets\Scripts\ServerProxy\ServerProxy.cs" />

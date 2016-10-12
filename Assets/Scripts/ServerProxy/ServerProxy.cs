@@ -18,7 +18,7 @@ public class ServerProxy : MonoBehaviour
 	Transform _scene = null;
     void Awake()
     {
-        Debug.Log("Awake ServerProxy.");
+        Debug.Log("ServerProxy Awake");
         DontDestroyOnLoad(gameObject);
         _busyTips = GameObject.Find("BusyTips");
         _chatPanel = GameObject.Find("ChatUI");
@@ -47,6 +47,11 @@ public class ServerProxy : MonoBehaviour
         Facade.GetSingleton<Dispatcher>().AddListener("MoveResp", (System.Action<MoveResp>)OnMoveResp);
         Facade.GetSingleton<Dispatcher>().AddListener("UseSkillResp", (System.Action<UseSkillResp>)OnUseSkillResp);
         Facade.GetSingleton<Dispatcher>().AddListener("AttachSceneResp", (System.Action<AttachSceneResp>)OnAttachSceneResp);
+
+        Facade.GetSingleton<Dispatcher>().AddListener("OnArenaScene", (System.Action)OnArenaScene);
+        Facade.GetSingleton<Dispatcher>().AddListener("OnHomeScene", (System.Action)OnHomeScene);
+        Facade.GetSingleton<Dispatcher>().AddListener("OnExitScene", (System.Action)OnExitScene);
+
 
     }
     void Start()
@@ -103,52 +108,32 @@ public class ServerProxy : MonoBehaviour
     {
         if (resp.retCode != (ushort)ERROR_CODE.EC_SUCCESS || resp.previews.Count == 0)
         {
-            Debug.logger.Log(LogType.Error, "NetController::OnCreateAvatarResp ");
+            Debug.logger.Log(LogType.Error, "ServerProxy::OnCreateAvatarResp ");
             return;
         }
-        Debug.logger.Log("NetController::OnCreateAvatarResp ");
+        Debug.logger.Log("ServerProxy::OnCreateAvatarResp ");
         _client.Send(new AttachAvatarReq("", resp.previews[0].avatarID));
     }
 
     void OnAttachAvatarResp(AttachAvatarResp resp)
     {
+        Debug.logger.Log("ServerProxy::AttachAvatarResp ");
         if (resp.retCode != (ushort)ERROR_CODE.EC_SUCCESS )
         {
-            Debug.LogError("NetController::AttachAvatarResp ");
+            Debug.LogError("ServerProxy::AttachAvatarResp ");
             return;
         }
-        if (Facade.AvatarInfo != null)
+        if (!Facade._mainUI._selectScenePanel.gameObject.activeSelf)
         {
-            Debug.LogError("NetController::AttachAvatarResp alread had attach");
-            return;
+            Facade._mainUI._selectScenePanel.gameObject.SetActive(true);
         }
-		if (_selectScene == null)
-		{
-			var sceneUI = Resources.Load<GameObject>("Guis/SelectScene/SelectScene");
-			if (sceneUI != null)
-			{
-				_selectScene = Instantiate(sceneUI).transform;
-				_selectScene.SetParent(GameObject.Find("MainUI").transform, false);
-				_selectScene.gameObject.SetActive(true);
-				_selectScene.Find("ExitScene").GetComponent<Button>().onClick.AddListener(delegate () { OnExitScene(); });
-				_selectScene.Find("HomeScene").GetComponent<Button>().onClick.AddListener(delegate () { OnHomeScene(); });
-				_selectScene.Find("ArenaScene").GetComponent<Button>().onClick.AddListener(delegate () { OnArenaScene(); });
-			}
-			else
-			{
-				Debug.LogError("can't Instantiate [Prefabs/Guis/SelectScene/SelectScene].");
-			}
-		}
-        Facade.AvatarInfo = resp.baseInfo;
+        Facade._avatarInfo = resp.baseInfo;
 		_client.Send (new SceneGroupGetReq ());
 
-        Debug.logger.Log("NetController::AttachAvatarResp ");
-        PingPongSend();
 
-        var login = GameObject.Find("LoginUI");
-        if (login != null)
+        if (Facade._mainUI._loginUI.gameObject.activeSelf)
         {
-            login.SetActive(false);
+            Facade._mainUI._loginUI.gameObject.SetActive(false);
         }
     }
     void CreateSceneSession(ulong avatarID,  Proto4z.SceneGroupInfo groupInfo)
@@ -176,8 +161,8 @@ public class ServerProxy : MonoBehaviour
 	void OnSceneGroupInfoNotice(SceneGroupInfoNotice notice)
 	{
         Debug.Log(notice);
-		if (Facade.GroupInfo != null 
-			&& Facade.GroupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_ACTIVE
+		if (Facade._groupInfo != null 
+			&& Facade._groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_ACTIVE
 			&& notice.groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_NONE) 
 		{
 			GameObject.Destroy (_scene);
@@ -187,16 +172,16 @@ public class ServerProxy : MonoBehaviour
 				_sceneSession = null;
 			}
 		}
-		if (Facade.GroupInfo != null 
-			&& Facade.GroupInfo.sceneState != (UInt16)SceneState.SCENE_STATE_WAIT
+		if (Facade._groupInfo != null 
+			&& Facade._groupInfo.sceneState != (UInt16)SceneState.SCENE_STATE_WAIT
 			&& notice.groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_WAIT) 
 		{
-            CreateSceneSession(Facade.AvatarInfo.avatarID, notice.groupInfo);
+            CreateSceneSession(Facade._avatarInfo.avatarID, notice.groupInfo);
         }
 
-		Facade.GroupInfo = notice.groupInfo;
+		Facade._groupInfo = notice.groupInfo;
 		Debug.Log (notice);
-		if (Facade.GroupInfo.groupID == 0)
+		if (Facade._groupInfo.groupID == 0)
 		{
 			_client.Send (new Proto4z.SceneGroupCreateReq ());
 		}
@@ -226,12 +211,12 @@ public class ServerProxy : MonoBehaviour
 
     void OnExitScene()
 	{
-		if (Facade.GroupInfo == null) 
+		if (Facade._groupInfo == null) 
 		{
 			return;
 		}
-		if (Facade.GroupInfo.sceneState != (ushort)SceneState.SCENE_STATE_ACTIVE 
-			&& Facade.GroupInfo.sceneType != (ushort)SceneType.SCENE_HOME) 
+		if (Facade._groupInfo.sceneState != (ushort)SceneState.SCENE_STATE_ACTIVE 
+			&& Facade._groupInfo.sceneType != (ushort)SceneType.SCENE_HOME) 
 		{
 			return;
 		}
@@ -240,21 +225,21 @@ public class ServerProxy : MonoBehaviour
 
 	void OnHomeScene()
 	{
-		if (Facade.GroupInfo == null) 
+		if (Facade._groupInfo == null) 
 		{
 			return;
 		}
-		if (Facade.GroupInfo.sceneState != (ushort)SceneState.SCENE_STATE_NONE && Facade.GroupInfo.sceneType != (ushort)SceneType.SCENE_HOME) 
+		if (Facade._groupInfo.sceneState != (ushort)SceneState.SCENE_STATE_NONE && Facade._groupInfo.sceneType != (ushort)SceneType.SCENE_HOME) 
 		{
 			return;
 		}
-		if (Facade.GroupInfo.groupID == 0) 
+		if (Facade._groupInfo.groupID == 0) 
 		{
 			return;
 		}
-        if (Facade.GroupInfo.sceneState == (ushort)SceneState.SCENE_STATE_ACTIVE)
+        if (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_ACTIVE)
         {
-            CreateSceneSession(Facade.AvatarInfo.avatarID, Facade.GroupInfo);
+            CreateSceneSession(Facade._avatarInfo.avatarID, Facade._groupInfo);
         }
         else
         {
@@ -267,15 +252,15 @@ public class ServerProxy : MonoBehaviour
 
     void OnAvatarBaseInfoNotice(AvatarBaseInfoNotice resp)
     {
-        Debug.logger.Log("NetController::AvatarBaseInfoNotice " + resp.baseInfo.avatarName);
-        if (resp.baseInfo.avatarID == Facade.AvatarInfo.avatarID)
+        Debug.logger.Log("ServerProxy::AvatarBaseInfoNotice " + resp.baseInfo.avatarName);
+        if (resp.baseInfo.avatarID == Facade._avatarInfo.avatarID)
         {
-            Facade.AvatarInfo = resp.baseInfo;
+            Facade._avatarInfo = resp.baseInfo;
         }
     }
     void OnPingPongResp(PingPongResp resp)
     {
-        //Debug.logger.Log("NetController::PingPongResp " + resp.msg);
+        //Debug.logger.Log("ServerProxy::PingPongResp " + resp.msg);
         Invoke("PingPongSend", 5.0f);
     }
     void PingPongSend()
@@ -298,9 +283,7 @@ public class ServerProxy : MonoBehaviour
             Debug.Log("create scene");
             _scene = Instantiate(scene).transform;
             _scene.gameObject.SetActive(true);
-            var ugui = GameObject.Find("MainUI");
-            var bg = ugui.GetComponent<RawImage>();
-            bg.gameObject.SetActive(false);
+            Facade._mainUI.SetActiveBG(false);
         }
         else
         {
@@ -316,7 +299,7 @@ public class ServerProxy : MonoBehaviour
         Debug.Log(notice);
         foreach (var entity in notice.entitys)
         {
-            Facade.CreateAvatar(entity.baseInfo.modeID);
+            Facade._gameScene.CreateEntity(entity);
         }
     }
     void OnRemoveEntityNotice(RemoveEntityNotice notice)

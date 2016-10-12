@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Proto4z;
-public class ModelMgr : MonoBehaviour
+public class ModelDict : MonoBehaviour
 {
     System.Collections.Generic.Dictionary<string, int> _modelNames;
     System.Collections.Generic.Dictionary<int, string> _modelIDs;

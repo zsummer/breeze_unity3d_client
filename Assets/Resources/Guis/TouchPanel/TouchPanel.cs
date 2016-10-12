@@ -5,7 +5,7 @@ using System;
 using Proto4z;
 
 
-public class ControlStick : MonoBehaviour
+public class TouchPanel : MonoBehaviour
 {
 
     UnityEngine.EventSystems.EventSystem _event;
@@ -15,7 +15,7 @@ public class ControlStick : MonoBehaviour
     Vector3 _originStrick;
     bool _isStrick = false;
 
-    AvatarController _control;
+    EntityModel _control;
 
     Transform _skillButtons = null;
     void Start ()
@@ -39,7 +39,7 @@ public class ControlStick : MonoBehaviour
     }
     void ChangeAvatarModel()
     {
-        Facade.GetSingleton<ServerProxy>().Send<ChangeModeIDReq>(new ChangeModeIDReq(Facade.GetSingleton<ModelMgr>().GetNextModelID(Facade.AvatarInfo.modeID)));
+        Facade.GetSingleton<ServerProxy>().Send<ChangeModeIDReq>(new ChangeModeIDReq(Facade.GetSingleton<ModelDict>().GetNextModelID(Facade._avatarInfo.modeID)));
     }
     void AvatarAttack()
     {
@@ -49,7 +49,7 @@ public class ControlStick : MonoBehaviour
     {
         if (resp.retCode == (ushort)ERROR_CODE.EC_SUCCESS)
         {
-            Facade.CreateAvatar(resp.modeID);
+            //Facade._gameScene.CreateEntityByAvatarID(Facade._avatarInfo.avatarID);
         }
     }
     void CheckStrick(Vector3 position)
@@ -76,15 +76,15 @@ public class ControlStick : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (_control == null && Facade.AvatarMode != null)
+        if (_control == null && Facade._entityID != 0)
         {
-            _control = Facade.AvatarMode.gameObject.GetComponent<AvatarController>();
+            _control = null;// Facade.AvatarMode.gameObject.GetComponent<AvatarController>();
         }
         if (_control == null)
         {
             return;
         }
-        if (Facade.AvatarMode == null || Facade.AvatarInfo == null)
+        if (Facade._entityID == 0 || Facade._avatarInfo == null)
         {
             if (_control.moveType != MoveType.MT_IDLE)
             {

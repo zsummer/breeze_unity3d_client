@@ -21,11 +21,11 @@ public class GameEntry : MonoBehaviour
             o.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
         }
 
-
         Facade.Init();
         Facade.AddSingleton<Dispatcher>();
         Facade.AddSingleton<ServerProxy>();
-        Facade.AddSingleton<ModelMgr>();
+        Facade.AddSingleton<ModelDict>();
+        Facade._gameScene = Facade.AddSingleton<GameScene>();
     }
 
     void Awake()

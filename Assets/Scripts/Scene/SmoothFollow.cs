@@ -13,9 +13,9 @@ public class SmoothFollow : MonoBehaviour
 
      void FixedUpdate()
      {
-        if (target == null && Facade.AvatarMode != null)
+        if (target == null && Facade._entityID != 0)
         {
-            target = Facade.AvatarMode;
+            target = Facade._gameScene.GetEntity(Facade._entityID).model.transform;
         }
         if (target == null)
         {

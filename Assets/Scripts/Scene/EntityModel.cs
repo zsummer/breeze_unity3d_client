@@ -10,7 +10,7 @@ public enum MoveType
 }
 
 
-public class AvatarController : MonoBehaviour
+public class EntityModel : MonoBehaviour
 {
     public Vector3 targetPos { get { return _targetPos; } set { _targetPos = value; } }
     public MoveType moveType { get { return _moveType; } set { _moveType = value; } }
@@ -36,7 +36,14 @@ public class AvatarController : MonoBehaviour
         _attack = anim["attack"];
         _free.wrapMode = WrapMode.Loop;
         _runned.wrapMode = WrapMode.Loop;
-		_mainCamera = Camera.main;
+        foreach(Camera camera in Camera.allCameras)
+        {
+            if (camera.name == "Camera")
+            {
+                _mainCamera = camera;
+                break;
+            }
+        }
     }
 
     public void CrossAttack()
