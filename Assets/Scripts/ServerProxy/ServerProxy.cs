@@ -3,7 +3,8 @@ using Proto4z;
 using System.Collections;
 using UnityEngine.UI;
 using System;
-public class NetController : MonoBehaviour
+
+public class ServerProxy : MonoBehaviour
 {
 
     Session _client;
@@ -17,7 +18,7 @@ public class NetController : MonoBehaviour
 	Transform _scene = null;
     void Awake()
     {
-        Debug.Log("Awake NetController.");
+        Debug.Log("Awake ServerProxy.");
         DontDestroyOnLoad(gameObject);
         _busyTips = GameObject.Find("BusyTips");
         _chatPanel = GameObject.Find("ChatUI");
@@ -26,10 +27,12 @@ public class NetController : MonoBehaviour
         Facade.GetSingleton<Dispatcher>().AddListener("AttachAvatarResp", (System.Action<AttachAvatarResp>)OnAttachAvatarResp);
         Facade.GetSingleton<Dispatcher>().AddListener("AvatarBaseInfoNotice", (System.Action<AvatarBaseInfoNotice>)OnAvatarBaseInfoNotice);
         Facade.GetSingleton<Dispatcher>().AddListener("PingPongResp", (System.Action<PingPongResp>)OnPingPongResp);
+
 		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupInfoNotice", (System.Action<SceneGroupInfoNotice>)OnSceneGroupInfoNotice);
 		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupGetResp", (System.Action<SceneGroupGetResp>)OnSceneGroupGetResp);
 		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupEnterResp", (System.Action<SceneGroupEnterResp>)OnSceneGroupEnterResp);
 		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupCancelResp", (System.Action<SceneGroupCancelResp>)OnSceneGroupCancelResp);
+
 		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupCreateResp", (System.Action<SceneGroupCreateResp>)OnSceneGroupCreateResp);
 		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupLeaveResp", (System.Action<SceneGroupLeaveResp>)OnSceneGroupLeaveResp);
     
@@ -48,7 +51,7 @@ public class NetController : MonoBehaviour
     }
     void Start()
     {
-        Debug.logger.Log("NetController::Start ");
+        Debug.logger.Log("ServerProxy::Start ");
     }
 
     public void Login(string host, ushort port, string account, string pwd)
@@ -82,10 +85,10 @@ public class NetController : MonoBehaviour
         var account = resp.account;
         if (resp.retCode != (ushort)ERROR_CODE.EC_SUCCESS)
         {
-            Debug.logger.Log(LogType.Error, "NetworkManager::OnClientAuthResp account=" + account);
+            Debug.logger.Log(LogType.Error, "ServerProxy::OnClientAuthResp account=" + account);
             return;
         }
-        Debug.logger.Log("NetController::OnClientAuthResp account=" + account);
+        Debug.logger.Log("ServerProxy::OnClientAuthResp account=" + account);
         if (resp.previews.Count == 0)
         {
             _client.Send(new CreateAvatarReq("", _account));
@@ -125,7 +128,7 @@ public class NetController : MonoBehaviour
 			if (sceneUI != null)
 			{
 				_selectScene = Instantiate(sceneUI).transform;
-				_selectScene.SetParent(GameObject.Find("UGUI").transform, false);
+				_selectScene.SetParent(GameObject.Find("MainUI").transform, false);
 				_selectScene.gameObject.SetActive(true);
 				_selectScene.Find("ExitScene").GetComponent<Button>().onClick.AddListener(delegate () { OnExitScene(); });
 				_selectScene.Find("HomeScene").GetComponent<Button>().onClick.AddListener(delegate () { OnHomeScene(); });
@@ -295,7 +298,7 @@ public class NetController : MonoBehaviour
             Debug.Log("create scene");
             _scene = Instantiate(scene).transform;
             _scene.gameObject.SetActive(true);
-            var ugui = GameObject.Find("UGUI");
+            var ugui = GameObject.Find("MainUI");
             var bg = ugui.GetComponent<RawImage>();
             bg.gameObject.SetActive(false);
         }

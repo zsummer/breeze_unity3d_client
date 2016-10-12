@@ -39,7 +39,7 @@ public class ControlStick : MonoBehaviour
     }
     void ChangeAvatarModel()
     {
-        Facade.GetSingleton<NetController>().Send<ChangeModeIDReq>(new ChangeModeIDReq(Facade.GetSingleton<ModelMgr>().GetNextModelID(Facade.AvatarInfo.modeID)));
+        Facade.GetSingleton<ServerProxy>().Send<ChangeModeIDReq>(new ChangeModeIDReq(Facade.GetSingleton<ModelMgr>().GetNextModelID(Facade.AvatarInfo.modeID)));
     }
     void AvatarAttack()
     {
@@ -98,7 +98,7 @@ public class ControlStick : MonoBehaviour
             if (skillButtonsRes != null)
             {
                 _skillButtons = Instantiate(skillButtonsRes).transform;
-                _skillButtons.SetParent(GameObject.Find("UGUI").transform, false);
+                _skillButtons.SetParent(GameObject.Find("MainUI").transform, false);
                 _skillButtons.gameObject.SetActive(true);
                 _skillButtons.Find("ChangeModelSkill").GetComponent<Button>().onClick.AddListener(delegate () { ChangeAvatarModel(); });
                 _skillButtons.Find("AttackSkill").GetComponent<Button>().onClick.AddListener(delegate () { AvatarAttack(); });

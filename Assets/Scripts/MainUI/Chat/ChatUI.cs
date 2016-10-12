@@ -22,7 +22,7 @@ public class ChatUI : MonoBehaviour
             if (Facade.AvatarInfo != null && msg.Length > 0)
             {
                 //_inputField.ActivateInputField();
-                Facade.GetSingleton<NetController>().Send<ChatReq>(new ChatReq((ushort)ChatChannelEnum.CC_WORLD, 0, msg));
+                Facade.GetSingleton<ServerProxy>().Send<ChatReq>(new ChatReq((ushort)ChatChannelEnum.CC_WORLD, 0, msg));
             }
         });
     }

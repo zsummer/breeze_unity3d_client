@@ -68,33 +68,30 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Avatar\AvatarController.cs" />
-    <Compile Include="Assets\Scripts\Avatar\ControlStick.cs" />
-    <Compile Include="Assets\Scripts\Avatar\GameMapObjs.cs" />
-    <Compile Include="Assets\Scripts\Avatar\ModelMgr.cs" />
-    <Compile Include="Assets\Scripts\Avatar\OptimizeStaticEffect.cs" />
-    <Compile Include="Assets\Scripts\Avatar\SmoothFollow.cs" />
-    <Compile Include="Assets\Scripts\Common\ByteBuffer.cs" />
-    <Compile Include="Assets\Scripts\Common\Utls.cs" />
-    <Compile Include="Assets\Scripts\Config\AppCommonConfig.cs" />
-    <Compile Include="Assets\Scripts\Facade\AppEntry.cs" />
+    <Compile Include="Assets\Scripts\Dict\AppCommonConfig.cs" />
+    <Compile Include="Assets\Scripts\Facade\Dispatcher.cs" />
     <Compile Include="Assets\Scripts\Facade\Facade.cs" />
-    <Compile Include="Assets\Scripts\Logic\AppManager.cs" />
-    <Compile Include="Assets\Scripts\Network\Dispatcher.cs" />
-    <Compile Include="Assets\Scripts\Network\NetController.cs" />
-    <Compile Include="Assets\Scripts\Network\Protocol\Proto4z.cs" />
-    <Compile Include="Assets\Scripts\Network\Protocol\ProtoClient.cs" />
-    <Compile Include="Assets\Scripts\Network\Protocol\ProtoCommon.cs" />
-    <Compile Include="Assets\Scripts\Network\Protocol\ProtoDocker.cs" />
-    <Compile Include="Assets\Scripts\Network\Protocol\ProtoReflection.cs" />
-    <Compile Include="Assets\Scripts\Network\Protocol\ProtoSceneClient.cs" />
-    <Compile Include="Assets\Scripts\Network\Protocol\ProtoSceneCommon.cs" />
-    <Compile Include="Assets\Scripts\Network\Protocol\ProtoSceneServer.cs" />
-    <Compile Include="Assets\Scripts\Network\Session.cs" />
-    <Compile Include="Assets\Scripts\UGUI\Chat\ChatUI.cs" />
-    <Compile Include="Assets\Scripts\UGUI\Login\LoginUI.cs" />
-    <Compile Include="Assets\Scripts\UGUI\MainUI.cs" />
-    <Compile Include="Assets\Scripts\UGUI\Tips\BusyTips.cs" />
+    <Compile Include="Assets\Scripts\Facade\GameEntry.cs" />
+    <Compile Include="Assets\Scripts\MainUI\Chat\ChatUI.cs" />
+    <Compile Include="Assets\Scripts\MainUI\Login\LoginUI.cs" />
+    <Compile Include="Assets\Scripts\MainUI\MainUI.cs" />
+    <Compile Include="Assets\Scripts\MainUI\Tips\BusyTips.cs" />
+    <Compile Include="Assets\Scripts\Protocol\Proto4z.cs" />
+    <Compile Include="Assets\Scripts\Protocol\ProtoClient.cs" />
+    <Compile Include="Assets\Scripts\Protocol\ProtoCommon.cs" />
+    <Compile Include="Assets\Scripts\Protocol\ProtoDocker.cs" />
+    <Compile Include="Assets\Scripts\Protocol\ProtoReflection.cs" />
+    <Compile Include="Assets\Scripts\Protocol\ProtoSceneClient.cs" />
+    <Compile Include="Assets\Scripts\Protocol\ProtoSceneCommon.cs" />
+    <Compile Include="Assets\Scripts\Protocol\ProtoSceneServer.cs" />
+    <Compile Include="Assets\Scripts\Scene\AvatarController.cs" />
+    <Compile Include="Assets\Scripts\Scene\ControlStick.cs" />
+    <Compile Include="Assets\Scripts\Scene\GameMapObjs.cs" />
+    <Compile Include="Assets\Scripts\Scene\ModelMgr.cs" />
+    <Compile Include="Assets\Scripts\Scene\OptimizeStaticEffect.cs" />
+    <Compile Include="Assets\Scripts\Scene\SmoothFollow.cs" />
+    <Compile Include="Assets\Scripts\ServerProxy\ServerProxy.cs" />
+    <Compile Include="Assets\Scripts\ServerProxy\Session.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Resources\Shader\Additive Turbulence.shader" />

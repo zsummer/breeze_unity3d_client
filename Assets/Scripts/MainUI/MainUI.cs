@@ -4,7 +4,7 @@ using UnityEngine;
 
 //外观类
 //所有单例从该类中引出
-public class Facade: MonoBehaviour
+public class MainUI: MonoBehaviour
 {
 	
     public static Transform AvatarMode { get { return _avatarMode; } set { _avatarMode = value; } }
@@ -21,36 +21,45 @@ public class Facade: MonoBehaviour
     
     public static void Init()
     {
-        Debug.Log("Facade Init");
+        Debug.Log("Init Facade.");
+
         _singletons = new System.Collections.Generic.Dictionary<string, object>();
         if (_facade != null)
         {
-            Debug.LogError("Facade Init Error. Duplicate Call");
             return;
         }
-        _facade = new GameObject();
+        _facade = Resources.Load<GameObject>("Facade");
+        if (_facade == null)
+        {
+            _facade = new GameObject();
+        }
+        else
+        {
+           _facade = Instantiate(_facade);
+        }
         _facade.name = "Facade";
         _facade.SetActive(true);
         _facade.AddComponent(typeof(Facade));
     }
     void Awake()
     {
-        Debug.Log("Facade Awake");
+        Debug.Log("Awake Facade.");
         DontDestroyOnLoad(gameObject);
     }
 
     void Start()
     {
-        Debug.Log("Facade Start");
+        Debug.Log("Start Facade.");
     }
 
     void Update()
     {
+        //Debug.Log("Facade Update");
     }
 
     void OnApplicationQuit()
     {
-        Debug.Log("Facade Quit");
+        Debug.Log("OnApplicationQuit Destroy Facade");
         GameObject.Destroy(_facade);
         _facade = null;
     }
@@ -112,7 +121,18 @@ public class Facade: MonoBehaviour
         }
         if (!_singletons.ContainsKey(name))
         {
-            return null;
+            var obj = _facade.GetComponent(name);
+            if (obj == null)
+            {
+                var typeInfo = Type.GetType(name);
+                if (typeInfo == null)
+                {
+                    Debug.LogWarning("not found type " + name);
+                    return null;
+                }
+                obj = _facade.AddComponent(Type.GetType(name));
+            }
+            _singletons.Add(name, obj);
         }
         return _singletons[name];
 	}
@@ -123,35 +143,7 @@ public class Facade: MonoBehaviour
 		return (GetSingleton(name) as T);
 	}
 
-    public static object AddSingleton(string name)
-    {
-        if (_facade == null || _singletons == null)
-        {
-            return null;
-        }
-        if (_singletons.ContainsKey(name))
-        {
-            return _singletons[name];
-        }
-
-        var typeInfo = Type.GetType(name);
-        if (typeInfo == null)
-        {
-            Debug.LogWarning("Facade Can't Add Single Script " + name);
-            return null;
-        }
-        var obj = _facade.AddComponent(Type.GetType(name));
-        _singletons.Add(name, obj);
-        return obj;
-    }
-
-    public static T AddSingleton<T>() where T : MonoBehaviour
-    {
-        string name = typeof(T).Name;
-        return (AddSingleton(name) as T);
-    }
-
-    public static void RemoveSingleton(string name)
+	public static void RemoveSingleton(string name)
 	{
         if (_facade == null || _singletons == null)
         {
@@ -161,7 +153,7 @@ public class Facade: MonoBehaviour
         {
             UnityEngine.Object.Destroy((UnityEngine.Object)(_singletons[name]));
             _singletons.Remove(name);
-            Debug.LogWarning("Facade Remove Script " + name);
+            Debug.LogWarning("RemoveSingleton " + name);
         }
 	}
 

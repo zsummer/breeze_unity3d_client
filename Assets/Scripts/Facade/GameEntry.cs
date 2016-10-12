@@ -5,19 +5,13 @@ using System.Collections;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
-public class AppEntry : MonoBehaviour
+public class GameEntry : MonoBehaviour
 {
 
 	[RuntimeInitializeOnLoadMethod]
 	static void Initialize()
 	{
 		Debug.logger.Log( "RuntimeInitializeOnLoadMethod" );
-        Facade.Init();
-        Facade.GetSingleton<Dispatcher>();
-        Facade.GetSingleton<NetController>();
-        Facade.GetSingleton<ModelMgr>();
-
-
 
         UnityEngine.EventSystems.EventSystem eventSys = GameObject.FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
         if (eventSys == null)
@@ -26,31 +20,25 @@ public class AppEntry : MonoBehaviour
             o.AddComponent<UnityEngine.EventSystems.EventSystem>();
             o.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
         }
-        
 
 
-        
-
-
-
-
-
-
+        Facade.Init();
+        Facade.AddSingleton<Dispatcher>();
+        Facade.AddSingleton<ServerProxy>();
+        Facade.AddSingleton<ModelMgr>();
     }
 
-    void Awake() {
-		AppManager.commonConfig = this.GetComponent<AppCommonConfig> ();
+    void Awake()
+    {
 	}
 
-	// Use this for initialization
-	void Start () {
+	void Start ()
+    {
 
 	}
 
-	// Update is called once per frame
-	void Update () {
+	void Update ()
+    {
 	
 	}
-
-
 }
