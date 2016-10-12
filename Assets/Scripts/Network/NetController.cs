@@ -27,9 +27,9 @@ public class NetController : MonoBehaviour
         Facade.GetSingleton<Dispatcher>().AddListener("AvatarBaseInfoNotice", (System.Action<AvatarBaseInfoNotice>)OnAvatarBaseInfoNotice);
         Facade.GetSingleton<Dispatcher>().AddListener("PingPongResp", (System.Action<PingPongResp>)OnPingPongResp);
 		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupInfoNotice", (System.Action<SceneGroupInfoNotice>)OnSceneGroupInfoNotice);
-		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupGetStatusResp", (System.Action<SceneGroupGetStatusResp>)OnSceneGroupGetStatusResp);
-		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupEnterSceneResp", (System.Action<SceneGroupEnterSceneResp>)OnSceneGroupEnterSceneResp);
-		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupCancelEnterResp", (System.Action<SceneGroupCancelEnterResp>)OnSceneGroupCancelEnterResp);
+		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupGetResp", (System.Action<SceneGroupGetResp>)OnSceneGroupGetResp);
+		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupEnterResp", (System.Action<SceneGroupEnterResp>)OnSceneGroupEnterResp);
+		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupCancelResp", (System.Action<SceneGroupCancelResp>)OnSceneGroupCancelResp);
 		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupCreateResp", (System.Action<SceneGroupCreateResp>)OnSceneGroupCreateResp);
 		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupLeaveResp", (System.Action<SceneGroupLeaveResp>)OnSceneGroupLeaveResp);
     
@@ -137,7 +137,7 @@ public class NetController : MonoBehaviour
 			}
 		}
         Facade.AvatarInfo = resp.baseInfo;
-		_client.Send (new SceneGroupGetStatusReq ());
+		_client.Send (new SceneGroupGetReq ());
 
         Debug.logger.Log("NetController::AttachAvatarResp ");
         PingPongSend();
@@ -174,8 +174,8 @@ public class NetController : MonoBehaviour
 	{
         Debug.Log(notice);
 		if (Facade.GroupInfo != null 
-			&& Facade.GroupInfo.sceneStatus == (UInt16)SceneState.SCENE_STATE_ACTIVE
-			&& notice.groupInfo.sceneStatus == (UInt16)SceneState.SCENE_STATE_NONE) 
+			&& Facade.GroupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_ACTIVE
+			&& notice.groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_NONE) 
 		{
 			GameObject.Destroy (_scene);
 			if (_sceneSession != null) 
@@ -185,8 +185,8 @@ public class NetController : MonoBehaviour
 			}
 		}
 		if (Facade.GroupInfo != null 
-			&& Facade.GroupInfo.sceneStatus != (UInt16)SceneState.SCENE_STATE_WAIT
-			&& notice.groupInfo.sceneStatus == (UInt16)SceneState.SCENE_STATE_WAIT) 
+			&& Facade.GroupInfo.sceneState != (UInt16)SceneState.SCENE_STATE_WAIT
+			&& notice.groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_WAIT) 
 		{
             CreateSceneSession(Facade.AvatarInfo.avatarID, notice.groupInfo);
         }
@@ -200,15 +200,15 @@ public class NetController : MonoBehaviour
 
 	}
 
-	void OnSceneGroupGetStatusResp(SceneGroupGetStatusResp resp)
+	void OnSceneGroupGetResp(SceneGroupGetResp resp)
 	{
         Debug.Log(resp);
     }
-    void OnSceneGroupEnterSceneResp(SceneGroupEnterSceneResp resp)
+    void OnSceneGroupEnterResp(SceneGroupEnterResp resp)
 	{
         Debug.Log(resp);
 	}
-	void OnSceneGroupCancelEnterResp(SceneGroupCancelEnterResp resp)
+	void OnSceneGroupCancelResp(SceneGroupCancelResp resp)
 	{
         Debug.Log(resp);
     }
@@ -227,12 +227,12 @@ public class NetController : MonoBehaviour
 		{
 			return;
 		}
-		if (Facade.GroupInfo.sceneStatus != (ushort)SceneState.SCENE_STATE_ACTIVE 
+		if (Facade.GroupInfo.sceneState != (ushort)SceneState.SCENE_STATE_ACTIVE 
 			&& Facade.GroupInfo.sceneType != (ushort)SceneType.SCENE_HOME) 
 		{
 			return;
 		}
-		_client.Send (new SceneGroupCancelEnterReq ());
+		_client.Send (new SceneGroupCancelReq ());
 	}
 
 	void OnHomeScene()
@@ -241,7 +241,7 @@ public class NetController : MonoBehaviour
 		{
 			return;
 		}
-		if (Facade.GroupInfo.sceneStatus != (ushort)SceneState.SCENE_STATE_NONE && Facade.GroupInfo.sceneType != (ushort)SceneType.SCENE_HOME) 
+		if (Facade.GroupInfo.sceneState != (ushort)SceneState.SCENE_STATE_NONE && Facade.GroupInfo.sceneType != (ushort)SceneType.SCENE_HOME) 
 		{
 			return;
 		}
@@ -249,13 +249,13 @@ public class NetController : MonoBehaviour
 		{
 			return;
 		}
-        if (Facade.GroupInfo.sceneStatus == (ushort)SceneState.SCENE_STATE_ACTIVE)
+        if (Facade.GroupInfo.sceneState == (ushort)SceneState.SCENE_STATE_ACTIVE)
         {
             CreateSceneSession(Facade.AvatarInfo.avatarID, Facade.GroupInfo);
         }
         else
         {
-            _client.Send(new Proto4z.SceneGroupEnterSceneReq((ushort)SceneType.SCENE_HOME, 0));
+            _client.Send(new Proto4z.SceneGroupEnterReq((ushort)SceneType.SCENE_HOME, 0));
         }
     }
 	void OnArenaScene()
