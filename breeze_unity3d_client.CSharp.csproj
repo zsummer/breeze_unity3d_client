@@ -83,10 +83,10 @@
     <Compile Include="Assets\Scripts\Network\Dispatcher.cs" />
     <Compile Include="Assets\Scripts\Network\NetController.cs" />
     <Compile Include="Assets\Scripts\Network\Protocol\Proto4z.cs" />
-    <Compile Include="Assets\Scripts\Network\Protocol\Proto4zReflection.cs" />
     <Compile Include="Assets\Scripts\Network\Protocol\ProtoClient.cs" />
     <Compile Include="Assets\Scripts\Network\Protocol\ProtoCommon.cs" />
     <Compile Include="Assets\Scripts\Network\Protocol\ProtoDocker.cs" />
+    <Compile Include="Assets\Scripts\Network\Protocol\ProtoReflection.cs" />
     <Compile Include="Assets\Scripts\Network\Protocol\ProtoSceneClient.cs" />
     <Compile Include="Assets\Scripts\Network\Protocol\ProtoSceneCommon.cs" />
     <Compile Include="Assets\Scripts\Network\Protocol\ProtoSceneServer.cs" />

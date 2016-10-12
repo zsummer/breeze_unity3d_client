@@ -295,6 +295,9 @@ public class NetController : MonoBehaviour
             Debug.Log("create scene");
             _scene = Instantiate(scene).transform;
             _scene.gameObject.SetActive(true);
+            var ugui = GameObject.Find("UGUI");
+            var bg = ugui.GetComponent<RawImage>();
+            bg.gameObject.SetActive(false);
         }
         else
         {
