@@ -262,7 +262,6 @@ class Session
         catch (Exception)
         {
             Debug.logger.Log(LogType.Error, "exception. len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
-            throw;
         }
 
 
@@ -341,11 +340,7 @@ class Session
                 return;
             }
 
-            if (Time.realtimeSinceStartup - _lastRecvTime > 60)
-            {
-                Close();
-                return;
-            }
+
         }
         catch (Exception e)
         {
