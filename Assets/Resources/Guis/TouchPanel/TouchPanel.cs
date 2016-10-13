@@ -17,13 +17,10 @@ public class TouchPanel : MonoBehaviour
 
     EntityModel _control;
 
-    Transform _skillButtons = null;
     void Start ()
     {
-        _mainCamera = Camera.main;
         _event = UnityEngine.EventSystems.EventSystem.current;
         Facade.GetSingleton<Dispatcher>().AddListener("ChangeModeIDResp", (Action<ChangeModeIDResp>)OnChangeModeIDResp);
-
     }
     void BeginStrick(Vector3 position)
     {
@@ -57,7 +54,7 @@ public class TouchPanel : MonoBehaviour
         var dis = Vector3.Distance(position, _originStrick);
         if (dis < 0.1f)
         {
-            _control.moveType = MoveType.MT_IDLE;
+            _control._moveType = MoveType.MT_IDLE;
             return;
         }
         if (dis > 40)
@@ -67,8 +64,8 @@ public class TouchPanel : MonoBehaviour
         var pos = (position - _originStrick) / 5;
         pos.z = pos.y;
         pos.y = 0;
-        _control.targetPos = pos;
-        _control.moveType = MoveType.MT_HANDLE;
+        _control._targetPos = pos;
+        _control._moveType = MoveType.MT_HANDLE;
         strick.transform.position = position;
         
     }
@@ -80,7 +77,7 @@ public class TouchPanel : MonoBehaviour
         {
             return;
         }
-        if (_control != null && _control.eid != Facade._entityID)
+        if (_control != null && _control._eid != Facade._entityID)
         {
             _control = null;
         }
@@ -104,12 +101,12 @@ public class TouchPanel : MonoBehaviour
             float v = Input.GetAxis("Vertical");
             if (Math.Abs(h) > 0.1 || Math.Abs(v) > 0.1)
             {
-                _control.targetPos = new Vector3(h, 0, v) * 10;
-                _control.moveType = MoveType.MT_HANDLE;
+                _control._targetPos = new Vector3(h, 0, v) * 10;
+                _control._moveType = MoveType.MT_HANDLE;
             }
-            if (_control.moveType == MoveType.MT_HANDLE && Math.Abs(h) < 0.1 && Math.Abs(v) < 0.1)
+            if (_control._moveType == MoveType.MT_HANDLE && Math.Abs(h) < 0.1 && Math.Abs(v) < 0.1)
             {
-                _control.moveType = MoveType.MT_IDLE;
+                _control._moveType = MoveType.MT_IDLE;
             }
         }
 
@@ -122,9 +119,9 @@ public class TouchPanel : MonoBehaviour
                 Physics.Raycast(ray, out hit3D, 100);
                 if (hit3D.transform != null && hit3D.transform.name == "Terrain")
                 {
-                    Debug.Log(hit3D.transform.gameObject.name + _control.targetPos);
-                    _control.targetPos = hit3D.point;
-                    _control.moveType = MoveType.MT_TARGET;
+                    Debug.Log(hit3D.transform.gameObject.name + _control._targetPos);
+                    _control._targetPos = hit3D.point;
+                    _control._moveType = MoveType.MT_TARGET;
                 }
             }
             else if (RectTransformUtility.RectangleContainsScreenPoint((transform as RectTransform), new Vector2(Input.mousePosition.x, Input.mousePosition.y)))

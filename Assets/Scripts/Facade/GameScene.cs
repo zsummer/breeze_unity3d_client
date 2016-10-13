@@ -134,7 +134,8 @@ public class GameScene : MonoBehaviour
         ClientEntityData newEntity = new ClientEntityData();
         newEntity.data = data;
 		newEntity.model = obj.GetComponent<EntityModel>();
-		newEntity.model.eid = data.entityInfo.eid;
+		newEntity.model._eid = data.entityInfo.eid;
+        newEntity.model._name = data.baseInfo.avatarName;
 
         _entitys[data.entityInfo.eid] = newEntity;
         if (data.baseInfo.avatarID != 0)

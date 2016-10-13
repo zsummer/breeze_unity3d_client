@@ -12,13 +12,14 @@ public enum MoveType
 
 public class EntityModel : MonoBehaviour
 {
-    public Vector3 targetPos { get { return _targetPos; } set { _targetPos = value; } }
-    public MoveType moveType { get { return _moveType; } set { _moveType = value; } }
-	public ulong eid = 0;
+	public ulong _eid = 0;
 	public float _speed = 12.0f;
+    public string _name = "unkown";
+    float _npcHeight;
 
-    MoveType _moveType = MoveType.MT_IDLE;
-    Vector3 _targetPos;
+
+    public MoveType _moveType = MoveType.MT_IDLE;
+    public Vector3 _targetPos;
 
     private AnimationState _free;
     private AnimationState _runned;
@@ -39,18 +40,39 @@ public class EntityModel : MonoBehaviour
         _attack = anim["attack"];
         _free.wrapMode = WrapMode.Loop;
         _runned.wrapMode = WrapMode.Loop;
-
-
+        _npcHeight = GetComponent<CapsuleCollider>().bounds.size.y * transform.localScale.y;
     }
 
     public void CrossAttack()
     {
         anim.CrossFade(_attack.name);
     }
+    void OnGUI()
+    {
+        Vector3 worldPosition = new Vector3 (transform.position.x , transform.position.y + _npcHeight,transform.position.z);
+        Vector2 position = Camera.main.WorldToScreenPoint (worldPosition);
+        position = new Vector2 (position.x, Screen.height - position.y);
 
+        //Vector2 bloodSize = GUI.skin.label.CalcSize (new GUIContent(blood_red));
+        //int blood_width = blood_red.width * HP/100;
+        //GUI.DrawTexture(new Rect(position.x - (bloodSize.x/2),position.y - bloodSize.y ,bloodSize.x,bloodSize.y),blood_black);
+        //GUI.DrawTexture(new Rect(position.x - (bloodSize.x/2),position.y - bloodSize.y ,blood_width,bloodSize.y),blood_red);
+
+        Vector2 nameSize = GUI.skin.label.CalcSize (new GUIContent(_name));
+        if (_eid == Facade._entityID && _eid != 0)
+        {
+            GUI.color = Color.yellow;
+        }
+        else
+        {
+            GUI.color = Color.red;
+        }
+        GUI.Label(new Rect(position.x - (nameSize.x/2),position.y - nameSize.y, nameSize.x,nameSize.y), name);
+
+    }
     void FixedUpdate()
     {
-		if (eid !=0 && eid == Facade._entityID && _mainCamera == null) 
+		if (_mainCamera == null) 
 		{
 			foreach(Camera camera in Camera.allCameras)
 			{
@@ -59,7 +81,7 @@ public class EntityModel : MonoBehaviour
 					_mainCamera = camera;
 					break;
 				}
-			}
+            }
 		}
 		if (_moveType == MoveType.MT_IDLE && (anim.IsPlaying(_runned.name) || !anim.isPlaying)) 
 		{
@@ -96,7 +118,6 @@ public class EntityModel : MonoBehaviour
                 {
                     euler = 360f - euler;
                 }
-                var cur = transform.eulerAngles.y;
                 var targetRotation = Quaternion.Euler(0, euler, 0);
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5);
 
