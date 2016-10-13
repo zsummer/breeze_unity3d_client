@@ -81,9 +81,13 @@ public class ServerProxy : MonoBehaviour
         }
     }
 
-    public void Send<T>(T proto) where T : Proto4z.IProtoObject
+    public void SendToGame<T>(T proto) where T : Proto4z.IProtoObject
     {
         _client.Send(proto);
+    }
+    public void SendToScene<T>(T proto) where T : Proto4z.IProtoObject
+    {
+        _sceneSession.Send(proto);
     }
     void OnClientAuthResp(ClientAuthResp resp)
     {
@@ -295,6 +299,8 @@ public class ServerProxy : MonoBehaviour
     void OnSceneRefreshNotice(SceneRefreshNotice notice)
     {
         Debug.Log(notice);
+        Facade._gameScene.RefreshEntityInfo(notice.entityInfos);
+        Facade._gameScene.RefreshEntityMove(notice.entityMoves);
     }
     void OnAddEntityNotice(AddEntityNotice notice)
     {

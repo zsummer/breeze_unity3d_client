@@ -14,8 +14,6 @@ public class EntityModel : MonoBehaviour
 {
     public Proto4z.EntityFullData _info;
 
-    public MoveType _moveType = MoveType.MT_IDLE;
-    public Vector3 _targetPos;
 
 
     private float _npcHeight;
@@ -66,58 +64,62 @@ public class EntityModel : MonoBehaviour
     }
     void FixedUpdate()
     {
-		if (_moveType == MoveType.MT_IDLE && (anim.IsPlaying(_runned.name) || !anim.isPlaying)) 
+        if (_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE 
+            && (anim.IsPlaying(_runned.name) || !anim.isPlaying)) 
 		{
 			anim.CrossFade(_free.name, 0.2f);
 		}
 
-		if (_moveType != MoveType.MT_IDLE) 
-		{
-			if (anim.IsPlaying(_free.name) || !anim.isPlaying)
-			{
-				anim.CrossFade(_runned.name, 0.2f);
-			}
-            Vector3 target = _targetPos;
-            if (_moveType == MoveType.MT_HANDLE)
+        var nextPos = new Vector3((float)_info.entityMove.pos.x, transform.position.y, (float)_info.entityMove.pos.y);
+        var endPos = nextPos;
+        var speed = 7.0f;
+        if (_info.entityMove.action != (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
+        {
+            speed = (float)_info.entityMove.speed;
+            if (_info.entityMove.waypoints.Count > 0)
             {
-                target = transform.position + target;
+                endPos.x = (float)_info.entityMove.waypoints[0].x;
+                endPos.z = (float)_info.entityMove.waypoints[0].y;
             }
-            else
+        }
+
+        var mdis = speed  * Time.fixedDeltaTime;
+        var nextDist = Vector3.Distance(transform.position, nextPos);
+        var endDist = Vector3.Distance(transform.position, endPos);
+        if (endDist < 1.0f) 
+        {
+            return;
+        }
+        if (mdis > nextDist)
+        {
+            mdis = nextDist;
+        }
+
+        Debug.DrawLine(transform.position + transform.up * 0.3f, nextPos+transform.up* 0.3f, Color.red, 1.2f);
+        Debug.DrawLine(transform.position + transform.up * 0.3f, endPos+transform.up* 0.3f, Color.blue, 1.2f);
+        Debug.DrawLine(transform.position + transform.up * 0.3f, transform.forward*10+ transform.position + transform.up * 0.3f, Color.yellow, 1.2f);
+
+        var dir = endPos - transform.position;
+
+        if (_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_FOLLOW
+            ||_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH)
+        {
+            if (anim.IsPlaying(_free.name) || !anim.isPlaying)
             {
-                target.y = transform.position.y;
+                anim.CrossFade(_runned.name, 0.2f);
             }
-            var mdis = (float)6.0 * Time.fixedDeltaTime;
-            var cdis = Vector3.Distance(transform.position, target);
-            if (mdis < cdis)    
+            var euler = Vector3.Angle(dir, Vector3.forward);
+            if (dir.x < 0f)
             {
-                
-                Debug.DrawLine(transform.position + transform.up * 0.3f, target+transform.up* 0.3f, Color.red, 1.2f);
-                Debug.DrawLine(transform.position + transform.up * 0.3f, transform.forward*10+ transform.position + transform.up * 0.3f, Color.yellow, 1.2f);
-
-                var dir = target - transform.position;
-
-                var euler = Vector3.Angle(dir, Vector3.forward);
-                if (dir.x < 0f)
-                {
-                    euler = 360f - euler;
-                }
-                var targetRotation = Quaternion.Euler(0, euler, 0);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5);
-
-
-                var rat = mdis / cdis;
-                transform.position += dir * rat;
-               // transform.LookAt(target);
+                euler = 360f - euler;
             }
-            else
-            {
-                transform.position = target;
-                _moveType = MoveType.MT_IDLE;
-            }
-
+            var targetRotation = Quaternion.Euler(0, euler, 0);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5);
         }
 
 
+        dir = nextPos - transform.position;
+        transform.position += dir * (mdis / nextDist);
     }
 	// Update is called once per frame
 	void Update ()

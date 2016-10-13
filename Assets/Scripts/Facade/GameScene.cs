@@ -18,7 +18,28 @@ public class GameScene : MonoBehaviour
     void FixedUpdate()
     {
     }
-
+    public void RefreshEntityMove(Proto4z.EntityMoveArray moves)
+    {
+        foreach (var mv in moves)
+        {
+            var entity = GetEntity(mv.eid);
+            if (entity != null)
+            {
+                entity._info.entityMove = mv;
+            }
+        }
+    }
+    public void RefreshEntityInfo(Proto4z.EntityInfoArray infos)
+    {
+        foreach (var info in infos)
+        {
+            var entity = GetEntity(info.eid);
+            if (entity != null)
+            {
+                entity._info.entityInfo = info;
+            }
+        }
+    }
     public EntityModel GetEntity(ulong entityID)
     {
         EntityModel ret = null;

@@ -14,7 +14,7 @@ public class TouchPanel : MonoBehaviour
     public Image strick;
     Vector3 _originStrick;
     bool _isStrick = false;
-
+    bool _isHandle = false;
     EntityModel _control;
 
     void Start ()
@@ -33,10 +33,17 @@ public class TouchPanel : MonoBehaviour
     {
         _isStrick = false;
         strick.gameObject.SetActive(false);
+        var req = new MoveReq();
+        req.eid = Facade._entityID;
+        req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE;
+        req.clientPos = new Proto4z.EPoint(_control.transform.position.x, _control.transform.position.z);
+        req.dstPos.x = _control.transform.position.x;
+        req.dstPos.y = _control.transform.position.z;
+        Facade.GetSingleton<ServerProxy>().SendToScene(req);
     }
     void ChangeAvatarModel()
     {
-        Facade.GetSingleton<ServerProxy>().Send<ChangeModeIDReq>(new ChangeModeIDReq(Facade.GetSingleton<ModelDict>().GetNextModelID(Facade._avatarInfo.modeID)));
+        Facade.GetSingleton<ServerProxy>().SendToGame<ChangeModeIDReq>(new ChangeModeIDReq(Facade.GetSingleton<ModelDict>().GetNextModelID(Facade._avatarInfo.modeID)));
     }
     void AvatarAttack()
     {
@@ -54,19 +61,28 @@ public class TouchPanel : MonoBehaviour
         var dis = Vector3.Distance(position, _originStrick);
         if (dis < 0.1f)
         {
-            _control._moveType = MoveType.MT_IDLE;
             return;
         }
         if (dis > 40)
         {
             position = _originStrick + (position - _originStrick) * (40 / dis);
         }
+
         var pos = (position - _originStrick) / 5;
         pos.z = pos.y;
         pos.y = 0;
-        _control._targetPos = pos;
-        _control._moveType = MoveType.MT_HANDLE;
         strick.transform.position = position;
+
+        var req = new MoveReq();
+        req.eid = Facade._entityID;
+        req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH;
+        req.clientPos = new Proto4z.EPoint(_control.transform.position.x, _control.transform.position.z);
+        req.dstPos.x = _control.transform.position.x;
+        req.dstPos.y = _control.transform.position.z;
+        req.dstPos.x += pos.x;
+        req.dstPos.y += pos.z;
+        Facade.GetSingleton<ServerProxy>().SendToScene(req);
+
         
     }
 
@@ -99,14 +115,25 @@ public class TouchPanel : MonoBehaviour
         {
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
+            var req = new MoveReq();
+            req.eid = Facade._entityID;
+            req.clientPos = new Proto4z.EPoint(_control.transform.position.x, _control.transform.position.z);
+            req.dstPos.x = _control.transform.position.x;
+            req.dstPos.y = _control.transform.position.z;
+
             if (Math.Abs(h) > 0.1 || Math.Abs(v) > 0.1)
             {
-                _control._targetPos = new Vector3(h, 0, v) * 10;
-                _control._moveType = MoveType.MT_HANDLE;
+                _isHandle = true;
+                req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH;
+                req.dstPos.x += h * 10;
+                req.dstPos.y += v * 10;
+                Facade.GetSingleton<ServerProxy>().SendToScene(req);
             }
-            if (_control._moveType == MoveType.MT_HANDLE && Math.Abs(h) < 0.1 && Math.Abs(v) < 0.1)
+            else if (_isHandle && _control._info.entityMove.action != (ushort) Proto4z.MoveAction.MOVE_ACTION_IDLE)
             {
-                _control._moveType = MoveType.MT_IDLE;
+                _isHandle = false;
+                req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE;
+                Facade.GetSingleton<ServerProxy>().SendToScene(req);
             }
         }
 
@@ -119,9 +146,13 @@ public class TouchPanel : MonoBehaviour
                 Physics.Raycast(ray, out hit3D, 100);
                 if (hit3D.transform != null && hit3D.transform.name == "Terrain")
                 {
-                    Debug.Log(hit3D.transform.gameObject.name + _control._targetPos);
-                    _control._targetPos = hit3D.point;
-                    _control._moveType = MoveType.MT_TARGET;
+                    var req = new MoveReq();
+                    req.eid = Facade._entityID;
+                    req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH;
+                    req.clientPos = new Proto4z.EPoint(_control.transform.position.x, _control.transform.position.z);
+                    req.dstPos.x = hit3D.point.x;
+                    req.dstPos.y = hit3D.point.z;
+                    Facade.GetSingleton<ServerProxy>().SendToScene(req);
                 }
             }
             else if (RectTransformUtility.RectangleContainsScreenPoint((transform as RectTransform), new Vector2(Input.mousePosition.x, Input.mousePosition.y)))
