@@ -15,7 +15,7 @@ public class SmoothFollow : MonoBehaviour
      {
         if (target == null && Facade._entityID != 0)
         {
-            target = Facade._gameScene.GetEntity(Facade._entityID).model.transform;
+            target = Facade._gameScene.GetEntity(Facade._entityID).transform;
         }
         if (target == null)
         {

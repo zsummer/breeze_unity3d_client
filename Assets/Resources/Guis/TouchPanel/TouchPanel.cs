@@ -77,13 +77,13 @@ public class TouchPanel : MonoBehaviour
         {
             return;
         }
-        if (_control != null && _control._eid != Facade._entityID)
+        if (_control != null && _control._info.entityInfo.eid != Facade._entityID)
         {
             _control = null;
         }
         if (_control == null)
         {
-            _control = Facade._gameScene.GetEntity(Facade._entityID).model;
+            _control = Facade._gameScene.GetEntity(Facade._entityID);
             foreach(Camera camera in Camera.allCameras)
             {
                 if (camera.name == "SceneCamera")

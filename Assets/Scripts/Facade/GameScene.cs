@@ -1,17 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class ClientEntityData
-{
-    public EntityModel model = null;
-    public Proto4z.EntityFullData data = null;
-}
 
 
 public class GameScene : MonoBehaviour
 {
-    private static System.Collections.Generic.Dictionary<ulong, ClientEntityData> _entitys = new System.Collections.Generic.Dictionary<ulong, ClientEntityData>();
-    private static System.Collections.Generic.Dictionary<ulong, ClientEntityData> _players = new System.Collections.Generic.Dictionary<ulong, ClientEntityData>();
+    private static System.Collections.Generic.Dictionary<ulong, EntityModel> _entitys = new System.Collections.Generic.Dictionary<ulong, EntityModel>();
+    private static System.Collections.Generic.Dictionary<ulong, EntityModel> _players = new System.Collections.Generic.Dictionary<ulong, EntityModel>();
 
 
 
@@ -24,15 +19,15 @@ public class GameScene : MonoBehaviour
     {
     }
 
-    public ClientEntityData GetEntity(ulong entityID)
+    public EntityModel GetEntity(ulong entityID)
     {
-        ClientEntityData ret = null;
+        EntityModel ret = null;
         _entitys.TryGetValue(entityID, out ret);
         return ret;
     }
-    public ClientEntityData GetPlayer(ulong avatarID)
+    public EntityModel GetPlayer(ulong avatarID)
     {
-        ClientEntityData ret = null;
+        EntityModel ret = null;
         _players.TryGetValue(avatarID, out ret);
         return ret;
     }
@@ -40,7 +35,7 @@ public class GameScene : MonoBehaviour
 	{
         foreach (var e in _entitys)
         {
-            GameObject.Destroy(e.Value.model.gameObject);
+            GameObject.Destroy(e.Value.gameObject);
         }
         _entitys.Clear();
         _players.Clear();
@@ -52,27 +47,24 @@ public class GameScene : MonoBehaviour
         {
             return;
         }
-        _entitys.Remove(entityID);
-        if (entity.model != null)
-        {
-            GameObject.Destroy(entity.model.gameObject);
-            entity.model = null;
-        }
-        if (entity.data.baseInfo.avatarID == Facade._avatarInfo.avatarID && entity.data.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_AVATAR)
+        if (entity._info.baseInfo.avatarID == Facade._avatarInfo.avatarID 
+            && entity._info.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_AVATAR)
         {
             Facade._entityID = 0;
         }
-        if (entity.data.baseInfo.avatarID != 0)
+        if (entity._info.baseInfo.avatarID != 0)
         {
-            _players.Remove(entity.data.baseInfo.avatarID);
+            _players.Remove(entity._info.baseInfo.avatarID);
         }
+        _entitys.Remove(entityID);
+        GameObject.Destroy(entity.gameObject);
     }
     public void DestroyPlayer(ulong avatarID)
     {
         var entity = GetPlayer(avatarID);
         if (entity != null)
         {
-            DestroyEntity(entity.data.entityInfo.eid);
+            DestroyEntity(entity._info.entityInfo.eid);
         }
     }
 
@@ -84,18 +76,18 @@ public class GameScene : MonoBehaviour
             Debug.LogError("CreateAvatarByAvatarID not found full data");
             return;
         }
-        CreateEntity(entity.data);
+        CreateEntity(entity._info);
     }
     public void CreateEntity(Proto4z.EntityFullData data)
     {
-        ClientEntityData oldEnity = GetEntity(data.entityInfo.eid);
+        EntityModel oldEnity = GetEntity(data.entityInfo.eid);
         
         Vector3 spawnpoint = new Vector3((float)data.entityMove.pos.x, -13.198f, (float)data.entityMove.pos.y);
         Quaternion quat = new Quaternion();
-        if (oldEnity != null && oldEnity.model != null)
+        if (oldEnity != null && oldEnity != null)
         {
-            spawnpoint = oldEnity.model.gameObject.transform.position;
-            quat = oldEnity.model.gameObject.transform.rotation;
+            spawnpoint = oldEnity.gameObject.transform.position;
+            quat = oldEnity.gameObject.transform.rotation;
         }
 
         string name = Facade.GetSingleton<ModelDict>().GetModelName(data.baseInfo.modeID);
@@ -131,20 +123,19 @@ public class GameScene : MonoBehaviour
         rd.freezeRotation = true;
         DestroyEntity(data.entityInfo.eid);
 
-        ClientEntityData newEntity = new ClientEntityData();
-        newEntity.data = data;
-		newEntity.model = obj.GetComponent<EntityModel>();
-		newEntity.model._eid = data.entityInfo.eid;
-        newEntity.model._name = data.baseInfo.avatarName;
+
+		var newEntity = obj.GetComponent<EntityModel>();
+        newEntity._info = data;
 
         _entitys[data.entityInfo.eid] = newEntity;
         if (data.baseInfo.avatarID != 0)
         {
             _players[data.baseInfo.avatarID] = newEntity;
         }
-        if (newEntity.data.baseInfo.avatarID == Facade._avatarInfo.avatarID && newEntity.data.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_AVATAR)
+        if (newEntity._info.baseInfo.avatarID == Facade._avatarInfo.avatarID 
+            && newEntity._info.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_AVATAR)
         {
-            Facade._entityID = newEntity.data.entityInfo.eid;
+            Facade._entityID = newEntity._info.entityInfo.eid;
         }
         Debug.Log("create avatar");
     }

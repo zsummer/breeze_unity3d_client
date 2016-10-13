@@ -12,24 +12,19 @@ public enum MoveType
 
 public class EntityModel : MonoBehaviour
 {
-	public ulong _eid = 0;
-	public float _speed = 12.0f;
-    public string _name = "unkown";
-    float _npcHeight;
-
+    public Proto4z.EntityFullData _info;
 
     public MoveType _moveType = MoveType.MT_IDLE;
     public Vector3 _targetPos;
 
+
+    private float _npcHeight;
     private AnimationState _free;
     private AnimationState _runned;
     private AnimationState _attack;
     private Animation anim;
 
-
-	Camera _mainCamera;
-
-
+   
 
 
 	void Start ()
@@ -57,8 +52,8 @@ public class EntityModel : MonoBehaviour
         //int blood_width = blood_red.width * HP/100;
         //GUI.DrawTexture(new Rect(position.x - (bloodSize.x/2),position.y - bloodSize.y ,bloodSize.x,bloodSize.y),blood_black);
         //GUI.DrawTexture(new Rect(position.x - (bloodSize.x/2),position.y - bloodSize.y ,blood_width,bloodSize.y),blood_red);
-        Vector2 nameSize = GUI.skin.label.CalcSize (new GUIContent(_name));
-        if (_eid == Facade._entityID && _eid != 0)
+        Vector2 nameSize = GUI.skin.label.CalcSize (new GUIContent(_info.baseInfo.avatarName));
+        if (_info.entityInfo.eid == Facade._entityID && _info.entityInfo.eid != 0)
         {
             GUI.color = Color.yellow;
         }
@@ -66,22 +61,11 @@ public class EntityModel : MonoBehaviour
         {
             GUI.color = Color.red;
         }
-        GUI.Label(new Rect(position.x - (nameSize.x/2),position.y - nameSize.y, nameSize.x,nameSize.y), _name);
+        GUI.Label(new Rect(position.x - (nameSize.x/2),position.y - nameSize.y, nameSize.x,nameSize.y), _info.baseInfo.avatarName);
 
     }
     void FixedUpdate()
     {
-		if (_mainCamera == null) 
-		{
-			foreach(Camera camera in Camera.allCameras)
-			{
-				if (camera.name == "SceneCamera")
-				{
-					_mainCamera = camera;
-					break;
-				}
-            }
-		}
 		if (_moveType == MoveType.MT_IDLE && (anim.IsPlaying(_runned.name) || !anim.isPlaying)) 
 		{
 			anim.CrossFade(_free.name, 0.2f);
@@ -102,7 +86,7 @@ public class EntityModel : MonoBehaviour
             {
                 target.y = transform.position.y;
             }
-            var mdis = _speed * Time.fixedDeltaTime;
+            var mdis = (float)6.0 * Time.fixedDeltaTime;
             var cdis = Vector3.Distance(transform.position, target);
             if (mdis < cdis)    
             {
