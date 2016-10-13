@@ -119,6 +119,11 @@ public class EntityModel : MonoBehaviour
 
 
         dir = nextPos - transform.position;
+        if (mdis < 0.001 || nextDist < 0.001 )
+        {
+            return;
+        }
+        Debug.Log("local x=" + transform.position.x + ", z=" + transform.position.z + ", nextPos x=" + nextPos.x + ", z=" + nextPos.z + ", mdist=" + mdis + ", nextDist=" + nextDist);
         transform.position += dir * (mdis / nextDist);
     }
 	// Update is called once per frame

@@ -31,15 +31,18 @@ public class TouchPanel : MonoBehaviour
     }
     void EndStrick()
     {
-        _isStrick = false;
-        strick.gameObject.SetActive(false);
-        var req = new MoveReq();
-        req.eid = Facade._entityID;
-        req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE;
-        req.clientPos = new Proto4z.EPoint(_control.transform.position.x, _control.transform.position.z);
-        req.dstPos.x = _control.transform.position.x;
-        req.dstPos.y = _control.transform.position.z;
-        Facade.GetSingleton<ServerProxy>().SendToScene(req);
+        if (_isStrick)
+        {
+            _isStrick = false;
+            strick.gameObject.SetActive(false);
+            var req = new MoveReq();
+            req.eid = Facade._entityID;
+            req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE;
+            req.clientPos = new Proto4z.EPoint(_control.transform.position.x, _control.transform.position.z);
+            req.dstPos.x = _control.transform.position.x;
+            req.dstPos.y = _control.transform.position.z;
+            Facade.GetSingleton<ServerProxy>().SendToScene(req);
+        }
     }
     void ChangeAvatarModel()
     {
