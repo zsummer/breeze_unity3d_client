@@ -57,7 +57,6 @@ public class EntityModel : MonoBehaviour
         //int blood_width = blood_red.width * HP/100;
         //GUI.DrawTexture(new Rect(position.x - (bloodSize.x/2),position.y - bloodSize.y ,bloodSize.x,bloodSize.y),blood_black);
         //GUI.DrawTexture(new Rect(position.x - (bloodSize.x/2),position.y - bloodSize.y ,blood_width,bloodSize.y),blood_red);
-
         Vector2 nameSize = GUI.skin.label.CalcSize (new GUIContent(_name));
         if (_eid == Facade._entityID && _eid != 0)
         {
@@ -67,7 +66,7 @@ public class EntityModel : MonoBehaviour
         {
             GUI.color = Color.red;
         }
-        GUI.Label(new Rect(position.x - (nameSize.x/2),position.y - nameSize.y, nameSize.x,nameSize.y), name);
+        GUI.Label(new Rect(position.x - (nameSize.x/2),position.y - nameSize.y, nameSize.x,nameSize.y), _name);
 
     }
     void FixedUpdate()
