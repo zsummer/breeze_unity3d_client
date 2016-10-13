@@ -14,6 +14,9 @@ public class EntityModel : MonoBehaviour
 {
     public Vector3 targetPos { get { return _targetPos; } set { _targetPos = value; } }
     public MoveType moveType { get { return _moveType; } set { _moveType = value; } }
+	public ulong eid = 0;
+	public float _speed = 12.0f;
+
     MoveType _moveType = MoveType.MT_IDLE;
     Vector3 _targetPos;
 
@@ -26,7 +29,7 @@ public class EntityModel : MonoBehaviour
 	Camera _mainCamera;
 
 
-	public float _speed = 12.0f;
+
 
 	void Start ()
     {
@@ -36,14 +39,8 @@ public class EntityModel : MonoBehaviour
         _attack = anim["attack"];
         _free.wrapMode = WrapMode.Loop;
         _runned.wrapMode = WrapMode.Loop;
-        foreach(Camera camera in Camera.allCameras)
-        {
-            if (camera.name == "Camera")
-            {
-                _mainCamera = camera;
-                break;
-            }
-        }
+
+
     }
 
     public void CrossAttack()
@@ -53,6 +50,17 @@ public class EntityModel : MonoBehaviour
 
     void FixedUpdate()
     {
+		if (eid !=0 && eid == Facade._entityID && _mainCamera == null) 
+		{
+			foreach(Camera camera in Camera.allCameras)
+			{
+				if (camera.name == "SceneCamera")
+				{
+					_mainCamera = camera;
+					break;
+				}
+			}
+		}
 		if (_moveType == MoveType.MT_IDLE && (anim.IsPlaying(_runned.name) || !anim.isPlaying)) 
 		{
 			anim.CrossFade(_free.name, 0.2f);

@@ -284,6 +284,8 @@ public class ServerProxy : MonoBehaviour
             _scene = Instantiate(scene).transform;
             _scene.gameObject.SetActive(true);
             Facade._mainUI.SetActiveBG(false);
+            Facade._mainUI._touchPanel.gameObject.SetActive(true);
+            Facade._mainUI._skillPanel.gameObject.SetActive(true);
         }
         else
         {

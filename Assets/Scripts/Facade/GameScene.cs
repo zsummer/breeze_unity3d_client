@@ -3,7 +3,7 @@ using System.Collections;
 
 public class ClientEntityData
 {
-    public Transform model = null;
+    public EntityModel model = null;
     public Proto4z.EntityFullData data = null;
 }
 
@@ -23,6 +23,7 @@ public class GameScene : MonoBehaviour
     void FixedUpdate()
     {
     }
+
     public ClientEntityData GetEntity(ulong entityID)
     {
         ClientEntityData ret = null;
@@ -35,6 +36,15 @@ public class GameScene : MonoBehaviour
         _players.TryGetValue(avatarID, out ret);
         return ret;
     }
+	public void CleanEntity()
+	{
+        foreach (var e in _entitys)
+        {
+            GameObject.Destroy(e.Value.model.gameObject);
+        }
+        _entitys.Clear();
+        _players.Clear();
+	}
     public void DestroyEntity(ulong entityID)
     {
         var entity = GetEntity(entityID);
@@ -84,8 +94,8 @@ public class GameScene : MonoBehaviour
         Quaternion quat = new Quaternion();
         if (oldEnity != null && oldEnity.model != null)
         {
-            spawnpoint = oldEnity.model.position;
-            quat = oldEnity.model.rotation;
+            spawnpoint = oldEnity.model.gameObject.transform.position;
+            quat = oldEnity.model.gameObject.transform.rotation;
         }
 
         string name = Facade.GetSingleton<ModelDict>().GetModelName(data.baseInfo.modeID);
@@ -123,7 +133,8 @@ public class GameScene : MonoBehaviour
 
         ClientEntityData newEntity = new ClientEntityData();
         newEntity.data = data;
-        newEntity.model = obj.transform;
+		newEntity.model = obj.GetComponent<EntityModel>();
+		newEntity.model.eid = data.entityInfo.eid;
 
         _entitys[data.entityInfo.eid] = newEntity;
         if (data.baseInfo.avatarID != 0)

@@ -29,11 +29,20 @@ public class MainUI: MonoBehaviour
         _busyTips = LoadUI("BusyTips", "Guis/BusyTips/BusyTips");
         _chatUI = LoadUI("ChatUI", "Guis/ChatUI/ChatUI");
         _loginUI = LoadUI("LoginUI", "Guis/LoginUI/LoginUI");
+
         _skillPanel = LoadUI("SkillPanel", "Guis/SkillPanel/SkillPanel");
+        _skillPanel.Find("ChangeModel").GetComponent<Button>().onClick.AddListener(
+            delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnChangeAvatarModel", null); });
+        _skillPanel.Find("Attack").GetComponent<Button>().onClick.AddListener(
+            delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnAvatarAttack", null); });
+
         _selectScenePanel = LoadUI("SelectScenePanel", "Guis/SelectScenePanel/SelectScenePanel");
-        _selectScenePanel.Find("ExitScene").GetComponent<Button>().onClick.AddListener(delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnExitScene", null); });
-        _selectScenePanel.Find("HomeScene").GetComponent<Button>().onClick.AddListener(delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnHomeScene", null); });
-        _selectScenePanel.Find("ArenaScene").GetComponent<Button>().onClick.AddListener(delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnArenaScene", null); });
+        _selectScenePanel.Find("ExitScene").GetComponent<Button>().onClick.AddListener(
+            delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnExitScene", null); });
+        _selectScenePanel.Find("HomeScene").GetComponent<Button>().onClick.AddListener(
+            delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnHomeScene", null); });
+        _selectScenePanel.Find("ArenaScene").GetComponent<Button>().onClick.AddListener(
+            delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnArenaScene", null); });
 
         _touchPanel = LoadUI("TouchPanel", "Guis/TouchPanel/TouchPanel");
     }

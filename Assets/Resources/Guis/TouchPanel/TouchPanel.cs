@@ -76,40 +76,27 @@ public class TouchPanel : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (_control == null && Facade._entityID != 0)
+        if (Facade._entityID == 0)
         {
-            _control = null;// Facade.AvatarMode.gameObject.GetComponent<AvatarController>();
+            return;
+        }
+        if (_control != null && _control.eid != Facade._entityID)
+        {
+            _control = null;
         }
         if (_control == null)
         {
-            return;
-        }
-        if (Facade._entityID == 0 || Facade._avatarInfo == null)
-        {
-            if (_control.moveType != MoveType.MT_IDLE)
+            _control = Facade._gameScene.GetEntity(Facade._entityID).model;
+            foreach(Camera camera in Camera.allCameras)
             {
-                _control.moveType = MoveType.MT_IDLE;
-            }
-            return;
-        }
-        if (_skillButtons == null)
-        {
-            var skillButtonsRes = Resources.Load<GameObject>("Guis/SkillButtons/SkillButtons");
-            if (skillButtonsRes != null)
-            {
-                _skillButtons = Instantiate(skillButtonsRes).transform;
-                _skillButtons.SetParent(GameObject.Find("MainUI").transform, false);
-                _skillButtons.gameObject.SetActive(true);
-                _skillButtons.Find("ChangeModelSkill").GetComponent<Button>().onClick.AddListener(delegate () { ChangeAvatarModel(); });
-                _skillButtons.Find("AttackSkill").GetComponent<Button>().onClick.AddListener(delegate () { AvatarAttack(); });
-
-            }
-            else
-            {
-                Debug.LogError("can't Instantiate [Prefabs/Guis/SkillButtons/SkillButtons].");
+                if (camera.name == "SceneCamera")
+                {
+                    _mainCamera = camera;
+                    break;
+                }
             }
         }
-
+            
 
         if (true)
         {
