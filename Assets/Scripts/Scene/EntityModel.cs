@@ -22,10 +22,11 @@ public class EntityModel : MonoBehaviour
     private AnimationState _attack;
     private Animation anim;
 
-   
+    
+    private float _lastLastStep = 0.0f;
+    private float _lastStep = 0.0f;
 
-
-	void Start ()
+    void Start ()
     {
         anim = GetComponent<Animation>();
         _free = anim["free"];
@@ -72,10 +73,8 @@ public class EntityModel : MonoBehaviour
 
         var nextPos = new Vector3((float)_info.entityMove.pos.x, transform.position.y, (float)_info.entityMove.pos.y);
         var endPos = nextPos;
-        var speed = 7.0f;
         if (_info.entityMove.action != (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
         {
-            speed = (float)_info.entityMove.speed;
             if (_info.entityMove.waypoints.Count > 0)
             {
                 endPos.x = (float)_info.entityMove.waypoints[0].x;
@@ -83,18 +82,22 @@ public class EntityModel : MonoBehaviour
             }
         }
 
-        var mdis = speed  * Time.fixedDeltaTime;
+        
+
         var nextDist = Vector3.Distance(transform.position, nextPos);
         var endDist = Vector3.Distance(transform.position, endPos);
         if (endDist < 1.0f) 
         {
+            _lastStep = 0.0f;
             return;
         }
-        if (mdis > nextDist)
-        {
-            mdis = nextDist;
-        }
+        //fix speed. 0.1 is server frame interval 
+        var curStep = nextDist / 0.1f * Time.fixedDeltaTime;
+        curStep = (curStep + _lastStep + _lastLastStep) / 3.0f;
+        _lastLastStep = _lastStep;
+        _lastStep = curStep;
 
+        Debug.Log(curStep);
         Debug.DrawLine(transform.position + transform.up * 0.3f, nextPos+transform.up* 0.3f, Color.red, 1.2f);
         Debug.DrawLine(transform.position + transform.up * 0.3f, endPos+transform.up* 0.3f, Color.blue, 1.2f);
         Debug.DrawLine(transform.position + transform.up * 0.3f, transform.forward*10+ transform.position + transform.up * 0.3f, Color.yellow, 1.2f);
@@ -119,12 +122,12 @@ public class EntityModel : MonoBehaviour
 
 
         dir = nextPos - transform.position;
-        if (mdis < 0.001 || nextDist < 0.001 )
+        if (curStep < 0.001 || nextDist < 0.001 )
         {
             return;
         }
-        Debug.Log("local x=" + transform.position.x + ", z=" + transform.position.z + ", nextPos x=" + nextPos.x + ", z=" + nextPos.z + ", mdist=" + mdis + ", nextDist=" + nextDist);
-        transform.position += dir * (mdis / nextDist);
+ //       Debug.Log("local x=" + transform.position.x + ", z=" + transform.position.z + ", nextPos x=" + nextPos.x + ", z=" + nextPos.z + ", mdist=" + curStep + ", nextDist=" + nextDist);
+        transform.position += dir * (curStep / nextDist);
     }
 	// Update is called once per frame
 	void Update ()

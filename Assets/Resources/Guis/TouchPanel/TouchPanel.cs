@@ -16,6 +16,7 @@ public class TouchPanel : MonoBehaviour
     bool _isStrick = false;
     bool _isHandle = false;
     EntityModel _control;
+    float _lastSendMove = 0.0f;
 
     void Start ()
     {
@@ -75,6 +76,11 @@ public class TouchPanel : MonoBehaviour
         pos.z = pos.y;
         pos.y = 0;
         strick.transform.position = position;
+        if (Time.realtimeSinceStartup - _lastSendMove < 0.1f)
+        {
+            return;
+        }
+        _lastSendMove = Time.realtimeSinceStartup;
 
         var req = new MoveReq();
         req.eid = Facade._entityID;

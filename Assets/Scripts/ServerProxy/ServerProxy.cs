@@ -8,13 +8,14 @@ public class ServerProxy : MonoBehaviour
 {
 
     Session _client;
+    float _clientLastPulse = 0.0f;
 	Session _sceneSession;
+    float _sceneSessionLastPulse = 0.0f;
     public SessionStatus ClientStatus { get { return _client == null ?  SessionStatus.SS_UNINIT: _client.Status; } }
     string _account;
     string _passwd;
     GameObject _busyTips;
     GameObject _chatPanel;
-	Transform _selectScene = null;
 	Transform _scene = null;
     void Awake()
     {
@@ -70,6 +71,7 @@ public class ServerProxy : MonoBehaviour
         _client = new Session();
         _client._onConnect = (Action)OnConnect;
         _client.Init(host, port, "");
+        _clientLastPulse = Time.realtimeSinceStartup;
         
     }
     public void OnConnect()
@@ -144,6 +146,7 @@ public class ServerProxy : MonoBehaviour
     {
         _sceneSession = new Session();
         _sceneSession.Init(groupInfo.host, groupInfo.port, "");
+        _sceneSessionLastPulse = Time.realtimeSinceStartup;
         var token = "";
         foreach (var m in groupInfo.members)
         {
@@ -352,10 +355,20 @@ public class ServerProxy : MonoBehaviour
         if (_client != null)
         {
             _client.Update();
+            if (Time.realtimeSinceStartup - _clientLastPulse > 30.0f)
+            {
+                _clientLastPulse = Time.realtimeSinceStartup;
+                _client.Send<Proto4z.ClientPulse>(new Proto4z.ClientPulse());
+            }
         }
         if (_sceneSession != null)
         {
             _sceneSession.Update();
+            if (Time.realtimeSinceStartup - _sceneSessionLastPulse > 30.0f)
+            {
+                _sceneSessionLastPulse = Time.realtimeSinceStartup;
+                _client.Send<Proto4z.SceneClientPulse>(new Proto4z.SceneClientPulse());
+            }
         }
         if (_busyTips != null)
         {
