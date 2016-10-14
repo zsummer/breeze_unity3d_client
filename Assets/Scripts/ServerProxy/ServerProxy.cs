@@ -28,8 +28,11 @@ public class ServerProxy : MonoBehaviour
         Facade.GetSingleton<Dispatcher>().AddListener("AttachAvatarResp", (System.Action<AttachAvatarResp>)OnAttachAvatarResp);
         Facade.GetSingleton<Dispatcher>().AddListener("AvatarBaseInfoNotice", (System.Action<AvatarBaseInfoNotice>)OnAvatarBaseInfoNotice);
         Facade.GetSingleton<Dispatcher>().AddListener("PingPongResp", (System.Action<PingPongResp>)OnPingPongResp);
+        Facade.GetSingleton<Dispatcher>().AddListener("SceneClientPulse", (System.Action<SceneClientPulse>)OnSceneClientPulse);
+        Facade.GetSingleton<Dispatcher>().AddListener("ClientPulse", (System.Action<ClientPulse>)OnClientPulse);
 
-		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupInfoNotice", (System.Action<SceneGroupInfoNotice>)OnSceneGroupInfoNotice);
+
+        Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupInfoNotice", (System.Action<SceneGroupInfoNotice>)OnSceneGroupInfoNotice);
 		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupGetResp", (System.Action<SceneGroupGetResp>)OnSceneGroupGetResp);
 		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupEnterResp", (System.Action<SceneGroupEnterResp>)OnSceneGroupEnterResp);
 		Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupCancelResp", (System.Action<SceneGroupCancelResp>)OnSceneGroupCancelResp);
@@ -270,6 +273,13 @@ public class ServerProxy : MonoBehaviour
         //Debug.logger.Log("ServerProxy::PingPongResp " + resp.msg);
         Invoke("PingPongSend", 5.0f);
     }
+    void OnSceneClientPulse(SceneClientPulse resp)
+    {
+    }
+    void OnClientPulse(ClientPulse resp)
+    {
+    }
+
     void PingPongSend()
     {
         _client.Send(new PingPongReq("curtime=" + Time.realtimeSinceStartup));
