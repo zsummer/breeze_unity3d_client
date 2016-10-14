@@ -89,7 +89,7 @@ public class EntityModel : MonoBehaviour
         if (endDist < 1.0f) 
         {
             _lastStep = 0.0f;
-            _lastLastStep = 0.0f;
+            _lastLastStep  = 0.0f;
             return;
         }
         //fix speed. 0.1 is server frame interval 

@@ -10,7 +10,14 @@ public class ServerProxy : MonoBehaviour
     Session _client;
     float _clientLastPulse = 0.0f;
 	float _clientLastPing = 0.0f;
-	Session _sceneSession;
+    float _clientPingValue = 0.0f;
+
+
+    float _lastFPSTime = 0.0f;
+    float _frameCount = 0.0f;
+    float _lastFPS = 0.0f;
+
+    Session _sceneSession;
     float _sceneSessionLastPulse = 0.0f;
     public SessionStatus ClientStatus { get { return _client == null ?  SessionStatus.SS_UNINIT: _client.Status; } }
     string _account;
@@ -369,14 +376,36 @@ public class ServerProxy : MonoBehaviour
 	}
 	void OnClientPingTestResp(ClientPingTestResp resp)
 	{
-		Debug.Log("Ping:" + (Time.realtimeSinceStartup - (float) resp.clientTime));
+        _clientPingValue = Time.realtimeSinceStartup - (float)resp.clientTime;
+        Debug.Log("Ping:" + _clientPingValue);
 	}
 
 
-
+    void OnGUI()
+    {
+        string name = "Ping:" + _clientPingValue;
+        Vector2 nameSize = GUI.skin.label.CalcSize(new GUIContent(name));
+        Vector2 position = new Vector2(Screen.height / 30, Screen.width / 40);
+        GUI.color = Color.red;
+        if (_scene != null)
+        {
+            GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name);
+        }
+        position.y += nameSize.y;
+  
+        name = "FPS:" + _lastFPS;
+        GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name);
+    }
     // Update is called once per frame
     void Update()
     {
+        _frameCount++;
+        if (Time.realtimeSinceStartup - _lastFPSTime > 1.0f)
+        {
+            _lastFPS = _frameCount;
+            _frameCount = 0;
+            _lastFPSTime = Time.realtimeSinceStartup;
+        }
 		if (_sceneSession != null && Time.realtimeSinceStartup - _clientLastPing >5.0f) 
 		{
 			_clientLastPing = Time.realtimeSinceStartup;
