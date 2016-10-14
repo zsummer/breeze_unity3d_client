@@ -175,7 +175,11 @@ public class ServerProxy : MonoBehaviour
 			&& Facade._groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_ACTIVE
 			&& notice.groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_NONE) 
 		{
-			GameObject.Destroy (_scene);
+			GameObject.Destroy (_scene.gameObject);
+            _scene = null;
+            Facade._mainUI._skillPanel.gameObject.SetActive(false);
+            Facade._mainUI._touchPanel.gameObject.SetActive(false);
+            Facade._mainUI.SetActiveBG(true);
 			if (_sceneSession != null) 
 			{
 				_sceneSession.Close ();
