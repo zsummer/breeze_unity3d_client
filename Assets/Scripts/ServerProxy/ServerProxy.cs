@@ -9,6 +9,7 @@ public class ServerProxy : MonoBehaviour
 
     Session _client;
     float _clientLastPulse = 0.0f;
+	float _clientLastPing = 0.0f;
 	Session _sceneSession;
     float _sceneSessionLastPulse = 0.0f;
     public SessionStatus ClientStatus { get { return _client == null ?  SessionStatus.SS_UNINIT: _client.Status; } }
@@ -17,6 +18,9 @@ public class ServerProxy : MonoBehaviour
     GameObject _busyTips;
     GameObject _chatPanel;
 	Transform _scene = null;
+
+
+
     void Awake()
     {
         Debug.Log("ServerProxy Awake");
@@ -55,6 +59,9 @@ public class ServerProxy : MonoBehaviour
         Facade.GetSingleton<Dispatcher>().AddListener("OnArenaScene", (System.Action)OnArenaScene);
         Facade.GetSingleton<Dispatcher>().AddListener("OnHomeScene", (System.Action)OnHomeScene);
         Facade.GetSingleton<Dispatcher>().AddListener("OnExitScene", (System.Action)OnExitScene);
+
+		Facade.GetSingleton<Dispatcher>().AddListener("ClientPingTestResp", (System.Action<ClientPingTestResp>)OnClientPingTestResp);
+
 
 
     }
@@ -356,17 +363,25 @@ public class ServerProxy : MonoBehaviour
     {
         Debug.Log(resp);
     }
-    void OnAttachSceneResp(AttachSceneResp resp)
-    {
-        Debug.Log(resp);
-    }
-
+	void OnAttachSceneResp(AttachSceneResp resp)
+	{
+		Debug.Log(resp);
+	}
+	void OnClientPingTestResp(ClientPingTestResp resp)
+	{
+		Debug.Log("Ping:" + (Time.realtimeSinceStartup - (float) resp.clientTime));
+	}
 
 
 
     // Update is called once per frame
     void Update()
     {
+		if (_sceneSession != null && Time.realtimeSinceStartup - _clientLastPing >5.0f) 
+		{
+			_clientLastPing = Time.realtimeSinceStartup;
+			_sceneSession.Send(new Proto4z.ClientPingTestReq (0, _clientLastPing));
+		}
         if (_client != null)
         {
             _client.Update();
