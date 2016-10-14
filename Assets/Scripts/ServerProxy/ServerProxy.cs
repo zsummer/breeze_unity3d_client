@@ -348,7 +348,7 @@ public class ServerProxy : MonoBehaviour
     }
     void OnMoveNotice(MoveNotice notice)
     {
-        Debug.Log(notice);
+        Debug.Log("[" + Time.realtimeSinceStartup +  "]eid=" + notice.moveInfo.eid + ", action=" + notice.moveInfo.action);
     }
     void OnAddBuffNotice(AddBuffNotice notice)
     {
@@ -392,8 +392,27 @@ public class ServerProxy : MonoBehaviour
             GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name);
         }
         position.y += nameSize.y;
-  
         name = "FPS:" + _lastFPS;
+        GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name);
+
+        if (Facade._groupInfo == null)
+        {
+            name = "当前位置:主界面";
+        }
+        else if (Facade._groupInfo.sceneType == (ushort)SceneType.SCENE_NONE)
+        {
+            name = "当前位置:主界面";
+        }
+        else if (Facade._groupInfo.sceneType == (ushort)SceneType.SCENE_HOME)
+        {
+            name = "当前位置:主城";
+        }
+        else
+        {
+            name = "当前位置:战场";
+        }
+        nameSize = GUI.skin.label.CalcSize(new GUIContent(name));
+        position.y += nameSize.y;
         GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name);
     }
     // Update is called once per frame

@@ -138,7 +138,10 @@ public class GameScene : MonoBehaviour
         }
         obj.AddComponent<EntityModel>();
         obj.transform.position = spawnpoint;
-        obj.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
+        if (data.baseInfo.modeID != 20)
+        {
+            obj.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
+        }
         obj.transform.rotation = quat;
         Rigidbody rd = obj.GetComponent<Rigidbody>();
         rd.freezeRotation = true;

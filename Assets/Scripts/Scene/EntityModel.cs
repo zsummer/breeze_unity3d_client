@@ -95,10 +95,19 @@ public class EntityModel : MonoBehaviour
         //fix speed. 0.1 is server frame interval 
         var curStep = nextDist / 0.1f * Time.fixedDeltaTime;
         curStep = (curStep + _lastStep + _lastLastStep) / 3.0f;
+        var expectStep = (float)_info.entityMove.speed * Time.fixedDeltaTime;
+        if (curStep < expectStep *0.8f)
+        {
+            curStep = expectStep * 0.8f;
+        }
+        else if (curStep > expectStep * 1.2f)
+        {
+            curStep = expectStep * 1.2f;
+        }
         _lastLastStep = _lastStep;
         _lastStep = curStep;
 
-        Debug.Log(curStep);
+
         Debug.DrawLine(transform.position + transform.up * 0.3f, nextPos+transform.up* 0.3f, Color.red, 1.2f);
         Debug.DrawLine(transform.position + transform.up * 0.3f, endPos+transform.up* 0.3f, Color.blue, 1.2f);
         Debug.DrawLine(transform.position + transform.up * 0.3f, transform.forward*10+ transform.position + transform.up * 0.3f, Color.yellow, 1.2f);
