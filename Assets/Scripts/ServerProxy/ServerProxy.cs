@@ -177,6 +177,7 @@ public class ServerProxy : MonoBehaviour
 		{
 			GameObject.Destroy (_scene.gameObject);
             _scene = null;
+            Facade._gameScene.CleanEntity();
             Facade._mainUI._skillPanel.gameObject.SetActive(false);
             Facade._mainUI._touchPanel.gameObject.SetActive(false);
             Facade._mainUI.SetActiveBG(true);
