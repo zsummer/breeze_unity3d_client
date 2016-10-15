@@ -6,28 +6,17 @@ using System.Collections.Generic;
 //优化静态特效,不可见停止渲染以及更新
 public class OptimizeStaticEffect : MonoBehaviour
 {
-    //保存碰撞体
-    Collider collider = null;
-    //包围盒子
-    Bounds bounds;
-    //是否可见
-    bool mVisible = true;
-
-    //子GameObject
+    Collider _collider = null;
+    bool _visible = true;
     List<GameObject> childObjs = new List<GameObject>();
-
-
-    // Use this for initialization
+    float _delta = 0;
     void Start()
     {
-        collider = GetComponent<Collider>();
-        if (collider == null)
+        _collider = GetComponent<Collider>();
+        if (_collider == null)
         {
-            //Debug.LogError("Optimize static effect should have collider!");
             return;
         }
-
-        //获取子object        
         for (int i = 0; i < gameObject.transform.childCount; i++)
         {
             Transform ts = gameObject.transform.GetChild(i);
@@ -36,26 +25,21 @@ public class OptimizeStaticEffect : MonoBehaviour
         }
     }
 
-    float mTotalTime = 0;
-    // Update is called once per frame
-    void Update()
+    
+
+    void FixedUpdate()
     {
-        //每隔0.1更新一次
-        mTotalTime += Time.deltaTime;
-        if (mTotalTime <= 0.1f)
+        _delta += Time.deltaTime;
+        if (_delta <= 1.1f)
         {
             return;
         }
-        else
-        {
-            mTotalTime = 0;
-        }
+        _delta = 0;
 
-
-        if (!mVisible)
+        if (_visible != GameOption._specialEffect)
         {
-            mVisible = true;
-            if (mVisible)
+            _visible = GameOption._specialEffect;
+            if (_visible)
             {
                 setActive(true);
             }
@@ -67,8 +51,7 @@ public class OptimizeStaticEffect : MonoBehaviour
     }
 
     void setActive(bool flag)
-    {
-        //collider.enabled = flag;        
+    {     
         foreach (GameObject obj in childObjs)
         {
             obj.SetActive(flag);

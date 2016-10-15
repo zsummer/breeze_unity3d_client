@@ -21,7 +21,6 @@ public class TouchPanel : MonoBehaviour
     void Start ()
     {
         _event = UnityEngine.EventSystems.EventSystem.current;
-        Facade.GetSingleton<Dispatcher>().AddListener("ChangeModeIDResp", (Action<ChangeModeIDResp>)OnChangeModeIDResp);
     }
     void BeginStrick(Vector3 position)
     {
@@ -53,13 +52,7 @@ public class TouchPanel : MonoBehaviour
     {
         _control.CrossAttack();
     }
-    void OnChangeModeIDResp(ChangeModeIDResp resp)
-    {
-        if (resp.retCode == (ushort)ERROR_CODE.EC_SUCCESS)
-        {
-            //Facade._gameScene.CreateEntityByAvatarID(Facade._avatarInfo.avatarID);
-        }
-    }
+
     void CheckStrick(Vector3 position)
     {
         var dis = Vector3.Distance(position, _originStrick);
@@ -119,7 +112,7 @@ public class TouchPanel : MonoBehaviour
             }
         }
             
-
+        /*
         if (true)
         {
             float h = Input.GetAxis("Horizontal");
@@ -145,6 +138,7 @@ public class TouchPanel : MonoBehaviour
                 Facade.GetSingleton<ServerProxy>().SendToScene(req);
             }
         }
+        */
 
         if (Input.GetMouseButtonDown(0))
         {

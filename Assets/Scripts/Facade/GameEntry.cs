@@ -25,6 +25,7 @@ public class GameEntry : MonoBehaviour
         Facade.AddSingleton<Dispatcher>();
         Facade.AddSingleton<ServerProxy>();
         Facade.AddSingleton<ModelDict>();
+        Facade.AddSingleton<GameOption>();
         Facade._gameScene = Facade.AddSingleton<GameScene>();
     }
 

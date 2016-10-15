@@ -14,6 +14,7 @@ public class Facade: MonoBehaviour
     public static Proto4z.AvatarBaseInfo _avatarInfo = null;
     public static ulong _entityID = 0;
     public static GameScene _gameScene = null;
+    
 
     private static System.Collections.Generic.Dictionary<string, object> _singletons;
     private static GameObject _facade = null;

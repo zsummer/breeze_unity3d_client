@@ -20,18 +20,20 @@ public class EntityModel : MonoBehaviour
     private AnimationState _free;
     private AnimationState _runned;
     private AnimationState _attack;
-    private Animation anim;
+    private Animation _anim;
 
     
     private float _lastLastStep = 0.0f;
     private float _lastStep = 0.0f;
 
+    private EntityModel _mainPlayer;
+
     void Start ()
     {
-        anim = GetComponent<Animation>();
-        _free = anim["free"];
-        _runned = anim["walk"];
-        _attack = anim["attack"];
+        _anim = GetComponent<Animation>();
+        _free = _anim["free"];
+        _runned = _anim["walk"];
+        _attack = _anim["attack"];
         _free.wrapMode = WrapMode.Loop;
         _runned.wrapMode = WrapMode.Loop;
         _npcHeight = GetComponent<CapsuleCollider>().bounds.size.y * transform.localScale.y;
@@ -39,7 +41,7 @@ public class EntityModel : MonoBehaviour
 
     public void CrossAttack()
     {
-        anim.CrossFade(_attack.name);
+        _anim.CrossFade(_attack.name);
     }
     void OnGUI()
     {
@@ -47,28 +49,36 @@ public class EntityModel : MonoBehaviour
         Vector2 position = Camera.main.WorldToScreenPoint (worldPosition);
         position = new Vector2 (position.x, Screen.height - position.y);
 
-        //Vector2 bloodSize = GUI.skin.label.CalcSize (new GUIContent(blood_red));
-        //int blood_width = blood_red.width * HP/100;
-        //GUI.DrawTexture(new Rect(position.x - (bloodSize.x/2),position.y - bloodSize.y ,bloodSize.x,bloodSize.y),blood_black);
-        //GUI.DrawTexture(new Rect(position.x - (bloodSize.x/2),position.y - bloodSize.y ,blood_width,bloodSize.y),blood_red);
-        Vector2 nameSize = GUI.skin.label.CalcSize (new GUIContent(_info.baseInfo.avatarName));
-        if (_info.entityInfo.eid == Facade._entityID && _info.entityInfo.eid != 0)
+        GUIStyle st = new GUIStyle();
+        st.normal.textColor = Color.red;
+        st.normal.background = null;
+        st.fontSize = (int)(Screen.height * GameOption._fontSizeScreeHeightRate);
+        Vector2 nameSize = nameSize = GUI.skin.label.CalcSize(new GUIContent(_info.baseInfo.avatarName)) * st.fontSize / GUI.skin.font.fontSize;
+
+        if (Facade._entityID == _info.entityInfo.eid)
         {
-            GUI.color = Color.yellow;
+            st.normal.textColor = Color.yellow;
         }
-        else
+        else if (_mainPlayer != null && _mainPlayer._info.entityInfo.camp != _info.entityInfo.camp)
         {
-            GUI.color = Color.red;
+            st.normal.textColor = Color.red;
         }
-        GUI.Label(new Rect(position.x - (nameSize.x/2),position.y - nameSize.y, nameSize.x,nameSize.y), _info.baseInfo.avatarName);
+        GUI.Label(new Rect(position.x - (nameSize.x/2),position.y - nameSize.y, nameSize.x,nameSize.y), _info.baseInfo.avatarName, st);
 
     }
     void FixedUpdate()
     {
+        //check main player 
+        if (Facade._entityID != 0 && (_mainPlayer == null || _mainPlayer._info.entityInfo.eid != Facade._entityID ))
+        {
+            _mainPlayer = Facade._gameScene.GetEntity(Facade._entityID);
+        }
+
+
         if (_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE 
-            && (anim.IsPlaying(_runned.name) || !anim.isPlaying)) 
+            && (_anim.IsPlaying(_runned.name) || !_anim.isPlaying)) 
 		{
-			anim.CrossFade(_free.name, 0.2f);
+            _anim.CrossFade(_free.name, 0.2f);
 		}
 
         var nextPos = new Vector3((float)_info.entityMove.pos.x, transform.position.y, (float)_info.entityMove.pos.y);
@@ -86,14 +96,14 @@ public class EntityModel : MonoBehaviour
 
         var nextDist = Vector3.Distance(transform.position, nextPos);
         var endDist = Vector3.Distance(transform.position, endPos);
-        if (endDist < 1.0f) 
+        if (endDist < 0.1f) 
         {
             _lastStep = 0.0f;
             _lastLastStep  = 0.0f;
             return;
         }
         //fix speed. 0.1 is server frame interval 
-        var curStep = nextDist / 0.1f * Time.fixedDeltaTime;
+        var curStep = nextDist / GameOption._ServerFrameInterval * Time.fixedDeltaTime;
         curStep = (curStep + _lastStep + _lastLastStep) / 3.0f;
         var expectStep = (float)_info.entityMove.speed * Time.fixedDeltaTime;
         if (curStep < expectStep *0.8f)
@@ -117,9 +127,9 @@ public class EntityModel : MonoBehaviour
         if (_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_FOLLOW
             ||_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH)
         {
-            if (anim.IsPlaying(_free.name) || !anim.isPlaying)
+            if (_anim.IsPlaying(_free.name) || !_anim.isPlaying)
             {
-                anim.CrossFade(_runned.name, 0.2f);
+                _anim.CrossFade(_runned.name, 0.2f);
             }
             var euler = Vector3.Angle(dir, Vector3.forward);
             if (dir.x < 0f)

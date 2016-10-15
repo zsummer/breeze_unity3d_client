@@ -138,9 +138,13 @@ public class GameScene : MonoBehaviour
         }
         obj.AddComponent<EntityModel>();
         obj.transform.position = spawnpoint;
-        if (data.baseInfo.modeID != 20)
+        if (data.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_AVATAR)
         {
             obj.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
+        }
+        else
+        {
+            obj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
         }
         obj.transform.rotation = quat;
         Rigidbody rd = obj.GetComponent<Rigidbody>();
