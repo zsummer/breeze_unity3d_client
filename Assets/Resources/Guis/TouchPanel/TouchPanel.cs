@@ -61,9 +61,9 @@ public class TouchPanel : MonoBehaviour
         {
             return;
         }
-        if (dist > 40)
+        if (dist > Screen.width * GameOption._TouchRedius)
         {
-            dist = 40;
+            dist = Screen.width * GameOption._TouchRedius;
         }
         var dir = Vector3.Normalize(position - _originStrick);
         strick.transform.position = _originStrick + (dir * dist);

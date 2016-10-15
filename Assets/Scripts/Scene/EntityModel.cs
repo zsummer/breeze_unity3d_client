@@ -41,7 +41,6 @@ public class EntityModel : MonoBehaviour
         {
            // _modelHeight = mesh.bounds.size.y * transform.localScale.y;
         }
-        //GetComponent<Rigidbody>().re
     }
 
     public void CrossAttack()
