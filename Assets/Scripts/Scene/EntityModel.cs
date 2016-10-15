@@ -16,7 +16,7 @@ public class EntityModel : MonoBehaviour
 
 
 
-    private float _npcHeight;
+    private float _modelHeight = 6;
     private AnimationState _free;
     private AnimationState _runned;
     private AnimationState _attack;
@@ -36,7 +36,12 @@ public class EntityModel : MonoBehaviour
         _attack = _anim["attack"];
         _free.wrapMode = WrapMode.Loop;
         _runned.wrapMode = WrapMode.Loop;
-        _npcHeight = GetComponent<CapsuleCollider>().bounds.size.y * transform.localScale.y;
+        var mesh = GetComponentInChildren<SkinnedMeshRenderer>();
+        if (mesh != null)
+        {
+           // _modelHeight = mesh.bounds.size.y * transform.localScale.y;
+        }
+        //GetComponent<Rigidbody>().re
     }
 
     public void CrossAttack()
@@ -45,7 +50,7 @@ public class EntityModel : MonoBehaviour
     }
     void OnGUI()
     {
-        Vector3 worldPosition = new Vector3 (transform.position.x , transform.position.y + _npcHeight,transform.position.z);
+        Vector3 worldPosition = new Vector3 (transform.position.x , transform.position.y + _modelHeight, transform.position.z);
         Vector2 position = Camera.main.WorldToScreenPoint (worldPosition);
         position = new Vector2 (position.x, Screen.height - position.y);
 

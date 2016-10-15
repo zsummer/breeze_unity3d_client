@@ -130,7 +130,6 @@ public class GameScene : MonoBehaviour
         }
 
         obj.AddComponent<Rigidbody>();
-        obj.AddComponent<CapsuleCollider>();
         if (obj.GetComponent<Animation>() == null)
         {
             obj.AddComponent<Animation>();
@@ -147,7 +146,7 @@ public class GameScene : MonoBehaviour
         }
         obj.transform.rotation = quat;
         Rigidbody rd = obj.GetComponent<Rigidbody>();
-        rd.freezeRotation = true;
+        rd.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
         DestroyEntity(data.entityInfo.eid);
 
 
