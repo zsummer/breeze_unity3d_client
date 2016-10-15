@@ -365,6 +365,7 @@ public class ServerProxy : MonoBehaviour
         {
             if (notice.moveInfo.action != (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
             {
+				/*
                 var entity = Facade._gameScene.GetEntity(Facade._entityID);
                 EntityFullData data = entity._info;
                 var binData = data.__encode().ToArray();
@@ -384,7 +385,7 @@ public class ServerProxy : MonoBehaviour
                 var newEntity = Facade._gameScene.GetEntity(data.entityInfo.eid).gameObject;
                 newEntity.transform.rotation = entity.transform.rotation;
                 newEntity.transform.position = new Vector3((float)data.entityMove.pos.x, newEntity.transform.position.y, (float)data.entityMove.pos.y);
-  
+  				*/
 
             }
             else
