@@ -65,6 +65,8 @@ public class EntityModel : MonoBehaviour
         }
         GUI.Label(new Rect(position.x - (nameSize.x/2),position.y - nameSize.y, nameSize.x,nameSize.y), _info.baseInfo.avatarName, st);
 
+
+
     }
     void FixedUpdate()
     {

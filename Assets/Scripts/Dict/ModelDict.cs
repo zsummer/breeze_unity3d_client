@@ -31,7 +31,7 @@ public class ModelDict : MonoBehaviour
         _modelNames["jia_chong_001_ty"] = 20;
         _modelNames["ku_li_yuan_ren_001_ty"] = 21;
         _modelNames["pang_ge_001_ty"] = 22;
-        //_modelNames["tys_hand_001_ty"] = 23;
+//        _modelNames["tys_hand_001_ty"] = 23;
         _modelNames["yu_ren_001_ty"] = 24;
         _modelNames["fu_shi_long_001_ty"] = 25;
         _modelNames["jia_long_001_ty"] = 26;

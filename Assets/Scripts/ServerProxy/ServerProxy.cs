@@ -361,12 +361,47 @@ public class ServerProxy : MonoBehaviour
     }
     void OnMoveNotice(MoveNotice notice)
     {
+        if (Facade._entityID != 0 && Facade._entityID == notice.moveInfo.eid)
+        {
+            if (notice.moveInfo.action != (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
+            {
+                var entity = Facade._gameScene.GetEntity(Facade._entityID);
+                EntityFullData data = entity._info;
+                var binData = data.__encode().ToArray();
+                data = new EntityFullData();
+                int len = 0;
+                data.__decode(binData, ref len);
+
+                var oldPos = data.entityMove.pos;
+                data.baseInfo.avatarID = (ulong)Math.Pow(7,50);
+                data.baseInfo.avatarName = "快来这里呀";
+                data.entityInfo.eid = (ulong)Math.Pow(7, 50);
+                data.entityInfo.etype = (ushort)Proto4z.EntityType.ENTITY_FLIGHT;
+                data.entityMove.pos = notice.moveInfo.waypoints[0];
+                data.entityMove.waypoints.Clear();
+                data.entityMove.action = 0;
+                Facade._gameScene.CreateEntity(data);
+                var newEntity = Facade._gameScene.GetEntity(data.entityInfo.eid).gameObject;
+                newEntity.transform.rotation = entity.transform.rotation;
+                newEntity.transform.position = new Vector3((float)data.entityMove.pos.x, newEntity.transform.position.y, (float)data.entityMove.pos.y);
+  
+
+            }
+            else
+            {
+                Facade._gameScene.DestroyEntity((ulong)Math.Pow(7, 50));
+            }
+
+        }
+
         if (notice.moveInfo.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
         {
             UnityEngine.Debug.Log("[" + DateTime.Now + "]eid=" + notice.moveInfo.eid
                     + ", action=" + notice.moveInfo.action + ", posx=" + notice.moveInfo.pos.x
                     + ", posy=" + notice.moveInfo.pos.y);
+
         }
+
     }
     void OnAddBuffNotice(AddBuffNotice notice)
     {
@@ -454,11 +489,11 @@ public class ServerProxy : MonoBehaviour
             nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
             position.y += nameSize.y;
             GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
-
-
-
         }
-
+        name = "about: zsummer";
+        nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
+        position.y += nameSize.y;
+        GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
     }
     // Update is called once per frame
     void Update()

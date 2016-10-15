@@ -9,7 +9,6 @@ public class GameScene : MonoBehaviour
     private static System.Collections.Generic.Dictionary<ulong, EntityModel> _players = new System.Collections.Generic.Dictionary<ulong, EntityModel>();
 
 
-
     void Start ()
     {
 
@@ -165,6 +164,7 @@ public class GameScene : MonoBehaviour
         {
             Facade._entityID = newEntity._info.entityInfo.eid;
         }
+
         Debug.Log("create avatar");
     }
 }
