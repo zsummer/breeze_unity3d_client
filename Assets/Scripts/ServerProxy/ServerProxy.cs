@@ -25,7 +25,7 @@ public class ServerProxy : MonoBehaviour
     GameObject _busyTips;
     GameObject _chatPanel;
     Transform _scene = null;
-
+    float _sceneEndTime = 0f;
 
 
     void Awake()
@@ -325,6 +325,7 @@ public class ServerProxy : MonoBehaviour
         {
             GameObject.Destroy(_scene.gameObject);
         }
+        _sceneEndTime = Time.realtimeSinceStartup + (float)notice.section.sceneEndTime - (float)notice.section.serverTime;
         var scene = Resources.Load<GameObject>("Scene/Home");
         if (scene != null)
         {
@@ -342,7 +343,7 @@ public class ServerProxy : MonoBehaviour
     }
     void OnSceneRefreshNotice(SceneRefreshNotice notice)
     {
-        Debug.Log(notice);
+//        Debug.Log(notice);
         Facade._gameScene.RefreshEntityInfo(notice.entityInfos);
         Facade._gameScene.RefreshEntityMove(notice.entityMoves);
     }
@@ -360,7 +361,12 @@ public class ServerProxy : MonoBehaviour
     }
     void OnMoveNotice(MoveNotice notice)
     {
-        Debug.Log("[" + Time.realtimeSinceStartup + "]eid=" + notice.moveInfo.eid + ", action=" + notice.moveInfo.action);
+        if (notice.moveInfo.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
+        {
+            UnityEngine.Debug.Log("[" + DateTime.Now + "]eid=" + notice.moveInfo.eid
+                    + ", action=" + notice.moveInfo.action + ", posx=" + notice.moveInfo.pos.x
+                    + ", posy=" + notice.moveInfo.pos.y);
+        }
     }
     void OnAddBuffNotice(AddBuffNotice notice)
     {
@@ -389,7 +395,6 @@ public class ServerProxy : MonoBehaviour
     void OnClientPingTestResp(ClientPingTestResp resp)
     {
         _clientPingValue = Time.realtimeSinceStartup - (float)resp.clientTime;
-        Debug.Log("Ping:" + _clientPingValue);
     }
 
 
@@ -427,6 +432,10 @@ public class ServerProxy : MonoBehaviour
         position.y += nameSize.y;
         GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
 
+        name = "当前时间:" + System.DateTime.Now;
+        nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
+        position.y += nameSize.y;
+        GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
 
         name = "FPS:" + _lastFPS;
         nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
@@ -440,6 +449,14 @@ public class ServerProxy : MonoBehaviour
             nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
             position.y += nameSize.y;
             GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+
+            name = "场景过期:" + ((int)_sceneEndTime - Time.realtimeSinceStartup) + "秒" ;
+            nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
+            position.y += nameSize.y;
+            GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+
+
+
         }
 
     }

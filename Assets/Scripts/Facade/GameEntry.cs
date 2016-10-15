@@ -11,6 +11,7 @@ public class GameEntry : MonoBehaviour
 	[RuntimeInitializeOnLoadMethod]
 	static void Initialize()
 	{
+        
 		Debug.logger.Log( "RuntimeInitializeOnLoadMethod" );
 
         UnityEngine.EventSystems.EventSystem eventSys = GameObject.FindObjectOfType<UnityEngine.EventSystems.EventSystem>();

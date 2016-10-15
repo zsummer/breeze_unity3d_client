@@ -13,8 +13,8 @@ public class TouchPanel : MonoBehaviour
 
     public Image strick;
     Vector3 _originStrick;
+    Vector3 _lastDirt;
     bool _isStrick = false;
-    bool _isHandle = false;
     EntityModel _control;
     float _lastSendMove = 0.0f;
 
@@ -42,6 +42,7 @@ public class TouchPanel : MonoBehaviour
             req.dstPos.x = _control.transform.position.x;
             req.dstPos.y = _control.transform.position.z;
             Facade.GetSingleton<ServerProxy>().SendToScene(req);
+            Debug.Log("client stop move EndStrick");
         }
     }
     void ChangeAvatarModel()
@@ -55,37 +56,42 @@ public class TouchPanel : MonoBehaviour
 
     void CheckStrick(Vector3 position)
     {
-        var dis = Vector3.Distance(position, _originStrick);
-        if (dis < 0.1f)
+        var dist = Vector3.Distance(position, _originStrick);
+        if (dist < 0.3f)
         {
             return;
         }
-        if (dis > 40)
+        if (dist > 40)
         {
-            position = _originStrick + (position - _originStrick) * (40 / dis);
+            dist = 40;
+        }
+        var dir = Vector3.Normalize(position - _originStrick);
+        strick.transform.position = _originStrick + (dir * dist);
+
+
+        
+        dir.z = dir.y;
+        dir.y = 0;
+        dir *= 600;
+        if (_lastDirt == null || Vector3.Distance(dir, _lastDirt) > Math.Sin( 10.0 * Math.PI/360.0)* 600)
+        {
+            _lastDirt = dir;
+        }
+        else if (Time.realtimeSinceStartup - _lastSendMove < 1f)
+        {
+            return;
         }
 
-        var pos = (position - _originStrick) / 5;
-        pos.z = pos.y;
-        pos.y = 0;
-        strick.transform.position = position;
-        if (Time.realtimeSinceStartup - _lastSendMove < 0.1f)
-        {
-            return;
-        }
+        Vector3 dst = _control.transform.position + _lastDirt;
         _lastSendMove = Time.realtimeSinceStartup;
-
+        Debug.Log("Send Move");
         var req = new MoveReq();
         req.eid = Facade._entityID;
         req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH;
         req.clientPos = new Proto4z.EPoint(_control.transform.position.x, _control.transform.position.z);
-        req.dstPos.x = _control.transform.position.x;
-        req.dstPos.y = _control.transform.position.z;
-        req.dstPos.x += pos.x;
-        req.dstPos.y += pos.z;
+        req.dstPos.x += dst.x;
+        req.dstPos.y += dst.z;
         Facade.GetSingleton<ServerProxy>().SendToScene(req);
-
-        
     }
 
     // Update is called once per frame
@@ -110,6 +116,7 @@ public class TouchPanel : MonoBehaviour
                     break;
                 }
             }
+            _isStrick = false;
         }
             
         /*
@@ -142,12 +149,17 @@ public class TouchPanel : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            if (!_event.IsPointerOverGameObject())
+            if (RectTransformUtility.RectangleContainsScreenPoint((transform as RectTransform), new Vector2(Input.mousePosition.x, Input.mousePosition.y)))
+            {
+                BeginStrick(Input.mousePosition);
+            }
+            else if(!_event.IsPointerOverGameObject())
             {
                 Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit3D = new RaycastHit();
                 Physics.Raycast(ray, out hit3D, 100);
-                if (hit3D.transform != null && hit3D.transform.name == "Terrain")
+                //if (hit3D.transform != null && hit3D.transform.name == "Terrain")
+                if (hit3D.transform != null )
                 {
                     var req = new MoveReq();
                     req.eid = Facade._entityID;
@@ -158,14 +170,7 @@ public class TouchPanel : MonoBehaviour
                     Facade.GetSingleton<ServerProxy>().SendToScene(req);
                 }
             }
-            else if (RectTransformUtility.RectangleContainsScreenPoint((transform as RectTransform), new Vector2(Input.mousePosition.x, Input.mousePosition.y)))
-            {
-                BeginStrick(Input.mousePosition);
-            }
-        }
-        if (Input.GetMouseButtonUp(1))
-        {
-            ChangeAvatarModel();
+            
         }
         if (Input.GetMouseButtonUp(0))
         {
