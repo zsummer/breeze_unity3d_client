@@ -40,6 +40,7 @@ public class ServerProxy : MonoBehaviour
         Facade.GetSingleton<Dispatcher>().AddListener("ClientPulse", (System.Action<ClientPulse>)OnClientPulse);
 
 		Facade.GetSingleton<Dispatcher>().AddListener("SceneClientPulse", (System.Action<SceneClientPulse>)OnSceneClientPulse);
+		Facade.GetSingleton<Dispatcher>().AddListener("ClientPingTestResp", (System.Action<ClientPingTestResp>)OnClientPingTestResp);
 
         Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupInfoNotice", (System.Action<SceneGroupInfoNotice>)OnSceneGroupInfoNotice);
         Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupGetResp", (System.Action<SceneGroupGetResp>)OnSceneGroupGetResp);
@@ -362,7 +363,7 @@ public class ServerProxy : MonoBehaviour
 
 		if (Facade._entityID != 0)
         {
-            name = "Ping:" + _clientPingValue;
+            name = "Ping:" + _clientPingValue +"秒";
             nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
             position.y += nameSize.y;
             GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
@@ -412,6 +413,11 @@ public class ServerProxy : MonoBehaviour
                 _sceneSessionLastPulse = Time.realtimeSinceStartup;
                 _client.Send<Proto4z.SceneClientPulse>(new Proto4z.SceneClientPulse());
             }
+			if (Time.realtimeSinceStartup - _clientLastPing > 5.0f) 
+			{
+				_clientLastPing = Time.realtimeSinceStartup;
+				_sceneSession.Send (new Proto4z.ClientPingTestReq ());
+			}
         }
         if (_busyTips != null)
         {
