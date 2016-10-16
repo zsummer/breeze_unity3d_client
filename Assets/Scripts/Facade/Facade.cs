@@ -8,30 +8,55 @@ using UnityEngine;
 
 public class Facade: MonoBehaviour
 {
-    
-    public static MainUI _mainUI = null;
     public static Proto4z.SceneGroupInfo _groupInfo = null;
     public static Proto4z.AvatarBaseInfo _avatarInfo = null;
     public static ulong _entityID = 0;
-    public static GameScene _gameScene = null;
-    
 
+    public static ModelDict _modelDict = null;
+    public static Dispatcher _dispatcher = null;
+    public static SceneManager _sceneManager = null;
+    public static ServerProxy _serverProxy = null;
+    public static AudioManager _audioManager = null;
+
+    public static MainUI _mainUI = null;
+    
+ 
     private static System.Collections.Generic.Dictionary<string, object> _singletons;
     private static GameObject _facade = null;
 
+    [RuntimeInitializeOnLoadMethod]
     public static void Init()
     {
         Debug.Log("Facade Init");
+
+
+        UnityEngine.EventSystems.EventSystem eventSys = GameObject.FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
+        if (eventSys == null)
+        {
+            GameObject o = new GameObject("EventSystem");
+            o.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            o.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+        }
+
+
         _singletons = new System.Collections.Generic.Dictionary<string, object>();
         if (_facade != null)
         {
             Debug.LogError("Facade Init Error. Duplicate Call");
             return;
         }
+
         _facade = new GameObject();
         _facade.name = "Facade";
         _facade.SetActive(true);
         _facade.AddComponent(typeof(Facade));
+
+        _dispatcher = Facade.AddSingleton<Dispatcher>();
+        Facade.AddSingleton<GameOption>();
+        _modelDict = Facade.AddSingleton<ModelDict>();
+        _serverProxy =  Facade.AddSingleton<ServerProxy>();
+        _sceneManager = Facade.AddSingleton<SceneManager>();
+        _audioManager = Facade.AddSingleton<AudioManager>();
     }
     void Awake()
     {

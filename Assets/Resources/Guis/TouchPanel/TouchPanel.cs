@@ -69,8 +69,8 @@ public class TouchPanel : MonoBehaviour
         
         dir.z = dir.y;
         dir.y = 0;
-        dir *= 600;
-        if (_lastDirt == null || Vector3.Distance(dir, _lastDirt) > Math.Sin( 10.0 * Math.PI/360.0)* 600)
+        dir *= 20;
+        if (_lastDirt == null || Vector3.Distance(dir, _lastDirt) > Math.Sin( 10.0 * Math.PI/360.0)* 20)
         {
             _lastDirt = dir;
         }
@@ -104,7 +104,7 @@ public class TouchPanel : MonoBehaviour
         }
         if (_control == null)
         {
-            _control = Facade._gameScene.GetEntity(Facade._entityID);
+            _control = Facade._sceneManager.GetEntity(Facade._entityID);
             foreach(Camera camera in Camera.allCameras)
             {
                 if (camera.name == "SceneCamera")

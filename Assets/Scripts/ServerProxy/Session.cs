@@ -257,7 +257,7 @@ class Session
             var inst = Activator.CreateInstance(typeInfo);
             int offset = 0;
             methodInfo.Invoke(inst, new object[] { bin, offset });
-            Facade.GetSingleton<Dispatcher>().TriggerEvent(protoName, new object[] { inst });
+            Facade._dispatcher.TriggerEvent(protoName, new object[] { inst });
         }
         catch (Exception)
         {

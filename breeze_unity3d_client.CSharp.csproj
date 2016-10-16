@@ -66,14 +66,13 @@
     <Compile Include="Assets\Resources\Guis\BusyTips\BusyTips.cs" />
     <Compile Include="Assets\Resources\Guis\ChatUI\ChatUI.cs" />
     <Compile Include="Assets\Resources\Guis\LoginUI\LoginUI.cs" />
+    <Compile Include="Assets\Resources\Guis\MainUI.cs" />
     <Compile Include="Assets\Resources\Guis\TouchPanel\TouchPanel.cs" />
+    <Compile Include="Assets\Scripts\Audio\AudioManager.cs" />
     <Compile Include="Assets\Scripts\Dict\GameOption.cs" />
     <Compile Include="Assets\Scripts\Dict\ModelDict.cs" />
     <Compile Include="Assets\Scripts\Facade\Dispatcher.cs" />
     <Compile Include="Assets\Scripts\Facade\Facade.cs" />
-    <Compile Include="Assets\Scripts\Facade\GameEntry.cs" />
-    <Compile Include="Assets\Scripts\Facade\GameScene.cs" />
-    <Compile Include="Assets\Scripts\Facade\MainUI.cs" />
     <Compile Include="Assets\Scripts\Protocol\Proto4z.cs" />
     <Compile Include="Assets\Scripts\Protocol\ProtoClient.cs" />
     <Compile Include="Assets\Scripts\Protocol\ProtoCommon.cs" />
@@ -83,8 +82,9 @@
     <Compile Include="Assets\Scripts\Protocol\ProtoSceneCommon.cs" />
     <Compile Include="Assets\Scripts\Protocol\ProtoSceneServer.cs" />
     <Compile Include="Assets\Scripts\Scene\EntityModel.cs" />
-    <Compile Include="Assets\Scripts\Scene\OptimizeStaticEffect.cs" />
-    <Compile Include="Assets\Scripts\Scene\SmoothFollow.cs" />
+    <Compile Include="Assets\Scripts\Scene\SceneCamera.cs" />
+    <Compile Include="Assets\Scripts\Scene\SceneEffectOption.cs" />
+    <Compile Include="Assets\Scripts\Scene\SceneManager.cs" />
     <Compile Include="Assets\Scripts\ServerProxy\ServerProxy.cs" />
     <Compile Include="Assets\Scripts\ServerProxy\Session.cs" />
   </ItemGroup>

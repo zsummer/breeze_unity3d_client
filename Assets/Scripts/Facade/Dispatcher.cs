@@ -27,18 +27,35 @@ public  class Dispatcher : MonoBehaviour
     {
         if (!_routing.ContainsKey(method))
         {
-            Debug.logger.Log(LogType.Error, "Dispatcher::RemoveListener not found method name = " + method);
+            Debug.LogError("Dispatcher::RemoveListener not found method name = " + method);
         }
         _routing.Remove(method);
     }
     public void TriggerEvent(string method, object[] args)
     {
-        Delegate dlg;
-        if (!_routing.TryGetValue(method, out dlg) || dlg == null)
+        try
         {
-            Debug.logger.Log(LogType.Error, "Dispatcher::TriggerEvent not found method. name = " + method);
-            return;
+            Delegate dlg;
+            if (!_routing.TryGetValue(method, out dlg) || dlg == null)
+            {
+                throw new Exception("the method no listener.");
+            }
+            dlg.DynamicInvoke(args);
         }
-        dlg.DynamicInvoke(args);
+        catch (Exception e)
+        {
+            string err = "Dispatcher::TriggerEvent [" + method + "](";
+            if (args != null)
+            {
+                foreach (var arg in args)
+                {
+                    err += arg + ",";
+                }
+            }
+            err += ") had Exception:";
+            err += e.Message;
+            Debug.LogError(err);
+        }
+        
     }
 }

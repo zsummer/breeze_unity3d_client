@@ -49,7 +49,7 @@ public class EntityModel : MonoBehaviour
     }
     void OnGUI()
     {
-		if (_info == null) 
+		if (_info == null || _info.entityInfo.etype != (ushort)Proto4z.EntityType.ENTITY_AVATAR) 
 		{
 			return;
 		}
@@ -72,16 +72,13 @@ public class EntityModel : MonoBehaviour
             st.normal.textColor = Color.red;
         }
         GUI.Label(new Rect(position.x - (nameSize.x/2),position.y - nameSize.y, nameSize.x,nameSize.y), _info.baseInfo.avatarName, st);
-
-
-
     }
     void FixedUpdate()
     {
         //check main player 
         if (Facade._entityID != 0 && (_mainPlayer == null || _mainPlayer._info.entityInfo.eid != Facade._entityID ))
         {
-            _mainPlayer = Facade._gameScene.GetEntity(Facade._entityID);
+            _mainPlayer = Facade._sceneManager.GetEntity(Facade._entityID);
         }
 
 

@@ -32,17 +32,17 @@ public class MainUI: MonoBehaviour
 
         _skillPanel = LoadUI("SkillPanel", "Guis/SkillPanel/SkillPanel");
         _skillPanel.Find("Attack").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnAvatarAttack", null); });
+            delegate () { Facade._dispatcher.TriggerEvent("OnAvatarAttack", null); });
 
         _selectScenePanel = LoadUI("SelectScenePanel", "Guis/SelectScenePanel/SelectScenePanel");
         _selectScenePanel.Find("ExitScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnExitScene", null); });
+            delegate () { Facade._dispatcher.TriggerEvent("OnExitScene", null); });
         _selectScenePanel.Find("HomeScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnHomeScene", null); });
+            delegate () { Facade._dispatcher.TriggerEvent("OnHomeScene", null); });
         _selectScenePanel.Find("ArenaScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnArenaScene", null); });
+            delegate () { Facade._dispatcher.TriggerEvent("OnArenaScene", null); });
 		_selectScenePanel.Find("ChangeModel").GetComponent<Button>().onClick.AddListener(
-			delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnChangeAvatarModel", null); });
+			delegate () { Facade._dispatcher.TriggerEvent("OnChangeAvatarModel", null); });
 
         _touchPanel = LoadUI("TouchPanel", "Guis/TouchPanel/TouchPanel");
     }

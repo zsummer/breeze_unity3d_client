@@ -10,6 +10,7 @@ public class GameOption : MonoBehaviour
     public static float _ServerFrameInterval = 0.1f;
     public static float _TouchRedius = 65.0f / 600.0f;
 	public static bool _EnbaleClickMove = false;
+    public static float _AudioVolume = 0.1f;
 
 }
 

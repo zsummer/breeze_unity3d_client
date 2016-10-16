@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 
 //优化静态特效,不可见停止渲染以及更新
-public class OptimizeStaticEffect : MonoBehaviour
+public class SceneEffectOption : MonoBehaviour
 {
     Collider _collider = null;
     bool _visible = true;
