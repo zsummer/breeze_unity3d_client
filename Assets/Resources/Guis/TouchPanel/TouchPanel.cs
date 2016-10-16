@@ -45,10 +45,7 @@ public class TouchPanel : MonoBehaviour
             Debug.Log("client stop move EndStrick");
         }
     }
-    void ChangeAvatarModel()
-    {
-        Facade.GetSingleton<ServerProxy>().SendToGame<ChangeModeIDReq>(new ChangeModeIDReq(Facade.GetSingleton<ModelDict>().GetNextModelID(Facade._avatarInfo.modeID)));
-    }
+
     void AvatarAttack()
     {
         _control.CrossAttack();
@@ -153,13 +150,13 @@ public class TouchPanel : MonoBehaviour
             {
                 BeginStrick(Input.mousePosition);
             }
-            else if(!_event.IsPointerOverGameObject())
+			else if(GameOption._EnbaleClickMove && !_event.IsPointerOverGameObject())
             {
                 Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit3D = new RaycastHit();
                 Physics.Raycast(ray, out hit3D, 100);
-                //if (hit3D.transform != null && hit3D.transform.name == "Terrain")
-                if (hit3D.transform != null )
+                if (hit3D.transform != null && hit3D.transform.name == "Terrain")
+                //if (hit3D.transform != null )
                 {
                     var req = new MoveReq();
                     req.eid = Facade._entityID;
