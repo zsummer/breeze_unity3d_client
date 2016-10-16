@@ -8,10 +8,9 @@ public class ServerProxy : MonoBehaviour
 {
 
     Session _client;
-    float _clientLastPulse = 0.0f;
-    float _clientLastPing = 0.0f;
-    float _clientPingValue = 0.0f;
-
+	float _clientLastPulse = 0.0f;
+	float _clientLastPing = 0.0f;
+	float _clientPingValue = 0.0f;
 
     float _lastFPSTime = 0.0f;
     float _frameCount = 0.0f;
@@ -24,8 +23,7 @@ public class ServerProxy : MonoBehaviour
     string _passwd;
     GameObject _busyTips;
     GameObject _chatPanel;
-    Transform _scene = null;
-    float _sceneEndTime = 0f;
+
 
 
     void Awake()
@@ -39,11 +37,9 @@ public class ServerProxy : MonoBehaviour
         Facade.GetSingleton<Dispatcher>().AddListener("AttachAvatarResp", (System.Action<AttachAvatarResp>)OnAttachAvatarResp);
         Facade.GetSingleton<Dispatcher>().AddListener("AvatarBaseInfoNotice", (System.Action<AvatarBaseInfoNotice>)OnAvatarBaseInfoNotice);
         Facade.GetSingleton<Dispatcher>().AddListener("PingPongResp", (System.Action<PingPongResp>)OnPingPongResp);
-        Facade.GetSingleton<Dispatcher>().AddListener("OnChangeAvatarModel", (System.Action)OnChangeAvatarModel);
-        Facade.GetSingleton<Dispatcher>().AddListener("ChangeModeIDResp", (System.Action<ChangeModeIDResp>)OnChangeModeIDResp);
-        Facade.GetSingleton<Dispatcher>().AddListener("SceneClientPulse", (System.Action<SceneClientPulse>)OnSceneClientPulse);
         Facade.GetSingleton<Dispatcher>().AddListener("ClientPulse", (System.Action<ClientPulse>)OnClientPulse);
 
+		Facade.GetSingleton<Dispatcher>().AddListener("SceneClientPulse", (System.Action<SceneClientPulse>)OnSceneClientPulse);
 
         Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupInfoNotice", (System.Action<SceneGroupInfoNotice>)OnSceneGroupInfoNotice);
         Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupGetResp", (System.Action<SceneGroupGetResp>)OnSceneGroupGetResp);
@@ -53,23 +49,13 @@ public class ServerProxy : MonoBehaviour
         Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupCreateResp", (System.Action<SceneGroupCreateResp>)OnSceneGroupCreateResp);
         Facade.GetSingleton<Dispatcher>().AddListener("SceneGroupLeaveResp", (System.Action<SceneGroupLeaveResp>)OnSceneGroupLeaveResp);
 
-        Facade.GetSingleton<Dispatcher>().AddListener("SceneSectionNotice", (System.Action<SceneSectionNotice>)OnSceneSectionNotice);
-        Facade.GetSingleton<Dispatcher>().AddListener("SceneRefreshNotice", (System.Action<SceneRefreshNotice>)OnSceneRefreshNotice);
-        Facade.GetSingleton<Dispatcher>().AddListener("AddEntityNotice", (System.Action<AddEntityNotice>)OnAddEntityNotice);
-        Facade.GetSingleton<Dispatcher>().AddListener("RemoveEntityNotice", (System.Action<RemoveEntityNotice>)OnRemoveEntityNotice);
-        Facade.GetSingleton<Dispatcher>().AddListener("MoveNotice", (System.Action<MoveNotice>)OnMoveNotice);
-        Facade.GetSingleton<Dispatcher>().AddListener("AddBuffNotice", (System.Action<AddBuffNotice>)OnAddBuffNotice);
-        Facade.GetSingleton<Dispatcher>().AddListener("RemoveBuffNotice", (System.Action<RemoveBuffNotice>)OnRemoveBuffNotice);
-        Facade.GetSingleton<Dispatcher>().AddListener("UseSkillNotice", (System.Action<UseSkillNotice>)OnUseSkillNotice);
-        Facade.GetSingleton<Dispatcher>().AddListener("MoveResp", (System.Action<MoveResp>)OnMoveResp);
-        Facade.GetSingleton<Dispatcher>().AddListener("UseSkillResp", (System.Action<UseSkillResp>)OnUseSkillResp);
+
         Facade.GetSingleton<Dispatcher>().AddListener("AttachSceneResp", (System.Action<AttachSceneResp>)OnAttachSceneResp);
 
         Facade.GetSingleton<Dispatcher>().AddListener("OnArenaScene", (System.Action)OnArenaScene);
         Facade.GetSingleton<Dispatcher>().AddListener("OnHomeScene", (System.Action)OnHomeScene);
         Facade.GetSingleton<Dispatcher>().AddListener("OnExitScene", (System.Action)OnExitScene);
 
-        Facade.GetSingleton<Dispatcher>().AddListener("ClientPingTestResp", (System.Action<ClientPingTestResp>)OnClientPingTestResp);
 
 
 
@@ -191,12 +177,7 @@ public class ServerProxy : MonoBehaviour
             && Facade._groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_ACTIVE
             && notice.groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_NONE)
         {
-            GameObject.Destroy(_scene.gameObject);
-            _scene = null;
-            Facade._gameScene.CleanEntity();
-            Facade._mainUI._skillPanel.gameObject.SetActive(false);
-            Facade._mainUI._touchPanel.gameObject.SetActive(false);
-            Facade._mainUI.SetActiveBG(true);
+			Facade._gameScene.DestroyCurrentScene ();
             if (_sceneSession != null)
             {
                 _sceneSession.Close();
@@ -295,14 +276,6 @@ public class ServerProxy : MonoBehaviour
         Invoke("PingPongSend", 5.0f);
     }
 
-    void OnChangeModeIDResp(ChangeModeIDResp resp)
-    {
-        Debug.logger.Log("ServerProxy::OnChangeModeIDResp ret=" + resp.retCode + ", newModelID= " + resp.modeID );
-    }
-    void OnChangeAvatarModel()
-    {
-        _client.Send(new ChangeModeIDReq(Facade._avatarInfo.modeID%45+1));
-    }
 
     void OnSceneClientPulse(SceneClientPulse resp)
     {
@@ -316,122 +289,10 @@ public class ServerProxy : MonoBehaviour
         _client.Send(new PingPongReq("curtime=" + Time.realtimeSinceStartup));
     }
 
-
-
-    void OnSceneSectionNotice(SceneSectionNotice notice)
-    {
-        Debug.Log(notice);
-        if (_scene != null)
-        {
-            GameObject.Destroy(_scene.gameObject);
-        }
-        _sceneEndTime = Time.realtimeSinceStartup + (float)notice.section.sceneEndTime - (float)notice.section.serverTime;
-        var scene = Resources.Load<GameObject>("Scene/Home");
-        if (scene != null)
-        {
-            Debug.Log("create scene");
-            _scene = Instantiate(scene).transform;
-            _scene.gameObject.SetActive(true);
-            Facade._mainUI.SetActiveBG(false);
-            Facade._mainUI._touchPanel.gameObject.SetActive(true);
-            Facade._mainUI._skillPanel.gameObject.SetActive(true);
-        }
-        else
-        {
-            Debug.LogError("can't Instantiate [Prefabs/Guis/SelectScene/SelectScene].");
-        }
-    }
-    void OnSceneRefreshNotice(SceneRefreshNotice notice)
-    {
-//        Debug.Log(notice);
-        Facade._gameScene.RefreshEntityInfo(notice.entityInfos);
-        Facade._gameScene.RefreshEntityMove(notice.entityMoves);
-    }
-    void OnAddEntityNotice(AddEntityNotice notice)
-    {
-        Debug.Log(notice);
-        foreach (var entity in notice.entitys)
-        {
-            Facade._gameScene.CreateEntity(entity);
-        }
-    }
-    void OnRemoveEntityNotice(RemoveEntityNotice notice)
-    {
-        Debug.Log(notice);
-    }
-    void OnMoveNotice(MoveNotice notice)
-    {
-        if (Facade._entityID != 0 && Facade._entityID == notice.moveInfo.eid)
-        {
-            if (notice.moveInfo.action != (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
-            {
-				/*
-                var entity = Facade._gameScene.GetEntity(Facade._entityID);
-                EntityFullData data = entity._info;
-                var binData = data.__encode().ToArray();
-                data = new EntityFullData();
-                int len = 0;
-                data.__decode(binData, ref len);
-
-                var oldPos = data.entityMove.pos;
-                data.baseInfo.avatarID = (ulong)Math.Pow(7,50);
-                data.baseInfo.avatarName = "快来这里呀";
-                data.entityInfo.eid = (ulong)Math.Pow(7, 50);
-                data.entityInfo.etype = (ushort)Proto4z.EntityType.ENTITY_FLIGHT;
-                data.entityMove.pos = notice.moveInfo.waypoints[0];
-                data.entityMove.waypoints.Clear();
-                data.entityMove.action = 0;
-                Facade._gameScene.CreateEntity(data);
-                var newEntity = Facade._gameScene.GetEntity(data.entityInfo.eid).gameObject;
-                newEntity.transform.rotation = entity.transform.rotation;
-                newEntity.transform.position = new Vector3((float)data.entityMove.pos.x, newEntity.transform.position.y, (float)data.entityMove.pos.y);
-  				*/
-
-            }
-            else
-            {
-                Facade._gameScene.DestroyEntity((ulong)Math.Pow(7, 50));
-            }
-
-        }
-
-        if (notice.moveInfo.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
-        {
-            UnityEngine.Debug.Log("[" + DateTime.Now + "]eid=" + notice.moveInfo.eid
-                    + ", action=" + notice.moveInfo.action + ", posx=" + notice.moveInfo.pos.x
-                    + ", posy=" + notice.moveInfo.pos.y);
-
-        }
-
-    }
-    void OnAddBuffNotice(AddBuffNotice notice)
-    {
-        Debug.Log(notice);
-    }
-    void OnRemoveBuffNotice(RemoveBuffNotice notice)
-    {
-        Debug.Log(notice);
-    }
-    void OnUseSkillNotice(UseSkillNotice notice)
-    {
-        Debug.Log(notice);
-    }
-    void OnMoveResp(MoveResp resp)
-    {
-        Debug.Log(resp);
-    }
-    void OnUseSkillResp(UseSkillResp resp)
-    {
-        Debug.Log(resp);
-    }
-    void OnAttachSceneResp(AttachSceneResp resp)
-    {
-        Debug.Log(resp);
-    }
-    void OnClientPingTestResp(ClientPingTestResp resp)
-    {
-        _clientPingValue = Time.realtimeSinceStartup - (float)resp.clientTime;
-    }
+	void OnAttachSceneResp(AttachSceneResp resp)
+	{
+		Debug.Log(resp);
+	}
 
 
     void OnGUI()
@@ -443,6 +304,40 @@ public class ServerProxy : MonoBehaviour
         st.fontSize = (int)(Screen.height * GameOption._fontSizeScreeHeightRate);
         Vector2 nameSize;
         Vector2 position = new Vector2(st.fontSize, st.fontSize);
+
+		name = "屏幕大小:" + Screen.width + "*" + Screen.height;
+		nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
+		GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+
+		name = "系统日期:" + System.DateTime.Now;
+		nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
+		position.y += nameSize.y;
+		GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+
+		name = "FPS:" + _lastFPS;
+		nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
+		position.y += nameSize.y;
+		GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+
+		if (Facade._avatarInfo != null) 
+		{
+			var modelID = Facade._avatarInfo.modeID;
+			name = "角色模型[" + modelID +"]:" + Facade.GetSingleton<ModelDict>().GetModelName(modelID);
+			nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
+			position.y += nameSize.y;
+			GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+		}
+
+		if (Facade._avatarInfo != null && Facade._entityID != 0) 
+		{
+			var modelID = Facade._gameScene.GetEntity (Facade._entityID)._info.baseInfo.modeID;
+			name = "当前模型[" + modelID +"]:" + Facade.GetSingleton<ModelDict>().GetModelName(modelID);
+			nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
+			position.y += nameSize.y;
+			GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+		}
+
+
 
         if (Facade._groupInfo == null)
         {
@@ -461,32 +356,18 @@ public class ServerProxy : MonoBehaviour
             name = "当前位置:战场";
         }
         nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-        GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
-
-        name = "屏幕大小:" + Screen.width + "*" + Screen.height;
-        nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-        position.y += nameSize.y;
-        GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
-
-        name = "当前时间:" + System.DateTime.Now;
-        nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-        position.y += nameSize.y;
-        GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
-
-        name = "FPS:" + _lastFPS;
-        nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-        position.y += nameSize.y;
+		position.y += nameSize.y;
         GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
 
 
-        if (_scene != null)
+		if (Facade._entityID != 0)
         {
             name = "Ping:" + _clientPingValue;
             nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
             position.y += nameSize.y;
             GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
 
-            name = "场景过期:" + ((int)_sceneEndTime - Time.realtimeSinceStartup) + "秒" ;
+			name = "场景过期:" + Facade._gameScene.GetSceneCountdown() + "秒" ;
             nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
             position.y += nameSize.y;
             GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
@@ -496,6 +377,13 @@ public class ServerProxy : MonoBehaviour
         position.y += nameSize.y;
         GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
     }
+
+	void OnClientPingTestResp(ClientPingTestResp resp)
+	{
+		_clientPingValue = Time.realtimeSinceStartup - (float)resp.clientTime;
+	}
+
+
     // Update is called once per frame
     void Update()
     {
@@ -506,11 +394,7 @@ public class ServerProxy : MonoBehaviour
             _frameCount = 0;
             _lastFPSTime = Time.realtimeSinceStartup;
         }
-        if (_sceneSession != null && Time.realtimeSinceStartup - _clientLastPing > 5.0f)
-        {
-            _clientLastPing = Time.realtimeSinceStartup;
-            _sceneSession.Send(new Proto4z.ClientPingTestReq(0, _clientLastPing));
-        }
+
         if (_client != null)
         {
             _client.Update();

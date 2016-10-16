@@ -31,8 +31,6 @@ public class MainUI: MonoBehaviour
         _loginUI = LoadUI("LoginUI", "Guis/LoginUI/LoginUI");
 
         _skillPanel = LoadUI("SkillPanel", "Guis/SkillPanel/SkillPanel");
-        _skillPanel.Find("ChangeModel").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnChangeAvatarModel", null); });
         _skillPanel.Find("Attack").GetComponent<Button>().onClick.AddListener(
             delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnAvatarAttack", null); });
 
@@ -43,6 +41,8 @@ public class MainUI: MonoBehaviour
             delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnHomeScene", null); });
         _selectScenePanel.Find("ArenaScene").GetComponent<Button>().onClick.AddListener(
             delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnArenaScene", null); });
+		_selectScenePanel.Find("ChangeModel").GetComponent<Button>().onClick.AddListener(
+			delegate () { Facade.GetSingleton<Dispatcher>().TriggerEvent("OnChangeAvatarModel", null); });
 
         _touchPanel = LoadUI("TouchPanel", "Guis/TouchPanel/TouchPanel");
     }
