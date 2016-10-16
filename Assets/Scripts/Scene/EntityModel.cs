@@ -49,6 +49,10 @@ public class EntityModel : MonoBehaviour
     }
     void OnGUI()
     {
+		if (_info == null) 
+		{
+			return;
+		}
         Vector3 worldPosition = new Vector3 (transform.position.x , transform.position.y + _modelHeight, transform.position.z);
         Vector2 position = Camera.main.WorldToScreenPoint (worldPosition);
         position = new Vector2 (position.x, Screen.height - position.y);
