@@ -15,7 +15,7 @@ public class SceneManager : MonoBehaviour
     GameObject _rcsHomeScene = null;
 
 
-	void Awake()
+    void Awake()
 	{
 		Facade._dispatcher.AddListener("OnChangeAvatarModel", (System.Action)OnChangeAvatarModel);
 		Facade._dispatcher.AddListener("ChangeModeIDResp", (System.Action<ChangeModeIDResp>)OnChangeModeIDResp);
@@ -252,6 +252,14 @@ public class SceneManager : MonoBehaviour
             }
             rcsScene = _rcsHomeScene;
         }
+        else if (notice.section.sceneType == (ushort)SceneType.SCENE_ARENA)
+        {
+            if (_rcsHomeScene == null)
+            {
+                _rcsHomeScene = Resources.Load<GameObject>("Scene/Home");
+            }
+            rcsScene = _rcsHomeScene;
+        }
         if (rcsScene == null)
         {
             Debug.LogError("can not local scene. ");
@@ -347,13 +355,13 @@ public class SceneManager : MonoBehaviour
 	}
 	void OnMoveResp(MoveResp resp)
 	{
-		Debug.Log(resp);
+		
 	}
 
 
 	void OnUseSkillResp(UseSkillResp resp)
 	{
-		Debug.Log(resp);
+		
 	}	
 
 	void OnAvatarAttack()

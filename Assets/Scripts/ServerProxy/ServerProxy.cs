@@ -257,6 +257,26 @@ public class ServerProxy : MonoBehaviour
     }
     void OnArenaScene()
     {
+        if (Facade._groupInfo == null)
+        {
+            return;
+        }
+        if (Facade._groupInfo.sceneState != (ushort)SceneState.SCENE_STATE_NONE && Facade._groupInfo.sceneType != (ushort)SceneType.SCENE_ARENA)
+        {
+            return;
+        }
+        if (Facade._groupInfo.groupID == 0)
+        {
+            return;
+        }
+        if (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_ACTIVE)
+        {
+            CreateSceneSession(Facade._avatarInfo.avatarID, Facade._groupInfo);
+        }
+        else
+        {
+            _gameClient.Send(new Proto4z.SceneGroupEnterReq((ushort)SceneType.SCENE_ARENA, 0));
+        }
     }
 
     void OnAvatarBaseInfoNotice(AvatarBaseInfoNotice resp)
@@ -269,7 +289,6 @@ public class ServerProxy : MonoBehaviour
     }
     void OnPingPongResp(PingPongResp resp)
     {
-        //Debug.logger.Log("ServerProxy::PingPongResp " + resp.msg);
         Invoke("PingPongSend", 5.0f);
     }
 
