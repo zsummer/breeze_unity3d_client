@@ -66,6 +66,7 @@ public class GameScene : MonoBehaviour
 			Facade._mainUI._skillPanel.gameObject.SetActive(false);
 			Facade._mainUI._touchPanel.gameObject.SetActive(false);
 			Facade._mainUI.SetActiveBG(true);
+            Facade._mainUI._selectScenePanel.GetComponent<AudioSource>().Play(0);
 		}
 
 	}
