@@ -73,7 +73,7 @@ public class EntityModel : MonoBehaviour
         }
         GUI.Label(new Rect(position.x - (nameSize.x/2),position.y - nameSize.y, nameSize.x,nameSize.y), _info.baseInfo.avatarName, st);
     }
-    void FixedUpdate()
+    void Update()
     {
         //check main player 
         if (Facade._entityID != 0 && (_mainPlayer == null || _mainPlayer._info.entityInfo.eid != Facade._entityID ))
@@ -110,9 +110,9 @@ public class EntityModel : MonoBehaviour
             return;
         }
         //fix speed. 0.1 is server frame interval 
-        var curStep = nextDist / GameOption._ServerFrameInterval * Time.fixedDeltaTime;
+        var curStep = nextDist / GameOption._ServerFrameInterval * Time.deltaTime;
         curStep = (curStep + _lastStep + _lastLastStep) / 3.0f;
-        var expectStep = (float)_info.entityMove.speed * Time.fixedDeltaTime;
+        var expectStep = (float)_info.entityMove.speed * Time.deltaTime;
         if (curStep < expectStep *0.8f)
         {
             curStep = expectStep * 0.8f;
@@ -156,9 +156,5 @@ public class EntityModel : MonoBehaviour
  //       Debug.Log("local x=" + transform.position.x + ", z=" + transform.position.z + ", nextPos x=" + nextPos.x + ", z=" + nextPos.z + ", mdist=" + curStep + ", nextDist=" + nextDist);
         transform.position += dir * (curStep / nextDist);
     }
-	// Update is called once per frame
-	void Update ()
-    {
-		
-	}
+
 }

@@ -33,6 +33,19 @@ public  class Dispatcher : MonoBehaviour
     }
     public void TriggerEvent(string method, object[] args)
     {
+        if (false)
+        {
+            string info = "Dispatcher::TriggerEvent call [" + method + "](";
+            if (args != null)
+            {
+                foreach (var arg in args)
+                {
+                    info += arg + ",";
+                }
+            }
+            info += ").";
+            Debug.Log(info);
+        }
         try
         {
             Delegate dlg;

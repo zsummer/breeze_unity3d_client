@@ -27,7 +27,7 @@ public class SceneCamera : MonoBehaviour
         {
             return;
         }
-        if (true)
+        if (false)
         {
             transform.position = Vector3.Lerp(transform.position, _target.transform.position - Vector3.forward * 30.0f + Vector3.up * 30.0f, Time.deltaTime * 3.0f);
             transform.LookAt(_target.transform.position);

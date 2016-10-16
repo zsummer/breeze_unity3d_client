@@ -237,7 +237,7 @@ class Session
     public void OnRecv(ushort protoID, byte[] bin)
     {
         string protoName = Proto4z.Reflection.getProtoName(protoID);
-        Debug.logger.Log("recv one pack len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
+        Debug.logger.Log("recv pack len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
         _lastRecvTime = Time.realtimeSinceStartup;
         try
         {

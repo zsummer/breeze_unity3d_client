@@ -171,7 +171,6 @@ public class ServerProxy : MonoBehaviour
     }
     void OnSceneGroupInfoNotice(SceneGroupInfoNotice notice)
     {
-        Debug.Log(notice);
         if (Facade._groupInfo != null
             && Facade._groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_ACTIVE
             && notice.groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_NONE)
@@ -201,23 +200,22 @@ public class ServerProxy : MonoBehaviour
 
     void OnSceneGroupGetResp(SceneGroupGetResp resp)
     {
-        Debug.Log(resp);
     }
     void OnSceneGroupEnterResp(SceneGroupEnterResp resp)
     {
-        Debug.Log(resp);
+        
     }
     void OnSceneGroupCancelResp(SceneGroupCancelResp resp)
     {
-        Debug.Log(resp);
+        
     }
     void OnSceneGroupCreateResp(SceneGroupCreateResp resp)
     {
-        Debug.Log(resp);
+        
     }
     void OnSceneGroupLeaveResp(SceneGroupLeaveResp resp)
     {
-        Debug.Log(resp);
+        
     }
 
     void OnExitScene()
@@ -290,7 +288,7 @@ public class ServerProxy : MonoBehaviour
 
 	void OnAttachSceneResp(AttachSceneResp resp)
 	{
-		Debug.Log(resp);
+		
 	}
 
 
