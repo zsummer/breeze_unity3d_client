@@ -416,7 +416,7 @@ public class ServerProxy : MonoBehaviour
 			if (Time.realtimeSinceStartup - _clientLastPing > 5.0f) 
 			{
 				_clientLastPing = Time.realtimeSinceStartup;
-				_sceneSession.Send (new Proto4z.ClientPingTestReq ());
+				_sceneSession.Send (new Proto4z.ClientPingTestReq (0, Time.realtimeSinceStartup));
 			}
         }
         if (_busyTips != null)
