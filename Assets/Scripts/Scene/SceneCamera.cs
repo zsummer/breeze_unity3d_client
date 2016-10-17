@@ -42,8 +42,8 @@ public class SceneCamera : MonoBehaviour
         }
         else
         {
-            curTarget.x = (float)_target._info.entityMove.pos.x;
-            curTarget.z = (float)_target._info.entityMove.pos.y;
+            curTarget.x = (float)_target._info.entityMove.position.x;
+            curTarget.z = (float)_target._info.entityMove.position.y;
         }
         if (Vector3.Distance(curTarget, _follow) < 1.0 && Vector3.Distance(_follow, transform.position) < 1.0)
         {
@@ -51,8 +51,8 @@ public class SceneCamera : MonoBehaviour
         }
         if (Vector3.Distance(curTarget, _follow) > 1.0)
         {
-            curTarget.x = (float)_target._info.entityMove.pos.x;
-            curTarget.z = (float)_target._info.entityMove.pos.y;
+            curTarget.x = (float)_target._info.entityMove.position.x;
+            curTarget.z = (float)_target._info.entityMove.position.y;
 
             Vector3 curLerp = curTarget - _follow;
             curLerp = curLerp / GameOption._ServerFrameInterval * Time.deltaTime;

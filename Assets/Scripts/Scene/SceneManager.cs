@@ -159,7 +159,7 @@ public class SceneManager : MonoBehaviour
     {
         EntityModel oldEnity = GetEntity(data.entityInfo.eid);
         
-        Vector3 spawnpoint = new Vector3((float)data.entityMove.pos.x, -13.198f, (float)data.entityMove.pos.y);
+        Vector3 spawnpoint = new Vector3((float)data.entityMove.position.x, -13.198f, (float)data.entityMove.position.y);
         Quaternion quat = new Quaternion();
         if (oldEnity != null && oldEnity != null)
         {
@@ -330,8 +330,8 @@ public class SceneManager : MonoBehaviour
 		if (notice.moveInfo.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
 		{
 			UnityEngine.Debug.Log("[" + DateTime.Now + "]eid=" + notice.moveInfo.eid
-				+ ", action=" + notice.moveInfo.action + ", posx=" + notice.moveInfo.pos.x
-				+ ", posy=" + notice.moveInfo.pos.y);
+				+ ", action=" + notice.moveInfo.action + ", posx=" + notice.moveInfo.position.x
+				+ ", posy=" + notice.moveInfo.position.y);
 
 		}
 

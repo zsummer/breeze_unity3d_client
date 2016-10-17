@@ -38,9 +38,8 @@ public class TouchPanel : MonoBehaviour
             var req = new MoveReq();
             req.eid = Facade._entityID;
             req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE;
-            req.clientPos = new Proto4z.EPoint(_control.transform.position.x, _control.transform.position.z);
-            req.dstPos.x = _control.transform.position.x;
-            req.dstPos.y = _control.transform.position.z;
+            req.clientPos = new Proto4z.EPosition(_control.transform.position.x, _control.transform.position.z);
+			req.waypoints.Add (new EPosition (_control.transform.position.x, _control.transform.position.z));
             Facade.GetSingleton<ServerProxy>().SendToScene(req);
             Debug.Log("client stop move EndStrick");
         }
@@ -85,9 +84,8 @@ public class TouchPanel : MonoBehaviour
         var req = new MoveReq();
         req.eid = Facade._entityID;
         req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH;
-        req.clientPos = new Proto4z.EPoint(_control.transform.position.x, _control.transform.position.z);
-        req.dstPos.x += dst.x;
-        req.dstPos.y += dst.z;
+        req.clientPos = new Proto4z.EPosition(_control.transform.position.x, _control.transform.position.z);
+		req.waypoints.Add (new EPosition (dst.x, dst.z));
         Facade.GetSingleton<ServerProxy>().SendToScene(req);
     }
 
@@ -161,9 +159,8 @@ public class TouchPanel : MonoBehaviour
                     var req = new MoveReq();
                     req.eid = Facade._entityID;
                     req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH;
-                    req.clientPos = new Proto4z.EPoint(_control.transform.position.x, _control.transform.position.z);
-                    req.dstPos.x = hit3D.point.x;
-                    req.dstPos.y = hit3D.point.z;
+                    req.clientPos = new Proto4z.EPosition(_control.transform.position.x, _control.transform.position.z);
+					req.waypoints.Add (new EPosition (hit3D.point.x, hit3D.point.z));
                     Facade.GetSingleton<ServerProxy>().SendToScene(req);
                 }
             }

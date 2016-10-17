@@ -88,7 +88,7 @@ public class EntityModel : MonoBehaviour
             _anim.CrossFade(_free.name, 0.2f);
 		}
 
-        var nextPos = new Vector3((float)_info.entityMove.pos.x, transform.position.y, (float)_info.entityMove.pos.y);
+        var nextPos = new Vector3((float)_info.entityMove.position.x, transform.position.y, (float)_info.entityMove.position.y);
         var endPos = nextPos;
         if (_info.entityMove.action != (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
         {
@@ -110,17 +110,12 @@ public class EntityModel : MonoBehaviour
             return;
         }
         //fix speed. 0.1 is server frame interval 
-        var curStep = nextDist / GameOption._ServerFrameInterval * Time.deltaTime;
+		var curStep = (float)_info.entityMove.realSpeed * Time.deltaTime;
         curStep = (curStep + _lastStep + _lastLastStep) / 3.0f;
-        var expectStep = (float)_info.entityMove.speed * Time.deltaTime;
-        if (curStep < expectStep *0.8f)
-        {
-            curStep = expectStep * 0.8f;
-        }
-        else if (curStep > expectStep * 1.2f)
-        {
-            curStep = expectStep * 1.2f;
-        }
+		if (curStep > nextDist )
+		{
+			curStep = nextDist;
+		}
         _lastLastStep = _lastStep;
         _lastStep = curStep;
 
