@@ -338,7 +338,7 @@ public class ServerProxy : MonoBehaviour
 		if (Facade._avatarInfo != null) 
 		{
 			var modelID = Facade._avatarInfo.modeID;
-			name = "角色模型[" + modelID +"]:" + Facade.GetSingleton<ModelDict>().GetModelName(modelID);
+			name = "角色模型[" + modelID +"]:" + Facade._modelDict.GetModelName(modelID);
 			nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
 			position.y += nameSize.y;
 			GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
@@ -347,7 +347,7 @@ public class ServerProxy : MonoBehaviour
 		if (Facade._avatarInfo != null && Facade._entityID != 0) 
 		{
 			var modelID = Facade._sceneManager.GetEntity (Facade._entityID)._info.baseInfo.modeID;
-			name = "当前模型[" + modelID +"]:" + Facade.GetSingleton<ModelDict>().GetModelName(modelID);
+			name = "当前模型[" + modelID +"]:" + Facade._modelDict.GetModelName(modelID);
 			nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
 			position.y += nameSize.y;
 			GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);

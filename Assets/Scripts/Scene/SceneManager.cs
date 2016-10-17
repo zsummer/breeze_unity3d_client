@@ -78,7 +78,7 @@ public class SceneManager : MonoBehaviour
             var entity = GetEntity(mv.eid);
             if (entity != null)
             {
-                entity._info.entityMove = mv;
+                entity.RefreshMoveInfo(mv);
             }
         }
     }
@@ -167,7 +167,7 @@ public class SceneManager : MonoBehaviour
             quat = oldEnity.gameObject.transform.rotation;
         }
 
-        string name = Facade.GetSingleton<ModelDict>().GetModelName(data.baseInfo.modeID);
+        string name = Facade._modelDict.GetModelName(data.baseInfo.modeID);
         if (name == null)
         {
             name = "jing_ling_nv_001_ty";
@@ -231,7 +231,7 @@ public class SceneManager : MonoBehaviour
 	}
 	void OnChangeAvatarModel()
 	{
-		Facade.GetSingleton<ServerProxy>().SendToGame(new ChangeModeIDReq(Facade._avatarInfo.modeID%45+1));
+		Facade._serverProxy.SendToGame(new ChangeModeIDReq(Facade._avatarInfo.modeID%45+1));
 	}
 
 	void OnSceneSectionNotice(SceneSectionNotice notice)
@@ -275,7 +275,6 @@ public class SceneManager : MonoBehaviour
     }
 	void OnSceneRefreshNotice(SceneRefreshNotice notice)
 	{
-		//        Debug.Log(notice);
 		Facade._sceneManager.RefreshEntityInfo(notice.entityInfos);
 		Facade._sceneManager.RefreshEntityMove(notice.entityMoves);
 	}
@@ -293,49 +292,10 @@ public class SceneManager : MonoBehaviour
 	}
 	void OnMoveNotice(MoveNotice notice)
 	{
-		if (Facade._entityID != 0 && Facade._entityID == notice.moveInfo.eid)
-		{
-			if (notice.moveInfo.action != (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
-			{
-				/*
-                var entity = Facade._sceneManager.GetEntity(Facade._entityID);
-                EntityFullData data = entity._info;
-                var binData = data.__encode().ToArray();
-                data = new EntityFullData();
-                int len = 0;
-                data.__decode(binData, ref len);
-
-                var oldPos = data.entityMove.pos;
-                data.baseInfo.avatarID = (ulong)Math.Pow(7,50);
-                data.baseInfo.avatarName = "快来这里呀";
-                data.entityInfo.eid = (ulong)Math.Pow(7, 50);
-                data.entityInfo.etype = (ushort)Proto4z.EntityType.ENTITY_FLIGHT;
-                data.entityMove.pos = notice.moveInfo.waypoints[0];
-                data.entityMove.waypoints.Clear();
-                data.entityMove.action = 0;
-                Facade._sceneManager.CreateEntity(data);
-                var newEntity = Facade._sceneManager.GetEntity(data.entityInfo.eid).gameObject;
-                newEntity.transform.rotation = entity.transform.rotation;
-                newEntity.transform.position = new Vector3((float)data.entityMove.pos.x, newEntity.transform.position.y, (float)data.entityMove.pos.y);
-  				*/
-
-			}
-			else
-			{
-				DestroyEntity((ulong)Math.Pow(7, 50));
-			}
-
-		}
-
-		if (notice.moveInfo.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
-		{
-			UnityEngine.Debug.Log("[" + DateTime.Now + "]eid=" + notice.moveInfo.eid
-				+ ", action=" + notice.moveInfo.action + ", posx=" + notice.moveInfo.position.x
-				+ ", posy=" + notice.moveInfo.position.y);
-
-		}
-
-	}
+        UnityEngine.Debug.Log("MoveNotice[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "]eid=" + notice.moveInfo.eid
+            + ", action=" + notice.moveInfo.action + ", posx=" + notice.moveInfo.position.x
+            + ", posy=" + notice.moveInfo.position.y);
+    }
 	void OnAddBuffNotice(AddBuffNotice notice)
 	{
 		Debug.Log(notice);
@@ -366,7 +326,7 @@ public class SceneManager : MonoBehaviour
 
 	void OnAvatarAttack()
 	{
-		Facade.GetSingleton<ServerProxy> ().SendToScene (new UseSkillReq (Facade._entityID));
+		Facade._serverProxy.SendToScene (new UseSkillReq (Facade._entityID));
 	}
 
 }

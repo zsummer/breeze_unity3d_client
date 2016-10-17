@@ -40,7 +40,7 @@ public class TouchPanel : MonoBehaviour
             req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE;
             req.clientPos = new Proto4z.EPosition(_control.transform.position.x, _control.transform.position.z);
 			req.waypoints.Add (new EPosition (_control.transform.position.x, _control.transform.position.z));
-            Facade.GetSingleton<ServerProxy>().SendToScene(req);
+            Facade._serverProxy.SendToScene(req);
             Debug.Log("client stop move EndStrick");
         }
     }
@@ -80,13 +80,17 @@ public class TouchPanel : MonoBehaviour
 
         Vector3 dst = _control.transform.position + _lastDirt;
         _lastSendMove = Time.realtimeSinceStartup;
+
         Debug.Log("Send Move");
         var req = new MoveReq();
         req.eid = Facade._entityID;
         req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH;
         req.clientPos = new Proto4z.EPosition(_control.transform.position.x, _control.transform.position.z);
 		req.waypoints.Add (new EPosition (dst.x, dst.z));
-        Facade.GetSingleton<ServerProxy>().SendToScene(req);
+        Facade._serverProxy.SendToScene(req);
+
+        Debug.Log("used time=" + (Time.realtimeSinceStartup - _lastSendMove));
+        
     }
 
     // Update is called once per frame
@@ -131,13 +135,13 @@ public class TouchPanel : MonoBehaviour
                 req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH;
                 req.dstPos.x += h * 10;
                 req.dstPos.y += v * 10;
-                Facade.GetSingleton<ServerProxy>().SendToScene(req);
+                Facade._serverProxy.SendToScene(req);
             }
             else if (_isHandle && _control._info.entityMove.action != (ushort) Proto4z.MoveAction.MOVE_ACTION_IDLE)
             {
                 _isHandle = false;
                 req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE;
-                Facade.GetSingleton<ServerProxy>().SendToScene(req);
+                Facade._serverProxy.SendToScene(req);
             }
         }
         */
@@ -148,23 +152,25 @@ public class TouchPanel : MonoBehaviour
             {
                 BeginStrick(Input.mousePosition);
             }
-			else if(GameOption._EnbaleClickMove && !_event.IsPointerOverGameObject())
+			else if(!_event.IsPointerOverGameObject())
             {
+#if UNITY_EDITOR 
+
                 Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit3D = new RaycastHit();
                 Physics.Raycast(ray, out hit3D, 100);
                 if (hit3D.transform != null && hit3D.transform.name == "Terrain")
-                //if (hit3D.transform != null )
                 {
                     var req = new MoveReq();
                     req.eid = Facade._entityID;
                     req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH;
                     req.clientPos = new Proto4z.EPosition(_control.transform.position.x, _control.transform.position.z);
 					req.waypoints.Add (new EPosition (hit3D.point.x, hit3D.point.z));
-                    Facade.GetSingleton<ServerProxy>().SendToScene(req);
+                    Facade._serverProxy.SendToScene(req);
                 }
+#endif
             }
-            
+
         }
         if (Input.GetMouseButtonUp(0))
         {

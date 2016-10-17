@@ -73,11 +73,11 @@ public class LoginUI : MonoBehaviour {
             PlayerPrefs.SetString("passwd", _passwdInput.text);
             if (_devTonggle.isOn)
             {
-                Facade.GetSingleton<ServerProxy>().Login("localhost", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
+                Facade._serverProxy.Login("localhost", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
             }
             else
             {
-                Facade.GetSingleton<ServerProxy>().Login("120.92.228.245", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
+                Facade._serverProxy.Login("120.92.228.245", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
             }
 
         });
