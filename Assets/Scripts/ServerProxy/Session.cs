@@ -166,6 +166,7 @@ class Session
             _status = SessionStatus.SS_CONNECTING;
             _socket = new Socket(_addr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _socket.Blocking = false;
+            _socket.NoDelay = true;
             _socket.BeginConnect(_addr, _port, new AsyncCallback(OnConnect), _socket);
 
         }
