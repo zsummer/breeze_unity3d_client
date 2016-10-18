@@ -100,7 +100,7 @@ public class EntityModel : MonoBehaviour
             return;
         }
         var old = transform.position; 
-        transform.position = Vector3.Lerp(_startMovePosition, serverPosition, (Time.realtimeSinceStartup - _startMoveTime)/_lastFrameTime * 0.6f );
+        transform.position = Vector3.Lerp(_startMovePosition, serverPosition, (Time.realtimeSinceStartup - _startMoveTime)/_lastFrameTime);
 
         /*
         Debug.LogWarning("move[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "]eid=" + _info.entityMove.eid
