@@ -20,9 +20,13 @@ public class EntityModel : MonoBehaviour
     private Animation _anim;
 
 
-    private float _lastLastSpeed = 0.0f;
-    private float _lastSpeed = 0.0f;
-    private Vector3 _moveDir;
+
+
+    private float _startMoveTime = 0;
+    private float _lastFrameTime = 0;
+    private Vector3 _startMovePosition;
+
+
 
     private EntityModel _mainPlayer;
 
@@ -34,13 +38,16 @@ public class EntityModel : MonoBehaviour
         _attack = _anim["attack"];
         _free.wrapMode = WrapMode.Loop;
         _runned.wrapMode = WrapMode.Loop;
-        _moveDir = new Vector3(0, 0, 0);
+        _lastFrameTime = GameOption._ServerFrameInterval;
+        _startMoveTime = Time.realtimeSinceStartup;
+        _startMovePosition = transform.position;
+
     }
     public void RefreshMoveInfo(Proto4z.EntityMove mv)
     {
-        _moveDir = new Vector3((float)mv.position.x, transform.position.y, (float)mv.position.y)
-            - new Vector3((float)_info.entityMove.position.x, transform.position.y, (float)_info.entityMove.position.y);
-
+        _startMovePosition = transform.position;
+        _lastFrameTime = Time.realtimeSinceStartup - _startMoveTime;
+        _startMoveTime = Time.realtimeSinceStartup;
         _info.entityMove = mv;
     }
     public void CrossAttack()
@@ -92,39 +99,22 @@ public class EntityModel : MonoBehaviour
         {
             return;
         }
+        var old = transform.position; 
+        transform.position = Vector3.Lerp(_startMovePosition, serverPosition, (Time.realtimeSinceStartup - _startMoveTime)/_lastFrameTime * 0.6f );
 
-        var curStep = (_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE ? 7.0f : (float)_info.entityMove.realSpeed) * Time.fixedDeltaTime;
-
-        Vector3 dir = new Vector3((float)_info.entityMove.position.x, transform.position.y, (float)_info.entityMove.position.y) - transform.position;
-        dir += _moveDir;
-        dir = Vector3.Normalize(dir);
-        if (_info.entityMove.action != (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
-        {
-            //dir += Vector3.Normalize(new Vector3((float)_info.entityMove.waypoints[0].x, transform.position.y, (float)_info.entityMove.waypoints[0].y) - transform.position)*0.6f;
-        }
-        dir = Vector3.Normalize(dir);
-
-        var expect = transform.position + dir * curStep * 0.9f;
-        if (Vector3.Distance(expect, serverPosition) >= dist)
-        {
-            transform.position = serverPosition;
-            return;
-        }
-
-        transform.position = expect;
         /*
         Debug.LogWarning("move[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "]eid=" + _info.entityMove.eid
-+ ", action=" + _info.entityMove.action + ", speed=" + _info.entityMove.realSpeed + ",dist=" + dist +", add=" + (dir*curStep).magnitude
-+ ", dir=" + dir.x + ":" + dir.z + ", curStep=" + curStep
-+ ", local=" + transform.position.x + ":" + transform.position.z
++ ", action=" + _info.entityMove.action + ", addtime=" + (Time.realtimeSinceStartup - _startMoveTime) + ", lastframeTime=" + _lastFrameTime
++ ", local=" + old.x + ":" + old.z
++ ", new=" + transform.position.x + ":" + transform.position.z
 + ", remote=" + serverPosition.x + ":" + serverPosition.y);
         */
+
         //Debug.DrawLine(transform.position + transform.up * 0.3f, nextPos + transform.up * 0.3f, Color.red, 1.2f);
         //Debug.DrawLine(transform.position + transform.up * 0.3f, endPos + transform.up * 0.3f, Color.blue, 1.2f);
         //Debug.DrawLine(transform.position + transform.up * 0.3f, transform.forward * 10 + transform.position + transform.up * 0.3f, Color.yellow, 1.2f);
 
-
-
+ 
         if (_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_FOLLOW
             || _info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH)
         {
@@ -136,7 +126,7 @@ public class EntityModel : MonoBehaviour
             {
                 var face = new Vector3((float)_info.entityMove.waypoints[0].x, 0, (float)_info.entityMove.waypoints[0].y) - transform.position;
                 var euler = Vector3.Angle(face, Vector3.forward);
-                if (dir.x < 0f)
+                if (face.x < 0f)
                 {
                     euler = 360f - euler;
                 }
