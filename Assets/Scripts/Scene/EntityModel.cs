@@ -23,9 +23,8 @@ public class EntityModel : MonoBehaviour
 
 
     private float _startMoveTime = 0;
-    private float _lastFrameTime = 0;
     private Vector3 _startMovePosition;
-
+    private bool _prediction = false;
 
 
     private EntityModel _mainPlayer;
@@ -38,7 +37,6 @@ public class EntityModel : MonoBehaviour
         _attack = _anim["attack"];
         _free.wrapMode = WrapMode.Loop;
         _runned.wrapMode = WrapMode.Loop;
-        _lastFrameTime = GameOption._ServerFrameInterval;
         _startMoveTime = Time.realtimeSinceStartup;
         _startMovePosition = transform.position;
 
@@ -46,8 +44,29 @@ public class EntityModel : MonoBehaviour
     public void RefreshMoveInfo(Proto4z.EntityMove mv)
     {
         _startMovePosition = transform.position;
-        _lastFrameTime = Time.realtimeSinceStartup - _startMoveTime;
         _startMoveTime = Time.realtimeSinceStartup;
+        _prediction = false;
+        float magnitude = 0;
+        if (mv.waypoints.Count > 0 &&  Math.Abs(mv.realSpeed - mv.expectSpeed) < 1.0f)
+        {
+            var server = new Vector3((float)mv.position.x, 0, (float)mv.position.y);
+            var dst = new Vector3((float)mv.waypoints[0].x, 0, (float)mv.waypoints[0].y);
+            var last = new Vector3((float)_info.entityMove.position.x, 0, (float)_info.entityMove.position.y);
+            server = Vector3.Normalize(server - last);
+            dst = Vector3.Normalize(dst - last);
+            last = server - dst;
+            magnitude = last.magnitude;
+            if (last.magnitude < 0.01)
+            {
+                _prediction = true;
+            }
+        }
+        if (!_prediction)
+        {
+            Debug.LogWarning("move prediction false. last frame magnitude=" + magnitude);
+        }
+
+
         _info.entityMove = mv;
     }
     public void CrossAttack()
@@ -99,8 +118,17 @@ public class EntityModel : MonoBehaviour
         {
             return;
         }
-        var old = transform.position; 
-        transform.position = Vector3.Lerp(_startMovePosition, serverPosition, (Time.realtimeSinceStartup - _startMoveTime)/_lastFrameTime);
+
+        var old = transform.position;
+        if (_prediction &&  (serverPosition - transform.position).magnitude < GameOption._CompensationSpeed)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, serverPosition, (float)_info.entityMove.expectSpeed * Time.fixedDeltaTime);
+        }
+        else
+        {
+            transform.position = Vector3.Lerp(_startMovePosition, serverPosition, (Time.realtimeSinceStartup - _startMoveTime) / GameOption._ServerFrameInterval);
+        }
+
 
         /*
         Debug.LogWarning("move[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "]eid=" + _info.entityMove.eid
@@ -114,7 +142,7 @@ public class EntityModel : MonoBehaviour
         //Debug.DrawLine(transform.position + transform.up * 0.3f, endPos + transform.up * 0.3f, Color.blue, 1.2f);
         //Debug.DrawLine(transform.position + transform.up * 0.3f, transform.forward * 10 + transform.position + transform.up * 0.3f, Color.yellow, 1.2f);
 
- 
+
         if (_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_FOLLOW
             || _info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH)
         {

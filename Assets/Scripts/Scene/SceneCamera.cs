@@ -27,13 +27,7 @@ public class SceneCamera : MonoBehaviour
         {
             return;
         }
-        if (true)
-        {
-            transform.position = Vector3.Lerp(transform.position, _target.position - Vector3.forward * 30.0f + Vector3.up * 40.0f, Time.deltaTime * 3.0f);
-            transform.position = _target.position - Vector3.forward * 30.0f + Vector3.up * 40.0f;
-            transform.LookAt(_target.position);
-            return;
-        }
-        
+        transform.position = _target.position - Vector3.forward * 30.0f + Vector3.up * 40.0f;
+        transform.LookAt(_target.position);
     }
 }
