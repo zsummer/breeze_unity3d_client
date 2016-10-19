@@ -224,12 +224,14 @@ public class ServerProxy : MonoBehaviour
         {
             return;
         }
-        if (Facade._groupInfo.sceneState != (ushort)SceneState.SCENE_STATE_ACTIVE
-            && Facade._groupInfo.sceneType != (ushort)SceneType.SCENE_HOME)
+        if (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_MATCHING ||
+            (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_ACTIVE
+            && Facade._groupInfo.sceneType == (ushort)SceneType.SCENE_HOME))
         {
-            return;
+            _gameClient.Send(new SceneGroupCancelReq());
         }
-        _gameClient.Send(new SceneGroupCancelReq());
+
+       
     }
 
     void OnHomeScene()
@@ -367,16 +369,48 @@ public class ServerProxy : MonoBehaviour
         {
             name = "当前位置:主城";
         }
+        else if (Facade._groupInfo.sceneType == (ushort)SceneType.SCENE_MELEE)
+        {
+            name = "当前位置:乱斗场";
+        }
+        else if (Facade._groupInfo.sceneType == (ushort)SceneType.SCENE_ARENA)
+        {
+            name = "当前位置:竞技场";
+        }
         else
         {
-            name = "当前位置:战场";
+            name = "当前位置:未命名战场";
         }
         nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
 		position.y += nameSize.y;
         GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+        if (Facade._groupInfo == null || Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_NONE)
+        {
+            name = "当前状态:闲置";
+        }
+        else if (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_MATCHING)
+        {
+            name = "当前状态:匹配中";
+        }
+        else if (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_ALLOCATE)
+        {
+            name = "当前状态:场景调度";
+        }
+        else if (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_ACTIVE)
+        {
+            name = "当前状态:游戏中";
+        }
+        else
+        {
+            name = "当前状态:其他状态";
+        }
+        nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
+        position.y += nameSize.y;
+        GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
 
 
-		if (Facade._entityID != 0)
+
+        if (Facade._entityID != 0)
         {
             name = "Ping:" + _scenePingValue +"秒";
             nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;

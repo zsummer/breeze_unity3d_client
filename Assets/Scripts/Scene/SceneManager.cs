@@ -192,6 +192,8 @@ public class SceneManager : MonoBehaviour
             obj.AddComponent<Animation>();
         }
         obj.AddComponent<EntityModel>();
+        obj.AddComponent<Light>();
+        
         obj.transform.position = spawnpoint;
         if (data.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_AVATAR)
         {
@@ -204,6 +206,9 @@ public class SceneManager : MonoBehaviour
         obj.transform.rotation = quat;
         Rigidbody rd = obj.GetComponent<Rigidbody>();
         rd.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
+        Light lt = obj.GetComponent<Light>();
+        lt.range = 5.0f;
+        lt.intensity = 8.0f;
         DestroyEntity(data.entityInfo.eid);
 
 
