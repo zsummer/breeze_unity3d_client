@@ -45,10 +45,7 @@ public class TouchPanel : MonoBehaviour
         }
     }
 
-    void AvatarAttack()
-    {
-        _control.CrossAttack();
-    }
+
 
     void CheckStrick(Vector3 position)
     {

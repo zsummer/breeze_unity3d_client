@@ -75,7 +75,7 @@ public class EntityModel : MonoBehaviour
     }
     void OnGUI()
     {
-        if (_info.entityInfo.etype != (ushort)Proto4z.EntityType.ENTITY_AVATAR)
+        if (_info.entityInfo.etype != (ushort)Proto4z.EntityType.ENTITY_PLAYER)
         {
             return;
         }

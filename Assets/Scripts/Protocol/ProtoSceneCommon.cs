@@ -447,7 +447,7 @@ namespace Proto4z
     public enum EntityType : ushort 
     { 
         ENTITY_NONE = 0,  
-        ENTITY_AVATAR = 1,  
+        ENTITY_PLAYER = 1,  
         ENTITY_AI = 2,  
         ENTITY_FLIGHT = 3, //飞行道具  
     }; 
@@ -471,24 +471,22 @@ namespace Proto4z
  
     public enum SearchMethodType : ushort 
     { 
-        SEARCH_METHOD_DISTANCE = 0, //org 半径,360度扇形的优化  
-        SEARCH_METHOD_SEACTOR = 1, //org 扇形  
-        SEARCH_METHOD_RECT = 2, //org 矩形  
+        SEARCH_METHOD_SEACTOR = 0, //org 扇形  
+        SEARCH_METHOD_RECT = 1, //org 矩形  
     }; 
  
-    public enum SearchTarget : ulong 
+    public enum SearchCampType : ulong 
     { 
-        SEARCH_TARGET_NONE = 0, //无  
-        SEARCH_TARGET_SELF = 1, //自身, 玩家或者AI  
-        SEARCH_TARGET_ENEMY = 2, //敌人  
-        SEARCH_TARGET_FRIEND = 3, //友方  
-        SEARCH_TARGET_NEUTRAL = 4, //中立  
+        SEARCH_CAMP_NONE = 0,  
+        SEARCH_CAMP_SELF = 1, //自身  
+        SEARCH_CAMP_SAME_WITHOUT_SELF = 2, //同阵营非自己  
+        SEARCH_CAMP_ALIEN = 3, //非己方阵营  
     }; 
  
     public enum SkillType : ulong 
     { 
         SKILL_NONE = 0,  
-        SKILL_AUTO = 1, //普攻  
+        SKILL_AUTO = 1, //自动循环攻击  
         SKILL_PASSIVE = 2, //被动技能  
         SKILL_CAN_BREAK = 3, //可被中断  
         SKILL_CAN_MOVE = 4, //可移动  
@@ -542,59 +540,59 @@ namespace Proto4z
         static public ushort getProtoID() { return 10003; } 
         static public string getProtoName() { return "SearchInfo"; } 
         //members   
-        public ushort searchMethod;  
-        public ulong searchTarget;  
-        public double rate; //概率  
+        public ushort etype; //实体类型, 玩家/AI 或者是NONE忽略该选项  
+        public ulong camp; //0忽略改选项, 1位标识自己, 2位标识同阵营非自己, 3其他阵营,   逗号分割 多选 SearchCampType  
+        public ushort method; //0扇形, 1矩形 SearchMethodType  
         public double distance; //伤害距离  
         public double radian; //弧度或者宽度  
-        public double offsetX; //坐标偏移量, 正数为x = x + offset  
-        public double offsetY; //坐标偏移量, 正数为y = y + offset  
-        public ulong targetMaxCount; //最大目标数  
+        public double offsetX; //坐标偏移量, 以caster为原点, 朝向为y轴  
+        public double offsetY; //坐标偏移量, 以caster为原点, 朝向为y轴  
+        public ulong limitEntitys; //最大目标数  
         public SearchInfo()  
         { 
-            searchMethod = 0;  
-            searchTarget = 0;  
-            rate = 0.0;  
+            etype = 0;  
+            camp = 0;  
+            method = 0;  
             distance = 0.0;  
             radian = 0.0;  
             offsetX = 0.0;  
             offsetY = 0.0;  
-            targetMaxCount = 0;  
+            limitEntitys = 0;  
         } 
-        public SearchInfo(ushort searchMethod, ulong searchTarget, double rate, double distance, double radian, double offsetX, double offsetY, ulong targetMaxCount) 
+        public SearchInfo(ushort etype, ulong camp, ushort method, double distance, double radian, double offsetX, double offsetY, ulong limitEntitys) 
         { 
-            this.searchMethod = searchMethod; 
-            this.searchTarget = searchTarget; 
-            this.rate = rate; 
+            this.etype = etype; 
+            this.camp = camp; 
+            this.method = method; 
             this.distance = distance; 
             this.radian = radian; 
             this.offsetX = offsetX; 
             this.offsetY = offsetY; 
-            this.targetMaxCount = targetMaxCount; 
+            this.limitEntitys = limitEntitys; 
         } 
         public System.Collections.Generic.List<byte> __encode() 
         { 
             var data = new System.Collections.Generic.List<byte>(); 
-            data.AddRange(Proto4z.BaseProtoObject.encodeUI16(this.searchMethod)); 
-            data.AddRange(Proto4z.BaseProtoObject.encodeUI64(this.searchTarget)); 
-            data.AddRange(Proto4z.BaseProtoObject.encodeDouble(this.rate)); 
+            data.AddRange(Proto4z.BaseProtoObject.encodeUI16(this.etype)); 
+            data.AddRange(Proto4z.BaseProtoObject.encodeUI64(this.camp)); 
+            data.AddRange(Proto4z.BaseProtoObject.encodeUI16(this.method)); 
             data.AddRange(Proto4z.BaseProtoObject.encodeDouble(this.distance)); 
             data.AddRange(Proto4z.BaseProtoObject.encodeDouble(this.radian)); 
             data.AddRange(Proto4z.BaseProtoObject.encodeDouble(this.offsetX)); 
             data.AddRange(Proto4z.BaseProtoObject.encodeDouble(this.offsetY)); 
-            data.AddRange(Proto4z.BaseProtoObject.encodeUI64(this.targetMaxCount)); 
+            data.AddRange(Proto4z.BaseProtoObject.encodeUI64(this.limitEntitys)); 
             return data; 
         } 
         public int __decode(byte[] binData, ref int pos) 
         { 
-            this.searchMethod = Proto4z.BaseProtoObject.decodeUI16(binData, ref pos); 
-            this.searchTarget = Proto4z.BaseProtoObject.decodeUI64(binData, ref pos); 
-            this.rate = Proto4z.BaseProtoObject.decodeDouble(binData, ref pos); 
+            this.etype = Proto4z.BaseProtoObject.decodeUI16(binData, ref pos); 
+            this.camp = Proto4z.BaseProtoObject.decodeUI64(binData, ref pos); 
+            this.method = Proto4z.BaseProtoObject.decodeUI16(binData, ref pos); 
             this.distance = Proto4z.BaseProtoObject.decodeDouble(binData, ref pos); 
             this.radian = Proto4z.BaseProtoObject.decodeDouble(binData, ref pos); 
             this.offsetX = Proto4z.BaseProtoObject.decodeDouble(binData, ref pos); 
             this.offsetY = Proto4z.BaseProtoObject.decodeDouble(binData, ref pos); 
-            this.targetMaxCount = Proto4z.BaseProtoObject.decodeUI64(binData, ref pos); 
+            this.limitEntitys = Proto4z.BaseProtoObject.decodeUI64(binData, ref pos); 
             return pos; 
         } 
     } 
@@ -785,55 +783,64 @@ namespace Proto4z
         } 
     } 
  
-    public enum HarmType : ushort 
+    public enum SceneEvent : ushort 
     { 
-        HARM_GENERAL = 0, //普通伤害  
-        HARM_MISS = 1, //闪避  
-        HARM_CRITICAL = 2, //暴击  
-        HARM_HILL = 3, //治疗  
+        SCENE_EVENT_LIE = 0,  
+        SCENE_EVENT_DIED = 1,  
+        SCENE_EVENT_FREEZE = 2,  
+        SCENE_EVENT_REBIRTH = 3,  
+        SCENE_EVENT_HARM_ATTACK = 4,  
+        SCENE_EVENT_HARM_HILL = 5,  
+        SCENE_EVENT_HARM_MISS = 6,  
+        SCENE_EVENT_HARM_CRITICAL = 7,  
     }; 
  
-    public class HarmData: Proto4z.IProtoObject //伤害数据  
+    public class SceneEventInfo: Proto4z.IProtoObject //伤害数据  
     {     
         //proto id   
-        public const ushort protoID = 10007;  
-        static public ushort getProtoID() { return 10007; } 
-        static public string getProtoName() { return "HarmData"; } 
+        public const ushort protoID = 10015;  
+        static public ushort getProtoID() { return 10015; } 
+        static public string getProtoName() { return "SceneEventInfo"; } 
         //members   
-        public ulong eid; //目标eid  
-        public ushort type; //伤害类型HarmType  
-        public double harm; //如果为正是伤害, 为负则是回血  
-        public HarmData()  
+        public ulong src; //eid  
+        public ulong dst; //eid  
+        public ushort ev; //伤害类型HarmType  
+        public double val;  
+        public SceneEventInfo()  
         { 
-            eid = 0;  
-            type = 0;  
-            harm = 0.0;  
+            src = 0;  
+            dst = 0;  
+            ev = 0;  
+            val = 0.0;  
         } 
-        public HarmData(ulong eid, ushort type, double harm) 
+        public SceneEventInfo(ulong src, ulong dst, ushort ev, double val) 
         { 
-            this.eid = eid; 
-            this.type = type; 
-            this.harm = harm; 
+            this.src = src; 
+            this.dst = dst; 
+            this.ev = ev; 
+            this.val = val; 
         } 
         public System.Collections.Generic.List<byte> __encode() 
         { 
             var data = new System.Collections.Generic.List<byte>(); 
-            data.AddRange(Proto4z.BaseProtoObject.encodeUI64(this.eid)); 
-            data.AddRange(Proto4z.BaseProtoObject.encodeUI16(this.type)); 
-            data.AddRange(Proto4z.BaseProtoObject.encodeDouble(this.harm)); 
+            data.AddRange(Proto4z.BaseProtoObject.encodeUI64(this.src)); 
+            data.AddRange(Proto4z.BaseProtoObject.encodeUI64(this.dst)); 
+            data.AddRange(Proto4z.BaseProtoObject.encodeUI16(this.ev)); 
+            data.AddRange(Proto4z.BaseProtoObject.encodeDouble(this.val)); 
             return data; 
         } 
         public int __decode(byte[] binData, ref int pos) 
         { 
-            this.eid = Proto4z.BaseProtoObject.decodeUI64(binData, ref pos); 
-            this.type = Proto4z.BaseProtoObject.decodeUI16(binData, ref pos); 
-            this.harm = Proto4z.BaseProtoObject.decodeDouble(binData, ref pos); 
+            this.src = Proto4z.BaseProtoObject.decodeUI64(binData, ref pos); 
+            this.dst = Proto4z.BaseProtoObject.decodeUI64(binData, ref pos); 
+            this.ev = Proto4z.BaseProtoObject.decodeUI16(binData, ref pos); 
+            this.val = Proto4z.BaseProtoObject.decodeDouble(binData, ref pos); 
             return pos; 
         } 
     } 
  
  
-    public class HarmDataArray : System.Collections.Generic.List<HarmData>, Proto4z.IProtoObject  
+    public class SceneEventInfoArray : System.Collections.Generic.List<SceneEventInfo>, Proto4z.IProtoObject  
     { 
         public System.Collections.Generic.List<byte> __encode() 
         { 
@@ -854,7 +861,7 @@ namespace Proto4z
             { 
                 for (int i=0; i<len; i++) 
                 { 
-                    var data = new HarmData(); 
+                    var data = new SceneEventInfo(); 
                     data.__decode(binData, ref pos); 
                     this.Add(data); 
                 } 
@@ -872,8 +879,6 @@ namespace Proto4z
         //members   
         public ulong skillID;  
         public double startTime;  
-        public double lastHitTime;  
-        public ulong seq; //hit seq  
         public EPosition dst; //目标位置  
         public ulong foe; //锁定的目标  
         public SkillData data; //配置数据  
@@ -881,18 +886,14 @@ namespace Proto4z
         { 
             skillID = 0;  
             startTime = 0.0;  
-            lastHitTime = 0.0;  
-            seq = 0;  
             dst = new EPosition();  
             foe = 0;  
             data = new SkillData();  
         } 
-        public SkillInfo(ulong skillID, double startTime, double lastHitTime, ulong seq, EPosition dst, ulong foe, SkillData data) 
+        public SkillInfo(ulong skillID, double startTime, EPosition dst, ulong foe, SkillData data) 
         { 
             this.skillID = skillID; 
             this.startTime = startTime; 
-            this.lastHitTime = lastHitTime; 
-            this.seq = seq; 
             this.dst = dst; 
             this.foe = foe; 
             this.data = data; 
@@ -902,8 +903,6 @@ namespace Proto4z
             var data = new System.Collections.Generic.List<byte>(); 
             data.AddRange(Proto4z.BaseProtoObject.encodeUI64(this.skillID)); 
             data.AddRange(Proto4z.BaseProtoObject.encodeDouble(this.startTime)); 
-            data.AddRange(Proto4z.BaseProtoObject.encodeDouble(this.lastHitTime)); 
-            data.AddRange(Proto4z.BaseProtoObject.encodeUI64(this.seq)); 
             if (this.dst == null) this.dst = new EPosition(); 
             data.AddRange(this.dst.__encode()); 
             data.AddRange(Proto4z.BaseProtoObject.encodeUI64(this.foe)); 
@@ -915,8 +914,6 @@ namespace Proto4z
         { 
             this.skillID = Proto4z.BaseProtoObject.decodeUI64(binData, ref pos); 
             this.startTime = Proto4z.BaseProtoObject.decodeDouble(binData, ref pos); 
-            this.lastHitTime = Proto4z.BaseProtoObject.decodeDouble(binData, ref pos); 
-            this.seq = Proto4z.BaseProtoObject.decodeUI64(binData, ref pos); 
             this.dst = new EPosition(); 
             this.dst.__decode(binData, ref pos); 
             this.foe = Proto4z.BaseProtoObject.decodeUI64(binData, ref pos); 

@@ -29,9 +29,14 @@ public class SceneManager : MonoBehaviour
 		Facade._dispatcher.AddListener("RemoveBuffNotice", (System.Action<RemoveBuffNotice>)OnRemoveBuffNotice);
 		Facade._dispatcher.AddListener("UseSkillNotice", (System.Action<UseSkillNotice>)OnUseSkillNotice);
 		Facade._dispatcher.AddListener("MoveResp", (System.Action<MoveResp>)OnMoveResp);
-		Facade._dispatcher.AddListener("UseSkillResp", (System.Action<UseSkillResp>)OnUseSkillResp);
+        Facade._dispatcher.AddListener("UseSkillResp", (System.Action<UseSkillResp>)OnUseSkillResp);
+        Facade._dispatcher.AddListener("SceneEventNotice", (System.Action<SceneEventNotice>)OnSceneEventNotice);
 
-		Facade._dispatcher.AddListener("OnAvatarAttack", (System.Action)OnAvatarAttack);
+
+
+
+
+        Facade._dispatcher.AddListener("OnAvatarAttack", (System.Action)OnAvatarAttack);
 
 	}
 
@@ -195,7 +200,7 @@ public class SceneManager : MonoBehaviour
         obj.AddComponent<Light>();
         
         obj.transform.position = spawnpoint;
-        if (data.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_AVATAR)
+        if (data.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
         {
             obj.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
         }
@@ -221,7 +226,7 @@ public class SceneManager : MonoBehaviour
             _players[data.baseInfo.avatarID] = newEntity;
         }
         if (newEntity._info.baseInfo.avatarID == Facade._avatarInfo.avatarID 
-            && newEntity._info.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_AVATAR)
+            && newEntity._info.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
         {
             Facade._entityID = newEntity._info.entityInfo.eid;
         }
@@ -322,7 +327,20 @@ public class SceneManager : MonoBehaviour
 	{
 		
 	}
-
+	void OnSceneEventNotice(SceneEventNotice notice)
+	{
+        foreach (var ev in notice.info)
+        {
+            if (ev.ev == (ushort)SceneEvent.SCENE_EVENT_REBIRTH)
+            {
+                var e = GetEntity(ev.dst);
+                if (e != null)
+                {
+                    e.transform.position = new Vector3((float)e._info.entityMove.position.x, e.transform.position.y, (float)e._info.entityMove.position.y);
+                }
+            }
+        }
+	}	
 
 	void OnUseSkillResp(UseSkillResp resp)
 	{
@@ -331,7 +349,13 @@ public class SceneManager : MonoBehaviour
 
 	void OnAvatarAttack()
 	{
-		Facade._serverProxy.SendToScene (new UseSkillReq (Facade._entityID));
+        var et = Facade._sceneManager.GetEntity(Facade._entityID);
+        if (et == null)
+        {
+            return;
+        }
+        float a = et.transform.rotation.eulerAngles.z;
+        Facade._serverProxy.SendToScene(new UseSkillReq(Facade._entityID, new EPosition(0, 0)));
 	}
 
 }
