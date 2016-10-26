@@ -14,7 +14,6 @@ public class SceneManager : MonoBehaviour
 
     GameObject _rcsHomeScene = null;
 
-
     void Awake()
 	{
 		Facade._dispatcher.AddListener("OnChangeAvatarModel", (System.Action)OnChangeAvatarModel);
@@ -32,11 +31,7 @@ public class SceneManager : MonoBehaviour
         Facade._dispatcher.AddListener("UseSkillResp", (System.Action<UseSkillResp>)OnUseSkillResp);
         Facade._dispatcher.AddListener("SceneEventNotice", (System.Action<SceneEventNotice>)OnSceneEventNotice);
 
-
-
-
-
-        Facade._dispatcher.AddListener("OnAvatarAttack", (System.Action)OnAvatarAttack);
+        Facade._dispatcher.AddListener("ButtonAttack", (System.Action)OnButtonAttack);
 
 	}
 
@@ -198,7 +193,6 @@ public class SceneManager : MonoBehaviour
         }
         obj.AddComponent<EntityModel>();
         obj.AddComponent<Light>();
-        
         obj.transform.position = spawnpoint;
         if (data.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
         {
@@ -214,12 +208,15 @@ public class SceneManager : MonoBehaviour
         Light lt = obj.GetComponent<Light>();
         lt.range = 5.0f;
         lt.intensity = 8.0f;
+
+
+
+
         DestroyEntity(data.entityInfo.eid);
 
 
 		var newEntity = obj.GetComponent<EntityModel>();
         newEntity._info = data;
-
         _entitys[data.entityInfo.eid] = newEntity;
         if (data.baseInfo.avatarID != 0)
         {
@@ -230,7 +227,11 @@ public class SceneManager : MonoBehaviour
         {
             Facade._entityID = newEntity._info.entityInfo.eid;
         }
-
+        if (newEntity._info.entityInfo.state == (ushort)Proto4z.EntityState.ENTITY_STATE_DIED
+            || newEntity._info.entityInfo.state == (ushort)Proto4z.EntityState.ENTITY_STATE_LIE)
+        {
+            newEntity.PlayerDeath();
+        }
         Debug.Log("create avatar");
     }
 
@@ -321,7 +322,7 @@ public class SceneManager : MonoBehaviour
 		{
 			return;
 		}
-		entity.CrossAttack ();
+		entity.PlayerAttack();
 	}
 	void OnMoveResp(MoveResp resp)
 	{
@@ -331,13 +332,20 @@ public class SceneManager : MonoBehaviour
 	{
         foreach (var ev in notice.info)
         {
+            var e = GetEntity(ev.dst);
+            if (e == null)
+            {
+                continue;
+            }
+            Debug.Log("OnSceneEventNotice[" + e._info.baseInfo.avatarName + "] event=" + ev.ev);
             if (ev.ev == (ushort)SceneEvent.SCENE_EVENT_REBIRTH)
             {
-                var e = GetEntity(ev.dst);
-                if (e != null)
-                {
-                    e.transform.position = new Vector3((float)e._info.entityMove.position.x, e.transform.position.y, (float)e._info.entityMove.position.y);
-                }
+                e.transform.position = new Vector3((float)e._info.entityMove.position.x, e.transform.position.y, (float)e._info.entityMove.position.y);
+                e.PlayerFree();
+            }
+            else if (ev.ev == (ushort) SceneEvent.SCENE_EVENT_LIE)
+            {
+                e.PlayerDeath();
             }
         }
 	}	
@@ -347,15 +355,16 @@ public class SceneManager : MonoBehaviour
 		
 	}	
 
-	void OnAvatarAttack()
+	void OnButtonAttack()
 	{
         var et = Facade._sceneManager.GetEntity(Facade._entityID);
         if (et == null)
         {
             return;
         }
-        float a = et.transform.rotation.eulerAngles.z;
-        Facade._serverProxy.SendToScene(new UseSkillReq(Facade._entityID, new EPosition(0, 0)));
+        float a = et.transform.rotation.eulerAngles.y;
+        Vector3 target = et.transform.rotation * Vector3.forward;
+        Facade._serverProxy.SendToScene(new UseSkillReq(Facade._entityID, 1, 0, new EPosition(target.x, target.z)));
 	}
 
 }

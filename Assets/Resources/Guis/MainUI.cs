@@ -32,7 +32,7 @@ public class MainUI: MonoBehaviour
 
         _skillPanel = LoadUI("SkillPanel", "Guis/SkillPanel/SkillPanel");
         _skillPanel.Find("Attack").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade._dispatcher.TriggerEvent("OnAvatarAttack", null); });
+            delegate () { Facade._dispatcher.TriggerEvent("ButtonAttack", null); });
 
         _selectScenePanel = LoadUI("SelectScenePanel", "Guis/SelectScenePanel/SelectScenePanel");
         _selectScenePanel.Find("ExitScene").GetComponent<Button>().onClick.AddListener(

@@ -13,10 +13,11 @@ public enum MoveType
 public class EntityModel : MonoBehaviour
 {
     public Proto4z.EntityFullData _info;
-    private float _modelHeight = 6;
+    private float _modelHeight = 5;
     private AnimationState _free;
     private AnimationState _runned;
     private AnimationState _attack;
+    private AnimationState _death;
     private Animation _anim;
 
 
@@ -33,10 +34,15 @@ public class EntityModel : MonoBehaviour
     {
         _anim = GetComponent<Animation>();
         _free = _anim["free"];
-        _runned = _anim["walk"];
-        _attack = _anim["attack"];
         _free.wrapMode = WrapMode.Loop;
+
+        _runned = _anim["walk"];
         _runned.wrapMode = WrapMode.Loop;
+
+        _attack = _anim["attack"];
+        _death = _anim["death"];
+        
+        
         _startMoveTime = Time.realtimeSinceStartup;
         _startMovePosition = transform.position;
 
@@ -69,16 +75,21 @@ public class EntityModel : MonoBehaviour
 
         _info.entityMove = mv;
     }
-    public void CrossAttack()
+    public void PlayerAttack()
     {
         _anim.CrossFade(_attack.name);
     }
+    public void PlayerDeath()
+    {
+        _anim.CrossFade(_death.name);
+    }
+    public void PlayerFree()
+    {
+        _anim.CrossFade(_free.name);
+    }
     void OnGUI()
     {
-        if (_info.entityInfo.etype != (ushort)Proto4z.EntityType.ENTITY_PLAYER)
-        {
-            return;
-        }
+
         Vector3 worldPosition = new Vector3(transform.position.x, transform.position.y + _modelHeight, transform.position.z);
         Vector2 position = Camera.main.WorldToScreenPoint(worldPosition);
         position = new Vector2(position.x, Screen.height - position.y);
@@ -87,17 +98,51 @@ public class EntityModel : MonoBehaviour
         st.normal.textColor = Color.red;
         st.normal.background = null;
         st.fontSize = (int)(Screen.height * GameOption._fontSizeScreeHeightRate);
-        Vector2 nameSize = nameSize = GUI.skin.label.CalcSize(new GUIContent(_info.baseInfo.avatarName)) * st.fontSize / GUI.skin.font.fontSize;
 
-        if (Facade._entityID == _info.entityInfo.eid)
+        string text = "";
+        Vector2 textSize = new Vector2();
+
+        if (_info.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
         {
-            st.normal.textColor = Color.yellow;
+            if (Facade._entityID == _info.entityInfo.eid)
+            {
+                st.normal.textColor = Color.yellow;
+            }
+            else if (_mainPlayer != null && _mainPlayer._info.entityInfo.camp != _info.entityInfo.camp)
+            {
+                st.normal.textColor = Color.red;
+            }
+            text = _info.baseInfo.avatarName;
+            textSize = GUI.skin.label.CalcSize(new GUIContent(text)) * st.fontSize / GUI.skin.font.fontSize;
+            GUI.Label(new Rect(position.x - (textSize.x / 2), position.y - textSize.y, textSize.x, textSize.y), text, st);
         }
-        else if (_mainPlayer != null && _mainPlayer._info.entityInfo.camp != _info.entityInfo.camp)
+        
+        int curHP = (int)(_info.entityInfo.curHP /100.0f *5);
+        if (curHP > 5)
         {
-            st.normal.textColor = Color.red;
+            curHP = 5;
         }
-        GUI.Label(new Rect(position.x - (nameSize.x / 2), position.y - nameSize.y, nameSize.x, nameSize.y), _info.baseInfo.avatarName, st);
+        text = _info.entityInfo.curHP.ToString();
+        text += ":";
+
+        for (int i = 0; i < curHP; i++)
+        {
+            text += "=";
+        }
+        for (int i = 0; i < 5 - curHP; i++)
+        {
+            text += "-";
+        }
+        if (curHP > 0)
+        {
+            st.normal.textColor = Color.green;
+        }
+        else
+        {
+            st.normal.textColor = Color.gray;
+        }
+        textSize = GUI.skin.label.CalcSize(new GUIContent(text)) * st.fontSize / GUI.skin.font.fontSize;
+        GUI.Label(new Rect(position.x - (textSize.x / 2), position.y - textSize.y - textSize.y, textSize.x, textSize.y), text, st);
     }
     void FixedUpdate()
     {
@@ -107,10 +152,11 @@ public class EntityModel : MonoBehaviour
             _mainPlayer = Facade._sceneManager.GetEntity(Facade._entityID);
         }
 
-        if (_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE
-            && (_anim.IsPlaying(_runned.name) || !_anim.isPlaying))
+        if (_info.entityInfo.state == (ushort) Proto4z.EntityState.ENTITY_STATE_ACTIVE 
+            &&_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE
+            && (_anim.IsPlaying(_runned.name) || (_anim.clip.name != _death.name  &&!_anim.isPlaying)))
         {
-            _anim.CrossFade(_free.name, 0.2f);
+            PlayerFree();
         }
         Vector3 serverPosition = new Vector3((float)_info.entityMove.position.x, transform.position.y, (float)_info.entityMove.position.y);
         var dist = Vector3.Distance(transform.position, serverPosition);
@@ -118,7 +164,11 @@ public class EntityModel : MonoBehaviour
         {
             return;
         }
-
+        if (_info.entityInfo.state != (ushort)Proto4z.EntityState.ENTITY_STATE_ACTIVE)
+        {
+            transform.position = serverPosition;
+            return;
+        }
         var old = transform.position;
         if (_prediction &&  (serverPosition - transform.position).magnitude < GameOption._CompensationSpeed)
         {
@@ -130,21 +180,10 @@ public class EntityModel : MonoBehaviour
         }
 
 
-        /*
-        Debug.LogWarning("move[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "]eid=" + _info.entityMove.eid
-+ ", action=" + _info.entityMove.action + ", addtime=" + (Time.realtimeSinceStartup - _startMoveTime) + ", lastframeTime=" + _lastFrameTime
-+ ", local=" + old.x + ":" + old.z
-+ ", new=" + transform.position.x + ":" + transform.position.z
-+ ", remote=" + serverPosition.x + ":" + serverPosition.y);
-        */
 
-        //Debug.DrawLine(transform.position + transform.up * 0.3f, nextPos + transform.up * 0.3f, Color.red, 1.2f);
-        //Debug.DrawLine(transform.position + transform.up * 0.3f, endPos + transform.up * 0.3f, Color.blue, 1.2f);
-        //Debug.DrawLine(transform.position + transform.up * 0.3f, transform.forward * 10 + transform.position + transform.up * 0.3f, Color.yellow, 1.2f);
-
-
-        if (_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_FOLLOW
-            || _info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH)
+        if (_info.entityInfo.state == (ushort)Proto4z.EntityState.ENTITY_STATE_ACTIVE
+            && (_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_FOLLOW
+            || _info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH))
         {
             if (_anim.IsPlaying(_free.name) || !_anim.isPlaying)
             {
