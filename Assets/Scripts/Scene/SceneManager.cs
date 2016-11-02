@@ -206,7 +206,7 @@ public class SceneManager : MonoBehaviour
         Rigidbody rd = obj.GetComponent<Rigidbody>();
         rd.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
         Light lt = obj.GetComponent<Light>();
-        lt.range = 5.0f;
+        lt.range = 1.0f;
         lt.intensity = 8.0f;
 
 
