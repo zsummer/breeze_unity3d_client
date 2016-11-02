@@ -4,109 +4,82 @@ using UnityEngine;
 
 //外观类
 //所有单例从该类中引出
+
+
 public class Facade: MonoBehaviour
 {
-	
-    public static Transform AvatarMode { get { return _avatarMode; } set { _avatarMode = value; } }
-    public static Proto4z.AvatarBaseInfo AvatarInfo { get { return _avatarInfo; } set { _avatarInfo = value; } }
+    public static Proto4z.SceneGroupInfo _groupInfo = null;
+    public static Proto4z.AvatarBaseInfo _avatarInfo = null;
+    public static ulong _entityID = 0;
 
-    static GameObject _facade = null;
-    static Transform _avatarMode = null;
-    static Proto4z.AvatarBaseInfo _avatarInfo = null;
+    public static ModelDict _modelDict = null;
+    public static Dispatcher _dispatcher = null;
+    public static SceneManager _sceneManager = null;
+    public static ServerProxy _serverProxy = null;
+    public static AudioManager _audioManager = null;
+
+    public static MainUI _mainUI = null;
+    
+ 
     private static System.Collections.Generic.Dictionary<string, object> _singletons;
-    
-    
+    private static GameObject _facade = null;
+
+    [RuntimeInitializeOnLoadMethod]
     public static void Init()
     {
-        Debug.Log("Init Facade.");
+        Debug.Log("Facade Init");
+
+
+        UnityEngine.EventSystems.EventSystem eventSys = GameObject.FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
+        if (eventSys == null)
+        {
+            GameObject o = new GameObject("EventSystem");
+            o.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            o.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+        }
+
 
         _singletons = new System.Collections.Generic.Dictionary<string, object>();
         if (_facade != null)
         {
+            Debug.LogError("Facade Init Error. Duplicate Call");
             return;
         }
-        _facade = Resources.Load<GameObject>("Facade");
-        if (_facade == null)
-        {
-            _facade = new GameObject();
-        }
-        else
-        {
-           _facade = Instantiate(_facade);
-        }
+
+        _facade = new GameObject();
         _facade.name = "Facade";
         _facade.SetActive(true);
         _facade.AddComponent(typeof(Facade));
+
+        _dispatcher = Facade.AddSingleton<Dispatcher>();
+        Facade.AddSingleton<GameOption>();
+        _modelDict = Facade.AddSingleton<ModelDict>();
+        _serverProxy =  Facade.AddSingleton<ServerProxy>();
+        _sceneManager = Facade.AddSingleton<SceneManager>();
+        _audioManager = Facade.AddSingleton<AudioManager>();
     }
     void Awake()
     {
-        Debug.Log("Awake Facade.");
+        Debug.Log("Facade Awake");
         DontDestroyOnLoad(gameObject);
     }
 
     void Start()
     {
-        Debug.Log("Start Facade.");
+        Debug.Log("Facade Start");
     }
 
     void Update()
     {
-        //Debug.Log("Facade Update");
     }
 
     void OnApplicationQuit()
     {
-        Debug.Log("OnApplicationQuit Destroy Facade");
+        Debug.Log("Facade Quit");
         GameObject.Destroy(_facade);
         _facade = null;
     }
 
-    public static void CreateAvatar(int modelID)
-    {
-        Vector3 spawnpoint = new Vector3(-63.37f, -13.198f, 73.3f);
-        Quaternion quat = new Quaternion();
-        if (_avatarMode != null)
-        {
-            spawnpoint = _avatarMode.position;
-            quat = _avatarMode.rotation;
-            GameObject.Destroy(_avatarMode.gameObject);
-            _avatarMode = null;
-
-        }
-        
-        string name = Facade.GetSingleton<ModelMgr>().GetModelName(modelID);
-        if (name == null)
-        {
-            name = "jing_ling_nv_001_ty";
-        }
-
-        var res = Resources.Load<GameObject>("Character/Model/" + name);
-        if (res == null)
-        {
-            Debug.LogError("can't load resouce model [" + name + "].");
-            return;
-        }
-        var obj = Instantiate(res);
-        if (obj == null)
-        {
-            Debug.LogError("can't Instantiate model[" + name + "].");
-            return;
-        }
-
-        obj.AddComponent<Rigidbody>();
-        obj.AddComponent<CapsuleCollider>();
-        if (obj.GetComponent<Animation>() == null)
-        {
-            obj.AddComponent<Animation>();
-        }
-        obj.AddComponent<AvatarController>();
-        obj.transform.position = spawnpoint;
-        obj.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
-        obj.transform.rotation = quat;
-        Rigidbody rd = obj.GetComponent<Rigidbody>();
-        rd.freezeRotation = true;
-        _avatarMode = obj.transform;
-    }
 
 
 	public static object GetSingleton (string name)
@@ -117,18 +90,7 @@ public class Facade: MonoBehaviour
         }
         if (!_singletons.ContainsKey(name))
         {
-            var obj = _facade.GetComponent(name);
-            if (obj == null)
-            {
-                var typeInfo = Type.GetType(name);
-                if (typeInfo == null)
-                {
-                    Debug.LogWarning("not found type " + name);
-                    return null;
-                }
-                obj = _facade.AddComponent(Type.GetType(name));
-            }
-            _singletons.Add(name, obj);
+            return null;
         }
         return _singletons[name];
 	}
@@ -139,7 +101,35 @@ public class Facade: MonoBehaviour
 		return (GetSingleton(name) as T);
 	}
 
-	public static void RemoveSingleton(string name)
+    public static object AddSingleton(string name)
+    {
+        if (_facade == null || _singletons == null)
+        {
+            return null;
+        }
+        if (_singletons.ContainsKey(name))
+        {
+            return _singletons[name];
+        }
+
+        var typeInfo = Type.GetType(name);
+        if (typeInfo == null)
+        {
+            Debug.LogWarning("Facade Can't Add Single Script " + name);
+            return null;
+        }
+        var obj = _facade.AddComponent(Type.GetType(name));
+        _singletons.Add(name, obj);
+        return obj;
+    }
+
+    public static T AddSingleton<T>() where T : MonoBehaviour
+    {
+        string name = typeof(T).Name;
+        return (AddSingleton(name) as T);
+    }
+
+    public static void RemoveSingleton(string name)
 	{
         if (_facade == null || _singletons == null)
         {
@@ -149,7 +139,7 @@ public class Facade: MonoBehaviour
         {
             UnityEngine.Object.Destroy((UnityEngine.Object)(_singletons[name]));
             _singletons.Remove(name);
-            Debug.LogWarning("RemoveSingleton " + name);
+            Debug.LogWarning("Facade Remove Script " + name);
         }
 	}
 
