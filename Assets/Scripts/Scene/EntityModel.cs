@@ -133,14 +133,7 @@ public class EntityModel : MonoBehaviour
         {
             text += "-";
         }
-        if (curHP > 0)
-        {
-            st.normal.textColor = Color.green;
-        }
-        else
-        {
-            st.normal.textColor = Color.gray;
-        }
+        st.normal.textColor = Color.red;
         textSize = GUI.skin.label.CalcSize(new GUIContent(text)) * st.fontSize / GUI.skin.font.fontSize;
         GUI.Label(new Rect(position.x - (textSize.x / 2), position.y - textSize.y - textSize.y, textSize.x, textSize.y), text, st);
     }

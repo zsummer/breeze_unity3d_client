@@ -347,6 +347,19 @@ public class SceneManager : MonoBehaviour
             {
                 e.PlayerDeath();
             }
+            else if (ev.ev == (ushort) SceneEvent.SCENE_EVENT_HARM_ATTACK
+                || ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_HILL
+                || ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_CRITICAL
+                || ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_MISS)
+            {
+                GameObject obj = new GameObject();
+                obj.name = "FightFloatingText";
+                obj.transform.position = e.transform.position;
+                obj.transform.localScale = e.transform.localScale;
+                var text = obj.AddComponent<FightFloatingText>();
+                text._text = "" + ev.val;
+                obj.SetActive(true);
+            }
         }
 	}	
 
