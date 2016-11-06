@@ -5,10 +5,10 @@ public class FightFloatingText: MonoBehaviour
 {
     public Color _textColor = Color.red;
     public int _initFontSize = (int)(Screen.height * GameOption._fontSizeScreeHeightRate);
-    public float _initScale = 0.6f;
+    public float _initScale = 0.8f;
     public float _stepScale = 0.2f;
-    public float _floatSpeed = -1.2f;
-    public float _keepTime = 5.0f;
+    public float _floatSpeed = 1.2f;
+    public float _keepTime = 2.0f;
     public string _text = "";
 
     GUIStyle _guiStyle = new GUIStyle();
@@ -48,7 +48,7 @@ public class FightFloatingText: MonoBehaviour
     {
         Vector3 gp = new Vector3(transform.position.x, transform.position.y + 4, transform.position.z);
         Vector2 position = _mainCamera.WorldToScreenPoint(gp);
-        
+        position = new Vector2(position.x, Screen.height - position.y);
         _guiStyle.fontSize = (int)(_initFontSize  * (_initScale + (Time.realtimeSinceStartup - _createTime) * _stepScale));
         Vector2 textSize = GUI.skin.label.CalcSize(new GUIContent(_text)) * _guiStyle.fontSize / GUI.skin.font.fontSize;
         GUI.Label(new Rect(position.x - (textSize.x / 2), position.y - textSize.y, textSize.x, textSize.y), _text, _guiStyle);

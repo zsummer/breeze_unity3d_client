@@ -375,9 +375,8 @@ public class SceneManager : MonoBehaviour
         {
             return;
         }
-        float a = et.transform.rotation.eulerAngles.y;
-        Vector3 target = et.transform.rotation * Vector3.forward;
-        Facade._serverProxy.SendToScene(new UseSkillReq(Facade._entityID, 1, 0, new EPosition(target.x, target.z)));
+        et.PlayerAttack2();
+
 	}
 
 }

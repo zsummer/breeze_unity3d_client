@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
-
+using Proto4z;
 public enum MoveType
 {
     MT_IDLE,
@@ -22,11 +22,10 @@ public class EntityModel : MonoBehaviour
 
 
 
-
     private float _startMoveTime = 0;
     private Vector3 _startMovePosition;
     private bool _prediction = false;
-
+    private Camera _mainCamera;
 
     private EntityModel _mainPlayer;
 
@@ -46,6 +45,18 @@ public class EntityModel : MonoBehaviour
         _startMoveTime = Time.realtimeSinceStartup;
         _startMovePosition = transform.position;
 
+        foreach (Camera camera in Camera.allCameras)
+        {
+            if (camera.name == "SceneCamera")
+            {
+                _mainCamera = camera;
+                break;
+            }
+        }
+        if (_mainCamera == null)
+        {
+            //_mainCamera = Camera.main;
+        }
     }
     public void RefreshMoveInfo(Proto4z.EntityMove mv)
     {
@@ -87,11 +98,35 @@ public class EntityModel : MonoBehaviour
     {
         _anim.CrossFade(_free.name);
     }
+    public void PlayerAttack2()
+    {
+        float a = transform.rotation.eulerAngles.y;
+        Vector3 target = transform.rotation * Vector3.forward ;
+        target = transform.position + target * 4.0f;
+        target.y += 2f;
+        Debug.DrawLine(new Vector3(transform.position.x, transform.position.y + 2f, transform.position.z), target, Color.yellow, 1.0f);
+        Facade._serverProxy.SendToScene(new UseSkillReq(Facade._entityID, 1, 0, new EPosition(target.x, target.z)));
+    }
     void OnGUI()
     {
 
         Vector3 worldPosition = new Vector3(transform.position.x, transform.position.y + _modelHeight, transform.position.z);
         Vector2 position = Camera.main.WorldToScreenPoint(worldPosition);
+        if (true)
+        {
+            worldPosition = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+            position = _mainCamera.WorldToScreenPoint(worldPosition);
+            position = new Vector2(position.x, Screen.height - position.y);
+            GUI.Box(new Rect(position, new Vector2(20, 20)), "a");
+
+            worldPosition = new Vector3((float)_info.entityMove.position.x, transform.position.y, (float)_info.entityMove.position.y);
+            
+            position = _mainCamera.WorldToScreenPoint(worldPosition);
+            position = new Vector2(position.x, Screen.height - position.y);
+            GUI.Box(new Rect(position, new Vector2(20, 20)), "b");
+        }
+        worldPosition = new Vector3(transform.position.x, transform.position.y + _modelHeight, transform.position.z);
+        position = Camera.main.WorldToScreenPoint(worldPosition);
         position = new Vector2(position.x, Screen.height - position.y);
 
         GUIStyle st = new GUIStyle();
