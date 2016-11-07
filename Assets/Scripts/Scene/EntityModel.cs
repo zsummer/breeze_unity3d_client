@@ -86,25 +86,28 @@ public class EntityModel : MonoBehaviour
 
         _info.entityMove = mv;
     }
-    public void PlayerAttack()
+    public void PlayAttack()
     {
         _anim.CrossFade(_attack.name);
     }
-    public void PlayerDeath()
+    public void PlayDeath()
     {
         _anim.CrossFade(_death.name);
     }
-    public void PlayerFree()
+    public void PlayFree()
     {
         _anim.CrossFade(_free.name);
     }
-    public void PlayerAttack2()
+    public void DoAttack()
     {
         float a = transform.rotation.eulerAngles.y;
-        Vector3 target = transform.rotation * Vector3.forward ;
-        target = transform.position + target * 4.0f;
+        Vector3 dir = transform.rotation * Vector3.forward ;
+        Vector3 src = transform.position - dir * 1.0f;
+        Vector3 target = transform.position + dir * 7.0f;
         target.y += 2f;
-        Debug.DrawLine(new Vector3(transform.position.x, transform.position.y + 2f, transform.position.z), target, Color.yellow, 1.0f);
+        src.y += 2f;
+        Debug.DrawLine(src, target, Color.yellow, 1.0f);
+
         Facade._serverProxy.SendToScene(new UseSkillReq(Facade._entityID, 1, 0, new EPosition(target.x, target.z)));
     }
     void OnGUI()
@@ -117,13 +120,13 @@ public class EntityModel : MonoBehaviour
             worldPosition = new Vector3(transform.position.x, transform.position.y, transform.position.z);
             position = _mainCamera.WorldToScreenPoint(worldPosition);
             position = new Vector2(position.x, Screen.height - position.y);
-            GUI.Box(new Rect(position, new Vector2(20, 20)), "a");
+            GUI.Box(new Rect(position, new Vector2(20, 20)), "c");
 
             worldPosition = new Vector3((float)_info.entityMove.position.x, transform.position.y, (float)_info.entityMove.position.y);
             
             position = _mainCamera.WorldToScreenPoint(worldPosition);
             position = new Vector2(position.x, Screen.height - position.y);
-            GUI.Box(new Rect(position, new Vector2(20, 20)), "b");
+            GUI.Box(new Rect(position, new Vector2(20, 20)), "s");
         }
         worldPosition = new Vector3(transform.position.x, transform.position.y + _modelHeight, transform.position.z);
         position = Camera.main.WorldToScreenPoint(worldPosition);
@@ -162,13 +165,18 @@ public class EntityModel : MonoBehaviour
 
         for (int i = 0; i < curHP; i++)
         {
-            text += "=";
+            text += "■";
         }
         for (int i = 0; i < 5 - curHP; i++)
         {
-            text += "-";
+            text += "□";
         }
         st.normal.textColor = Color.red;
+        if (Facade._entityID == _info.entityInfo.eid)
+        {
+            st.normal.textColor = Color.yellow;
+        }
+        
         textSize = GUI.skin.label.CalcSize(new GUIContent(text)) * st.fontSize / GUI.skin.font.fontSize;
         GUI.Label(new Rect(position.x - (textSize.x / 2), position.y - textSize.y - textSize.y, textSize.x, textSize.y), text, st);
     }
@@ -184,7 +192,7 @@ public class EntityModel : MonoBehaviour
             &&_info.entityMove.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE
             && (_anim.IsPlaying(_runned.name) || (_anim.clip.name != _death.name  &&!_anim.isPlaying)))
         {
-            PlayerFree();
+            PlayFree();
         }
         Vector3 serverPosition = new Vector3((float)_info.entityMove.position.x, transform.position.y, (float)_info.entityMove.position.y);
         var dist = Vector3.Distance(transform.position, serverPosition);

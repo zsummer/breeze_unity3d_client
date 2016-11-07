@@ -318,6 +318,7 @@ public class ServerProxy : MonoBehaviour
         string name;
         GUIStyle st = new GUIStyle();
         st.normal.textColor = new Color(126, 0, 219);
+        st.normal.textColor = new Color(255, 255, 255);
         st.normal.background = null;
         st.fontSize = (int)(Screen.height * GameOption._fontSizeScreeHeightRate);
         Vector2 nameSize;

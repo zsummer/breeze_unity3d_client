@@ -230,7 +230,7 @@ public class SceneManager : MonoBehaviour
         if (newEntity._info.entityInfo.state == (ushort)Proto4z.EntityState.ENTITY_STATE_DIED
             || newEntity._info.entityInfo.state == (ushort)Proto4z.EntityState.ENTITY_STATE_LIE)
         {
-            newEntity.PlayerDeath();
+            newEntity.PlayDeath();
         }
         Debug.Log("create avatar");
     }
@@ -322,7 +322,7 @@ public class SceneManager : MonoBehaviour
 		{
 			return;
 		}
-		entity.PlayerAttack();
+		entity.PlayAttack();
 	}
 	void OnMoveResp(MoveResp resp)
 	{
@@ -340,12 +340,16 @@ public class SceneManager : MonoBehaviour
             Debug.Log("OnSceneEventNotice[" + e._info.baseInfo.avatarName + "] event=" + ev.ev);
             if (ev.ev == (ushort)SceneEvent.SCENE_EVENT_REBIRTH)
             {
+                var strPos = ev.mix.Split(',');
+                e._info.entityMove.position.x = double.Parse(strPos[0]);
+                e._info.entityMove.position.y = double.Parse(strPos[1]);
+                e._info.entityInfo.curHP = ev.val;
                 e.transform.position = new Vector3((float)e._info.entityMove.position.x, e.transform.position.y, (float)e._info.entityMove.position.y);
-                e.PlayerFree();
+                e.PlayFree();
             }
             else if (ev.ev == (ushort) SceneEvent.SCENE_EVENT_LIE)
             {
-                e.PlayerDeath();
+                e.PlayDeath();
             }
             else if (ev.ev == (ushort) SceneEvent.SCENE_EVENT_HARM_ATTACK
                 || ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_HILL
@@ -375,7 +379,7 @@ public class SceneManager : MonoBehaviour
         {
             return;
         }
-        et.PlayerAttack2();
+        et.DoAttack();
 
 	}
 
