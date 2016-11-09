@@ -191,16 +191,18 @@ public class SceneManager : MonoBehaviour
         {
             obj.AddComponent<Animation>();
         }
-        obj.AddComponent<EntityModel>();
+        var em = obj.AddComponent<EntityModel>();
         obj.AddComponent<Light>();
         obj.transform.position = spawnpoint;
         if (data.info.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
         {
             obj.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
+            em._modelHeight *= 2.5f;
         }
         else
         {
             obj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+            em._modelHeight *= 1.5f;
         }
         obj.transform.rotation = quat;
         Rigidbody rd = obj.GetComponent<Rigidbody>();

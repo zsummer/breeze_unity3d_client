@@ -13,7 +13,7 @@ public enum MoveType
 public class EntityModel : MonoBehaviour
 {
     public Proto4z.EntityFullData _info;
-    private float _modelHeight = 5;
+    public float _modelHeight = 2;
     private AnimationState _free;
     private AnimationState _runned;
     private AnimationState _attack;
