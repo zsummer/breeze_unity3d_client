@@ -14,6 +14,7 @@ public class EntityModel : MonoBehaviour
 {
     public Proto4z.EntityFullData _info;
     public float _modelHeight = 2;
+    public Transform _model = null;
     private AnimationState _free;
     private AnimationState _runned;
     private AnimationState _attack;
@@ -31,7 +32,7 @@ public class EntityModel : MonoBehaviour
 
     void Start()
     {
-        _anim = GetComponent<Animation>();
+        _anim = _model.GetComponent<Animation>();
         _free = _anim["free"];
         _free.wrapMode = WrapMode.Loop;
 
@@ -86,9 +87,30 @@ public class EntityModel : MonoBehaviour
 
         _info.mv = mv;
     }
+
+    private IEnumerator DeleteEffect(Transform ts, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        GameObject.Destroy(ts.gameObject);
+    }
+    private IEnumerator CreateEffect(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        Vector3 dir = transform.rotation * Vector3.forward;
+        var attack = Instantiate(Resources.Load<GameObject>("Effect/skill/attack"));
+        attack.transform.SetParent(gameObject.transform, false);
+        attack.transform.localPosition = Vector3.forward;
+        attack.transform.rotation = transform.rotation;
+        var childs = attack.GetComponentsInChildren<Transform>();     
+        StartCoroutine(DeleteEffect(attack.transform, 2));
+
+    }
+
     public void PlayAttack()
     {
         _anim.CrossFade(_attack.name);
+        StartCoroutine(CreateEffect(0.1f));
     }
     public void PlayDeath()
     {

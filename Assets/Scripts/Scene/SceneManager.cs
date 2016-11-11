@@ -160,79 +160,86 @@ public class SceneManager : MonoBehaviour
         EntityModel oldEnity = GetEntity(data.info.eid);
         
         Vector3 spawnpoint = new Vector3((float)data.mv.position.x, -13.198f, (float)data.mv.position.y);
-        Quaternion quat = new Quaternion();
+        Quaternion rotation = new Quaternion();
         if (oldEnity != null && oldEnity != null)
         {
             spawnpoint = oldEnity.gameObject.transform.position;
-            quat = oldEnity.gameObject.transform.rotation;
+            rotation = oldEnity.gameObject.transform.rotation;
         }
 
-        string name = Facade._modelDict.GetModelName(data.baseInfo.modelID);
-        if (name == null)
+        string modelName = Facade._modelDict.GetModelName(data.baseInfo.modelID);
+        if (modelName == null)
         {
-            name = "jing_ling_nv_001_ty";
+            modelName = "jing_ling_nv_001_ty";
         }
 
-        var res = Resources.Load<GameObject>("Character/Model/" + name);
-        if (res == null)
+        var modelRes = Resources.Load<GameObject>("Character/Model/" + modelName);
+        if (modelRes == null)
         {
-            Debug.LogError("can't load resouce model [" + name + "].");
+            Debug.LogError("can't load resouce model [" + modelName + "].");
             return;
         }
-        var obj = Instantiate(res);
-        if (obj == null)
+        var model = Instantiate(modelRes);
+        if (model == null)
         {
-            Debug.LogError("can't Instantiate model[" + name + "].");
+            Debug.LogError("can't Instantiate model[" + modelName + "].");
             return;
         }
 
-        obj.AddComponent<Rigidbody>();
-        if (obj.GetComponent<Animation>() == null)
+        model.AddComponent<Rigidbody>();
+        if (model.GetComponent<Animation>() == null)
         {
-            obj.AddComponent<Animation>();
+            model.AddComponent<Animation>();
         }
-        var em = obj.AddComponent<EntityModel>();
-        obj.AddComponent<Light>();
-        obj.transform.position = spawnpoint;
-        if (data.info.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
-        {
-            obj.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
-            em._modelHeight *= 2.5f;
-        }
-        else
-        {
-            obj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
-            em._modelHeight *= 1.5f;
-        }
-        obj.transform.rotation = quat;
-        Rigidbody rd = obj.GetComponent<Rigidbody>();
+        Rigidbody rd = model.GetComponent<Rigidbody>();
         rd.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
-        Light lt = obj.GetComponent<Light>();
+        Light lt = model.AddComponent<Light>();
         lt.range = 1.0f;
         lt.intensity = 8.0f;
 
+        var entity = new GameObject();
+        entity.name = data.baseInfo.modelName;
+        model.transform.SetParent(entity.transform);
+
+
+        var entityScrpt = entity.AddComponent<EntityModel>();
+        entityScrpt._model = model.transform;
+        entityScrpt._info = data;
+        entity.transform.position = spawnpoint;
+        entity.transform.rotation = rotation;
+
+        if (data.info.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
+        {
+            entity.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
+            entityScrpt._modelHeight *= 2.5f;
+        }
+        else
+        {
+            entity.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+            entityScrpt._modelHeight *= 1.5f;
+        }
 
 
 
         DestroyEntity(data.info.eid);
 
 
-		var newEntity = obj.GetComponent<EntityModel>();
-        newEntity._info = data;
-        _entitys[data.info.eid] = newEntity;
+        _entitys[data.info.eid] = entityScrpt;
         if (data.baseInfo.avatarID != 0)
         {
-            _players[data.baseInfo.avatarID] = newEntity;
+            _players[data.baseInfo.avatarID] = entityScrpt;
         }
-        if (newEntity._info.baseInfo.avatarID == Facade._avatarInfo.avatarID 
-            && newEntity._info.info.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
+        if (entityScrpt._info.baseInfo.avatarID == Facade._avatarInfo.avatarID 
+            && entityScrpt._info.info.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
         {
-            Facade._entityID = newEntity._info.info.eid;
+            Facade._entityID = entityScrpt._info.info.eid;
+            var selected = Instantiate(Resources.Load<GameObject>("Effect/other/selected"));
+            selected.transform.SetParent(entity.transform,false);
         }
-        if (newEntity._info.info.state == (ushort)Proto4z.EntityState.ENTITY_STATE_DIED
-            || newEntity._info.info.state == (ushort)Proto4z.EntityState.ENTITY_STATE_LIE)
+        if (entityScrpt._info.info.state == (ushort)Proto4z.EntityState.ENTITY_STATE_DIED
+            || entityScrpt._info.info.state == (ushort)Proto4z.EntityState.ENTITY_STATE_LIE)
         {
-            newEntity.PlayDeath();
+            entityScrpt.PlayDeath();
         }
         Debug.Log("create avatar");
     }
