@@ -93,24 +93,22 @@ public class EntityModel : MonoBehaviour
         yield return new WaitForSeconds(delay);
         GameObject.Destroy(ts.gameObject);
     }
-    private IEnumerator CreateEffect(float delay)
+    public IEnumerator CreateEffect(string path, Vector3 offset,  float delay, float keep)
     {
         yield return new WaitForSeconds(delay);
 
-        Vector3 dir = transform.rotation * Vector3.forward;
-        var attack = Instantiate(Resources.Load<GameObject>("Effect/skill/attack"));
+        var attack = Instantiate(Resources.Load<GameObject>(path));
         attack.transform.SetParent(gameObject.transform, false);
-        attack.transform.localPosition = Vector3.forward;
-        attack.transform.rotation = transform.rotation;
+        attack.transform.localPosition += offset;
         var childs = attack.GetComponentsInChildren<Transform>();     
-        StartCoroutine(DeleteEffect(attack.transform, 2));
+        StartCoroutine(DeleteEffect(attack.transform, keep));
 
     }
 
     public void PlayAttack()
     {
         _anim.CrossFade(_attack.name);
-        StartCoroutine(CreateEffect(0.1f));
+        StartCoroutine(CreateEffect("Effect/skill/attack", Vector3.forward, 0.1f, 2f));
     }
     public void PlayDeath()
     {

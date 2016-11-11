@@ -355,10 +355,12 @@ public class SceneManager : MonoBehaviour
                 e._info.info.curHP = ev.val;
                 e.transform.position = new Vector3((float)e._info.mv.position.x, e.transform.position.y, (float)e._info.mv.position.y);
                 e.PlayFree();
+                StartCoroutine(e.CreateEffect("Effect/other/fuhuo", Vector3.zero, 0f, 5f));
             }
             else if (ev.ev == (ushort) SceneEvent.SCENE_EVENT_LIE)
             {
                 e.PlayDeath();
+                
             }
             else if (ev.ev == (ushort) SceneEvent.SCENE_EVENT_HARM_ATTACK
                 || ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_HILL
@@ -370,8 +372,18 @@ public class SceneManager : MonoBehaviour
                 obj.transform.position = e.transform.position;
                 obj.transform.localScale = e.transform.localScale;
                 var text = obj.AddComponent<FightFloatingText>();
-                text._text = "" + ev.val;
+                if (ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_HILL)
+                {
+                    text._text = "+" + ev.val;
+                    text._textColor = Color.blue;
+                }
+                else
+                {
+                    text._text = "-" + ev.val;
+                    text._textColor = Color.red;
+                }
                 obj.SetActive(true);
+                StartCoroutine(e.CreateEffect("Effect/skill/hit/hit_steal", Vector3.up, 0.1f, 2f));
             }
         }
 	}	
