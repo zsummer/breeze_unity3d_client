@@ -5,7 +5,7 @@ public class SceneCamera : MonoBehaviour
 {
     
     private Transform _target;
-    private float _height = 60.0f;
+    private float _targetInitHeight = 0.0f;
     void Start ()
     {
 
@@ -16,14 +16,18 @@ public class SceneCamera : MonoBehaviour
         if (_target == null && Facade._entityID != 0)
         {
             _target = Facade._sceneManager.GetEntity(Facade._entityID).gameObject.transform;
-            _height = _target.position.y;
+			_targetInitHeight = _target.position.y;
+			//var target = new Vector3(_target.position.x, _targetInitHeight, _target.position.z);
+			//transform.position = target - Vector3.forward * 30.0f + Vector3.up * 40.0f;
+			//transform.LookAt(target);
+
         }
         if (_target == null)
         {
             return;
         }
-        var target = new Vector3(_target.position.x, _height, _target.position.z);
+		var target = new Vector3(_target.position.x, _targetInitHeight, _target.position.z);
         transform.position = target - Vector3.forward * 30.0f + Vector3.up * 40.0f;
-        transform.LookAt(_target.position);
+		transform.LookAt(target);
     }
 }
