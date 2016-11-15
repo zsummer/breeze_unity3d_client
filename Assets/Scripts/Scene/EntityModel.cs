@@ -88,11 +88,7 @@ public class EntityModel : MonoBehaviour
         _info.mv = mv;
     }
 
-    private IEnumerator DeleteEffect(Transform ts, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        GameObject.Destroy(ts.gameObject);
-    }
+
     public IEnumerator CreateEffect(string path, Vector3 offset,  float delay, float keep)
     {
         yield return new WaitForSeconds(delay);
@@ -100,9 +96,8 @@ public class EntityModel : MonoBehaviour
         var attack = Instantiate(Resources.Load<GameObject>(path));
         attack.transform.SetParent(gameObject.transform, false);
         attack.transform.localPosition += offset;
-        var childs = attack.GetComponentsInChildren<Transform>();     
-        StartCoroutine(DeleteEffect(attack.transform, keep));
-
+        var childs = attack.GetComponentsInChildren<Transform>();
+        DestroyObject(attack.gameObject, keep);
     }
 
     public void PlayAttack()
