@@ -9,6 +9,168 @@ public enum MoveType
     MT_TARGET,
 }
 
+public class Deviation
+{
+    System.Collections.Generic.List<float> _bucket = new System.Collections.Generic.List<float>();
+    public void pushValue(float val)
+    {
+        _bucket.Add(val);
+    }
+    public void cleanBucket()
+    {
+        _bucket.Clear();
+    }
+    public string OutDeviationData(ref float threshold)
+    {
+        float avg = 0; //基线
+        float va = 0; //方差
+        float sd = 0; //标准差
+        float md = 0; //平均差
+        float maxd = float.MinValue;
+        float mind = float.MaxValue;
+
+        foreach (var val in _bucket)
+        {
+            avg += val;
+            if (val > maxd)
+            {
+                maxd = val;
+            }
+            if (val < mind)
+            {
+                mind = val;
+            }
+        }
+        avg = avg / (float)_bucket.Count;
+
+        foreach (var val in _bucket)
+        {
+            va += (float)Math.Pow(avg - val, 2.0);
+        }
+        va = va / (float)_bucket.Count;
+
+        sd = (float)Math.Sqrt(va);
+
+        foreach (var val in _bucket)
+        {
+            md += Math.Abs(avg - val);
+        }
+        md = md / (float)_bucket.Count;
+        if (md / avg > threshold)
+        {
+            threshold = md / avg;
+        }
+
+        string ret = "[";
+        ret += "count:" + _bucket.Count + ", ";
+        ret += "avg:" + avg.ToString(".####") + ", ";
+        ret += "mind:" + mind.ToString(".####") + ", ";
+        ret += "maxd:" + maxd.ToString(".####") + ", ";
+        //ret += "va:" + va.ToString(".####") + ":" + (va / avg).ToString("P") + ", ";
+        //ret += "sd:" + sd.ToString(".####") + ":" + (sd / avg).ToString("P") + ", ";
+        ret += "md:" + md.ToString(".####") + ":" + (md / avg).ToString("P");
+        ret += "]";
+        return ret;
+    }
+}
+
+public class SyncCheck
+{
+    float _beginTime;
+
+
+    float _sumFixedDeltaTime;
+    float _sumSmoothTime;
+    float _sumDeltaTime;
+    float _sumSyncMoveCount;
+
+    Deviation _devFixedDeltaTime = new Deviation();
+    Deviation _devSmoothTime = new Deviation();
+    Deviation _devDeltaTime = new Deviation();
+    Deviation _devPassTime = new Deviation();
+    Deviation _devSyncMoveTime = new Deviation();
+    Deviation _devRealMoveTime = new Deviation();
+
+    float _lastUpdateTime;
+    float _lastSyncTime;
+    float _lastShowTime;
+    float _expectSpeed;
+    public void Init()
+    {
+        _beginTime = Time.realtimeSinceStartup;
+
+        _sumFixedDeltaTime = 0;
+        _sumSmoothTime = 0;
+        _sumDeltaTime = 0;
+        _sumSyncMoveCount = 0;
+        _expectSpeed = 0;
+        _lastUpdateTime = _beginTime;
+        _lastShowTime = _beginTime;
+        _lastSyncTime = _beginTime;
+    }
+    public void whenSync(float realTime, float expectSpeed)
+    {
+        float now = Time.realtimeSinceStartup;
+        _sumSyncMoveCount++;
+        _devSyncMoveTime.pushValue(now - _lastSyncTime);
+        _devRealMoveTime.pushValue(realTime);
+        _expectSpeed = expectSpeed;
+        _lastSyncTime = now;
+    }
+    public void FixedUpdate(ulong eid)
+    {
+        float now = Time.realtimeSinceStartup;
+        _sumFixedDeltaTime += Time.fixedDeltaTime;
+        _sumSmoothTime += Time.smoothDeltaTime;
+        _sumDeltaTime += Time.deltaTime;
+
+        _devFixedDeltaTime.pushValue(Time.fixedDeltaTime);
+        _devSmoothTime.pushValue(Time.smoothDeltaTime);
+        _devDeltaTime.pushValue(Time.deltaTime);
+        _devPassTime.pushValue(now - _lastUpdateTime);
+        
+
+        _lastUpdateTime = now;
+        if (now - _lastShowTime > 2)
+        {
+            _lastShowTime = now;
+
+            float threshold = 0.0f;
+            string showDev = "passTime=" + (now - _beginTime).ToString(".####");
+            showDev += ", _sumFixedDeltaTime=" + _sumFixedDeltaTime.ToString(".####");
+            showDev += ", _sumSmoothTime=" + _sumSmoothTime.ToString(".####");
+            showDev += ", _sumDeltaTime=" + _sumDeltaTime.ToString(".####");
+            showDev += ", _sumSyncTime=" + (_sumSyncMoveCount * 100.0f).ToString(".####");
+//             showDev += ", _devFixedDeltaTime=" + _devFixedDeltaTime.OutDeviationData(ref threshold);
+//             _devFixedDeltaTime.cleanBucket();
+//             showDev += ", _devSmoothTime=" + _devSmoothTime.OutDeviationData(ref threshold);
+//             _devSmoothTime.cleanBucket();
+//             showDev += ", _devDeltaTime=" + _devDeltaTime.OutDeviationData(ref threshold);
+//             _devDeltaTime.cleanBucket();
+            showDev += ", _devPassTime=" + _devPassTime.OutDeviationData(ref threshold);
+            _devPassTime.cleanBucket();
+            showDev += ", _devSyncMoveTime=" + _devSyncMoveTime.OutDeviationData(ref threshold);
+            _devSyncMoveTime.cleanBucket();
+            showDev += ", _expectSpeed=" + _expectSpeed.ToString(".####");
+            showDev += ", _devRealMoveTime=" + _devRealMoveTime.OutDeviationData(ref threshold);
+            _devRealMoveTime.cleanBucket();
+
+            if (threshold > 1.2)
+            {
+                Debug.LogError("eid:" + eid + " -> " + showDev);
+            }
+            else if (threshold > 0.6)
+            {
+                Debug.LogWarning("eid:" + eid + " -> " + showDev);
+            }
+//             else
+//             {
+//                 Debug.Log("eid:" + eid + " -> " + showDev);
+//             }
+//             
+        }
+    }
+}
 
 public class EntityModel : MonoBehaviour
 {
@@ -25,11 +187,13 @@ public class EntityModel : MonoBehaviour
 
     private float _startMoveTime = 0;
     private Vector3 _startMovePosition;
-    private bool _prediction = false;
+
     private Camera _mainCamera;
 
     private EntityModel _mainPlayer;
 
+
+   private SyncCheck _check = new SyncCheck();
     void Start()
     {
         _anim = _model.GetComponent<Animation>();
@@ -58,34 +222,18 @@ public class EntityModel : MonoBehaviour
         {
             //_mainCamera = Camera.main;
         }
+        _check.Init();
     }
     public void RefreshMoveInfo(Proto4z.EntityMove mv)
     {
         _startMovePosition = transform.position;
         _startMoveTime = Time.realtimeSinceStartup;
-        _prediction = false;
-        float magnitude = 0;
-        if (mv.waypoints.Count > 0 &&  Math.Abs(mv.realSpeed - mv.expectSpeed) < 1.0f)
-        {
-            var server = new Vector3((float)mv.position.x, 0, (float)mv.position.y);
-            var dst = new Vector3((float)mv.waypoints[0].x, 0, (float)mv.waypoints[0].y);
-            var last = new Vector3((float)_info.mv.position.x, 0, (float)_info.mv.position.y);
-            server = Vector3.Normalize(server - last);
-            dst = Vector3.Normalize(dst - last);
-            last = server - dst;
-            magnitude = last.magnitude;
-            if (last.magnitude < 0.01)
-            {
-                _prediction = true;
-            }
-        }
-        if (!_prediction)
-        {
-            Debug.LogWarning("move prediction false. last frame magnitude=" + magnitude);
-        }
-
-
         _info.mv = mv;
+        if (Facade._entityID == _info.info.eid)
+        {
+            _check.whenSync((float)_info.mv.realSpeed, (float)_info.mv.expectSpeed);
+        }
+        
     }
 
 
@@ -205,31 +353,52 @@ public class EntityModel : MonoBehaviour
             _mainPlayer = Facade._sceneManager.GetEntity(Facade._entityID);
         }
 
+        if (Facade._entityID == _info.info.eid)
+        {
+            _check.FixedUpdate(_info.info.eid);
+        }
+
         if (_info.info.state == (ushort) Proto4z.EntityState.ENTITY_STATE_ACTIVE 
             &&_info.mv.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE
             && (_anim.IsPlaying(_runned.name) || (_anim.clip.name != _death.name  &&!_anim.isPlaying)))
         {
             PlayFree();
         }
+
         Vector3 serverPosition = new Vector3((float)_info.mv.position.x, transform.position.y, (float)_info.mv.position.y);
-        var dist = Vector3.Distance(transform.position, serverPosition);
-        if (dist < 0.1f && _info.mv.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
+        if (_info.mv.action == (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE)
         {
-            return;
+            if (Vector3.Distance(transform.position, serverPosition) < 0.1f)
+            {
+                return;
+            }
+            else
+            {
+                _info.mv.realSpeed = _info.mv.expectSpeed = 10.0f;
+            }
         }
+
+
+        Vector3 serverWaypointPosition = serverPosition;
+        if (_info.mv.waypoints.Count > 0)
+        {
+            serverWaypointPosition = new Vector3((float)_info.mv.waypoints[0].x, transform.position.y, (float)_info.mv.waypoints[0].y);
+        }
+        
         if (_info.info.state != (ushort)Proto4z.EntityState.ENTITY_STATE_ACTIVE)
         {
             transform.position = serverPosition;
             return;
         }
-        var old = transform.position;
-        if (_prediction &&  (serverPosition - transform.position).magnitude < GameOption._CompensationSpeed)
+
+
+        if (Vector3.Distance(transform.position, serverPosition) < 0.2 * (float)_info.mv.expectSpeed && _info.mv.realSpeed / _info.mv.expectSpeed > 0.9)
         {
-            transform.position = Vector3.MoveTowards(transform.position, serverPosition, (float)_info.mv.expectSpeed * Time.fixedDeltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, serverWaypointPosition, (float)_info.mv.realSpeed * Time.fixedDeltaTime);
         }
         else
         {
-            transform.position = Vector3.Lerp(_startMovePosition, serverPosition, (Time.realtimeSinceStartup - _startMoveTime) / GameOption._ServerFrameInterval);
+            transform.position = Vector3.MoveTowards(transform.position, serverPosition, (float)_info.mv.realSpeed * Time.fixedDeltaTime);
         }
 
 

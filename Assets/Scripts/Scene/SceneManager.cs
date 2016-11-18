@@ -312,9 +312,9 @@ public class SceneManager : MonoBehaviour
 	}
 	void OnMoveNotice(MoveNotice notice)
 	{
-        UnityEngine.Debug.Log("MoveNotice[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "]eid=" + notice.moveInfo.eid
-            + ", action=" + notice.moveInfo.action + ", posx=" + notice.moveInfo.position.x
-            + ", posy=" + notice.moveInfo.position.y);
+//        UnityEngine.Debug.Log("MoveNotice[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "]eid=" + notice.moveInfo.eid
+//            + ", action=" + notice.moveInfo.action + ", posx=" + notice.moveInfo.position.x
+//            + ", posy=" + notice.moveInfo.position.y);
     }
 	void OnAddBuffNotice(AddBuffNotice notice)
 	{
