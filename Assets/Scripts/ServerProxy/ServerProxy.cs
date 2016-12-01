@@ -318,6 +318,7 @@ public class ServerProxy : MonoBehaviour
         string name;
         GUIStyle st = new GUIStyle();
         st.normal.textColor = new Color(126, 0, 219);
+        st.normal.textColor = new Color(255, 255, 255);
         st.normal.background = null;
         st.fontSize = (int)(Screen.height * GameOption._fontSizeScreeHeightRate);
         Vector2 nameSize;
@@ -348,7 +349,7 @@ public class ServerProxy : MonoBehaviour
 
 		if (Facade._avatarInfo != null && Facade._entityID != 0) 
 		{
-			var modelID = Facade._sceneManager.GetEntity (Facade._entityID)._info.baseInfo.modeID;
+			var modelID = Facade._sceneManager.GetEntity (Facade._entityID)._info.baseInfo.modelID;
 			name = "当前模型[" + modelID +"]:" + Facade._modelDict.GetModelName(modelID);
 			nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
 			position.y += nameSize.y;

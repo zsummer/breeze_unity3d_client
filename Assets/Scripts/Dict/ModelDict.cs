@@ -3,12 +3,12 @@ using System.Collections;
 using Proto4z;
 public class ModelDict : MonoBehaviour
 {
-    System.Collections.Generic.Dictionary<string, int> _modelNames;
-    System.Collections.Generic.Dictionary<int, string> _modelIDs;
+    System.Collections.Generic.Dictionary<string, ulong> _modelNames;
+    System.Collections.Generic.Dictionary<ulong, string> _modelIDs;
     void Awake()
     {
         DontDestroyOnLoad(gameObject);
-        _modelNames = new System.Collections.Generic.Dictionary<string, int>();
+        _modelNames = new System.Collections.Generic.Dictionary<string, ulong>();
         _modelNames["ai_ge_001_ty"] = 1;
         _modelNames["hai_wu_shi_001_ty"] = 2;
         _modelNames["jlxb_yc_001_ty"] = 3;
@@ -54,13 +54,13 @@ public class ModelDict : MonoBehaviour
         _modelNames["ling_hun_zhan_che_001_ty"] = 43;
         _modelNames["shi_mo_001_ty"] = 44;
         _modelNames["xiong_001_ty"] = 45;
-        _modelIDs = new System.Collections.Generic.Dictionary<int, string>();
+        _modelIDs = new System.Collections.Generic.Dictionary<ulong, string>();
         foreach (var item in _modelNames)
         {
             _modelIDs[item.Value] = item.Key;
         }
     }
-    public string GetModelName(int id)
+    public string GetModelName(ulong id)
     {
         string ret;
         if (_modelIDs.TryGetValue(id, out ret))
@@ -69,12 +69,12 @@ public class ModelDict : MonoBehaviour
         }
         return null;
     }
-    public int GetNextModelID(int id)
+    public ulong GetNextModelID(ulong id)
     {
-        int ret = -1;
+        ulong ret = 999999999999;
         foreach (var item in _modelIDs)
         {
-            if (ret == -1 || ret > item.Key)
+            if (ret == 9999999999991 || ret > item.Key)
             {
                 ret = item.Key;
             }
@@ -85,9 +85,9 @@ public class ModelDict : MonoBehaviour
         }
         return ret;
     }
-    public int GetModelID(string name)
+    public ulong GetModelID(string name)
     {
-        int id = 0;
+        ulong id = 0;
         if (_modelNames.TryGetValue(name, out id))
         {
             return id;

@@ -89,7 +89,7 @@ public class SceneManager : MonoBehaviour
             var entity = GetEntity(info.eid);
             if (entity != null)
             {
-                entity._info.entityInfo = info;
+                entity._info.info = info;
             }
         }
     }
@@ -109,7 +109,7 @@ public class SceneManager : MonoBehaviour
 	{
         foreach (var e in _entitys)
         {
-			if (e.Value._info.entityInfo.eid == Facade._entityID) 
+			if (e.Value._info.info.eid == Facade._entityID) 
 			{
 				Facade._entityID = 0;
 			}
@@ -125,7 +125,7 @@ public class SceneManager : MonoBehaviour
         {
             return;
         }
-        if (entity._info.entityInfo.eid == Facade._entityID)
+        if (entity._info.info.eid == Facade._entityID)
         {
             Facade._entityID = 0;
         }
@@ -141,7 +141,7 @@ public class SceneManager : MonoBehaviour
         var entity = GetPlayer(avatarID);
         if (entity != null)
         {
-            DestroyEntity(entity._info.entityInfo.eid);
+            DestroyEntity(entity._info.info.eid);
         }
     }
 
@@ -157,80 +157,89 @@ public class SceneManager : MonoBehaviour
     }
     public void CreateEntity(Proto4z.EntityFullData data)
     {
-        EntityModel oldEnity = GetEntity(data.entityInfo.eid);
+        EntityModel oldEnity = GetEntity(data.info.eid);
         
-        Vector3 spawnpoint = new Vector3((float)data.entityMove.position.x, -13.198f, (float)data.entityMove.position.y);
-        Quaternion quat = new Quaternion();
+        Vector3 spawnpoint = new Vector3((float)data.mv.position.x, -13.198f, (float)data.mv.position.y);
+        Quaternion rotation = new Quaternion();
         if (oldEnity != null && oldEnity != null)
         {
             spawnpoint = oldEnity.gameObject.transform.position;
-            quat = oldEnity.gameObject.transform.rotation;
+            rotation = oldEnity.gameObject.transform.rotation;
         }
 
-        string name = Facade._modelDict.GetModelName(data.baseInfo.modeID);
-        if (name == null)
+        string modelName = Facade._modelDict.GetModelName(data.baseInfo.modelID);
+        if (modelName == null)
         {
-            name = "jing_ling_nv_001_ty";
+            modelName = "jing_ling_nv_001_ty";
         }
 
-        var res = Resources.Load<GameObject>("Character/Model/" + name);
-        if (res == null)
+        var modelRes = Resources.Load<GameObject>("Character/Model/" + modelName);
+        if (modelRes == null)
         {
-            Debug.LogError("can't load resouce model [" + name + "].");
+            Debug.LogError("can't load resouce model [" + modelName + "].");
             return;
         }
-        var obj = Instantiate(res);
-        if (obj == null)
+        var model = Instantiate(modelRes);
+        if (model == null)
         {
-            Debug.LogError("can't Instantiate model[" + name + "].");
+            Debug.LogError("can't Instantiate model[" + modelName + "].");
             return;
         }
 
-        obj.AddComponent<Rigidbody>();
-        if (obj.GetComponent<Animation>() == null)
+        model.AddComponent<Rigidbody>();
+        if (model.GetComponent<Animation>() == null)
         {
-            obj.AddComponent<Animation>();
+            model.AddComponent<Animation>();
         }
-        obj.AddComponent<EntityModel>();
-        obj.AddComponent<Light>();
-        obj.transform.position = spawnpoint;
-        if (data.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
-        {
-            obj.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
-        }
-        else
-        {
-            obj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
-        }
-        obj.transform.rotation = quat;
-        Rigidbody rd = obj.GetComponent<Rigidbody>();
+        Rigidbody rd = model.GetComponent<Rigidbody>();
         rd.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
-        Light lt = obj.GetComponent<Light>();
+        Light lt = model.AddComponent<Light>();
         lt.range = 1.0f;
         lt.intensity = 8.0f;
 
+        var entity = new GameObject();
+        entity.name = data.baseInfo.modelName;
+        model.transform.SetParent(entity.transform);
+
+
+        var entityScrpt = entity.AddComponent<EntityModel>();
+        entityScrpt._model = model.transform;
+        entityScrpt._info = data;
+        entity.transform.position = spawnpoint;
+        entity.transform.rotation = rotation;
+
+        if (data.info.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
+        {
+            entity.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
+            entityScrpt._modelHeight *= 2.5f;
+        }
+        else
+        {
+            entity.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+            entityScrpt._modelHeight *= 1.5f;
+        }
 
 
 
-        DestroyEntity(data.entityInfo.eid);
+        DestroyEntity(data.info.eid);
 
 
-		var newEntity = obj.GetComponent<EntityModel>();
-        newEntity._info = data;
-        _entitys[data.entityInfo.eid] = newEntity;
+        _entitys[data.info.eid] = entityScrpt;
         if (data.baseInfo.avatarID != 0)
         {
-            _players[data.baseInfo.avatarID] = newEntity;
+            _players[data.baseInfo.avatarID] = entityScrpt;
         }
-        if (newEntity._info.baseInfo.avatarID == Facade._avatarInfo.avatarID 
-            && newEntity._info.entityInfo.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
+        if (entityScrpt._info.baseInfo.avatarID == Facade._avatarInfo.avatarID 
+            && entityScrpt._info.info.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
         {
-            Facade._entityID = newEntity._info.entityInfo.eid;
+            Facade._entityID = entityScrpt._info.info.eid;
+            var selected = Instantiate(Resources.Load<GameObject>("Effect/other/selected"));
+            selected.transform.SetParent(entity.transform,false);
         }
-        if (newEntity._info.entityInfo.state == (ushort)Proto4z.EntityState.ENTITY_STATE_DIED
-            || newEntity._info.entityInfo.state == (ushort)Proto4z.EntityState.ENTITY_STATE_LIE)
+        if (entityScrpt._info.info.state == (ushort)Proto4z.EntityState.ENTITY_STATE_DIED
+            || entityScrpt._info.info.state == (ushort)Proto4z.EntityState.ENTITY_STATE_LIE)
         {
-            newEntity.PlayerDeath();
+            entityScrpt.PlayDeath();
         }
         Debug.Log("create avatar");
     }
@@ -303,9 +312,9 @@ public class SceneManager : MonoBehaviour
 	}
 	void OnMoveNotice(MoveNotice notice)
 	{
-        UnityEngine.Debug.Log("MoveNotice[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "]eid=" + notice.moveInfo.eid
-            + ", action=" + notice.moveInfo.action + ", posx=" + notice.moveInfo.position.x
-            + ", posy=" + notice.moveInfo.position.y);
+//        UnityEngine.Debug.Log("MoveNotice[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "]eid=" + notice.moveInfo.eid
+//            + ", action=" + notice.moveInfo.action + ", posx=" + notice.moveInfo.position.x
+//            + ", posy=" + notice.moveInfo.position.y);
     }
 	void OnAddBuffNotice(AddBuffNotice notice)
 	{
@@ -322,7 +331,7 @@ public class SceneManager : MonoBehaviour
 		{
 			return;
 		}
-		entity.PlayerAttack();
+		entity.PlayAttack();
 	}
 	void OnMoveResp(MoveResp resp)
 	{
@@ -340,12 +349,41 @@ public class SceneManager : MonoBehaviour
             Debug.Log("OnSceneEventNotice[" + e._info.baseInfo.avatarName + "] event=" + ev.ev);
             if (ev.ev == (ushort)SceneEvent.SCENE_EVENT_REBIRTH)
             {
-                e.transform.position = new Vector3((float)e._info.entityMove.position.x, e.transform.position.y, (float)e._info.entityMove.position.y);
-                e.PlayerFree();
+                var strPos = ev.mix.Split(',');
+                e._info.mv.position.x = double.Parse(strPos[0]);
+                e._info.mv.position.y = double.Parse(strPos[1]);
+                e._info.info.curHP = ev.val;
+                e.transform.position = new Vector3((float)e._info.mv.position.x, e.transform.position.y, (float)e._info.mv.position.y);
+                e.PlayFree();
+                StartCoroutine(e.CreateEffect("Effect/other/fuhuo", Vector3.zero, 0f, 5f));
             }
             else if (ev.ev == (ushort) SceneEvent.SCENE_EVENT_LIE)
             {
-                e.PlayerDeath();
+                e.PlayDeath();
+                
+            }
+            else if (ev.ev == (ushort) SceneEvent.SCENE_EVENT_HARM_ATTACK
+                || ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_HILL
+                || ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_CRITICAL
+                || ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_MISS)
+            {
+                GameObject obj = new GameObject();
+                obj.name = "FightFloatingText";
+                obj.transform.position = e.transform.position;
+                obj.transform.localScale = e.transform.localScale;
+                var text = obj.AddComponent<FightFloatingText>();
+                if (ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_HILL)
+                {
+                    text._text = "+" + ev.val;
+                    text._textColor = Color.blue;
+                }
+                else
+                {
+                    text._text = "-" + ev.val;
+                    text._textColor = Color.red;
+                }
+                obj.SetActive(true);
+                StartCoroutine(e.CreateEffect("Effect/skill/hit/hit_steal", Vector3.up, 0.1f, 2f));
             }
         }
 	}	
@@ -362,9 +400,8 @@ public class SceneManager : MonoBehaviour
         {
             return;
         }
-        float a = et.transform.rotation.eulerAngles.y;
-        Vector3 target = et.transform.rotation * Vector3.forward;
-        Facade._serverProxy.SendToScene(new UseSkillReq(Facade._entityID, 1, 0, new EPosition(target.x, target.z)));
+        et.DoAttack();
+
 	}
 
 }

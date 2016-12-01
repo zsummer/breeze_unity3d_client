@@ -78,7 +78,7 @@ public class TouchPanel : MonoBehaviour
         Vector3 dst = _control.transform.position + _lastDirt;
         _lastSendMove = Time.realtimeSinceStartup;
 
-        Debug.Log("Send Move");
+        //Debug.Log("Send Move");
         var req = new MoveReq();
         req.eid = Facade._entityID;
         req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_PATH;
@@ -86,7 +86,7 @@ public class TouchPanel : MonoBehaviour
 		req.waypoints.Add (new EPosition (dst.x, dst.z));
         Facade._serverProxy.SendToScene(req);
 
-        Debug.Log("used time=" + (Time.realtimeSinceStartup - _lastSendMove));
+        //Debug.Log("used time=" + (Time.realtimeSinceStartup - _lastSendMove));
         
     }
 
@@ -97,7 +97,7 @@ public class TouchPanel : MonoBehaviour
         {
             return;
         }
-        if (_control != null && _control._info.entityInfo.eid != Facade._entityID)
+        if (_control != null && _control._info.info.eid != Facade._entityID)
         {
             _control = null;
         }
@@ -134,7 +134,7 @@ public class TouchPanel : MonoBehaviour
                 req.dstPos.y += v * 10;
                 Facade._serverProxy.SendToScene(req);
             }
-            else if (_isHandle && _control._info.entityMove.action != (ushort) Proto4z.MoveAction.MOVE_ACTION_IDLE)
+            else if (_isHandle && _control._info.mv.action != (ushort) Proto4z.MoveAction.MOVE_ACTION_IDLE)
             {
                 _isHandle = false;
                 req.action = (ushort)Proto4z.MoveAction.MOVE_ACTION_IDLE;
