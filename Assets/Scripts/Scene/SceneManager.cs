@@ -82,14 +82,14 @@ public class SceneManager : MonoBehaviour
             }
         }
     }
-    public void RefreshEntityInfo(Proto4z.EntityInfoArray infos)
+    public void RefreshEntityInfo(Proto4z.EntityStateArray states)
     {
-        foreach (var info in infos)
+        foreach (var state in states)
         {
-            var entity = GetEntity(info.eid);
+            var entity = GetEntity(state.eid);
             if (entity != null)
             {
-                entity._info.info = info;
+                entity._info.state = state;
             }
         }
     }
@@ -109,7 +109,7 @@ public class SceneManager : MonoBehaviour
 	{
         foreach (var e in _entitys)
         {
-			if (e.Value._info.info.eid == Facade._entityID) 
+			if (e.Value._info.state.eid == Facade._entityID) 
 			{
 				Facade._entityID = 0;
 			}
@@ -125,13 +125,13 @@ public class SceneManager : MonoBehaviour
         {
             return;
         }
-        if (entity._info.info.eid == Facade._entityID)
+        if (entity._info.state.eid == Facade._entityID)
         {
             Facade._entityID = 0;
         }
-        if (entity._info.baseInfo.avatarID != 0)
+        if (entity._info.state.avatarID != 0)
         {
-            _players.Remove(entity._info.baseInfo.avatarID);
+            _players.Remove(entity._info.state.avatarID);
         }
         _entitys.Remove(entityID);
         GameObject.Destroy(entity.gameObject);
@@ -141,7 +141,7 @@ public class SceneManager : MonoBehaviour
         var entity = GetPlayer(avatarID);
         if (entity != null)
         {
-            DestroyEntity(entity._info.info.eid);
+            DestroyEntity(entity._info.state.eid);
         }
     }
 
@@ -157,7 +157,7 @@ public class SceneManager : MonoBehaviour
     }
     public void CreateEntity(Proto4z.EntityFullData data)
     {
-        EntityModel oldEnity = GetEntity(data.info.eid);
+        EntityModel oldEnity = GetEntity(data.state.eid);
         
         Vector3 spawnpoint = new Vector3((float)data.mv.position.x, -13.198f, (float)data.mv.position.y);
         Quaternion rotation = new Quaternion();
@@ -167,7 +167,7 @@ public class SceneManager : MonoBehaviour
             rotation = oldEnity.gameObject.transform.rotation;
         }
 
-        string modelName = Facade._modelDict.GetModelName(data.baseInfo.modelID);
+        string modelName = Facade._modelDict.GetModelName(data.state.modelID);
         if (modelName == null)
         {
             modelName = "jing_ling_nv_001_ty";
@@ -198,7 +198,7 @@ public class SceneManager : MonoBehaviour
         lt.intensity = 8.0f;
 
         var entity = new GameObject();
-        entity.name = data.baseInfo.modelName;
+        entity.name = data.state.avatarName;
         model.transform.SetParent(entity.transform);
 
 
@@ -208,7 +208,7 @@ public class SceneManager : MonoBehaviour
         entity.transform.position = spawnpoint;
         entity.transform.rotation = rotation;
 
-        if (data.info.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
+        if (data.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
         {
             entity.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
             entityScrpt._modelHeight *= 2.5f;
@@ -221,23 +221,23 @@ public class SceneManager : MonoBehaviour
 
 
 
-        DestroyEntity(data.info.eid);
+        DestroyEntity(data.state.eid);
 
 
-        _entitys[data.info.eid] = entityScrpt;
-        if (data.baseInfo.avatarID != 0)
+        _entitys[data.state.eid] = entityScrpt;
+        if (data.state.avatarID != 0)
         {
-            _players[data.baseInfo.avatarID] = entityScrpt;
+            _players[data.state.avatarID] = entityScrpt;
         }
-        if (entityScrpt._info.baseInfo.avatarID == Facade._avatarInfo.avatarID 
-            && entityScrpt._info.info.etype == (ushort)Proto4z.EntityType.ENTITY_PLAYER)
+        if (entityScrpt._info.state.avatarID == Facade._avatarInfo.avatarID 
+            && entityScrpt._info.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
         {
-            Facade._entityID = entityScrpt._info.info.eid;
+            Facade._entityID = entityScrpt._info.state.eid;
             var selected = Instantiate(Resources.Load<GameObject>("Effect/other/selected"));
             selected.transform.SetParent(entity.transform,false);
         }
-        if (entityScrpt._info.info.state == (ushort)Proto4z.EntityState.ENTITY_STATE_DIED
-            || entityScrpt._info.info.state == (ushort)Proto4z.EntityState.ENTITY_STATE_LIE)
+        if (entityScrpt._info.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_DIED
+            || entityScrpt._info.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_LIE)
         {
             entityScrpt.PlayDeath();
         }
@@ -264,7 +264,7 @@ public class SceneManager : MonoBehaviour
 		_sceneEndTime = Time.realtimeSinceStartup + (float)notice.section.sceneEndTime - (float)notice.section.serverTime;
 
         GameObject rcsScene = null;
-        if (notice.section.sceneType == (ushort)SceneType.SCENE_HOME)
+        if (notice.section.sceneType == (ushort)SCENE_TYPE.SCENE_HOME)
         {
             if (_rcsHomeScene == null)
             {
@@ -272,7 +272,7 @@ public class SceneManager : MonoBehaviour
             }
             rcsScene = _rcsHomeScene;
         }
-        else if (notice.section.sceneType == (ushort)SceneType.SCENE_ARENA)
+        else if (notice.section.sceneType == (ushort)SCENE_TYPE.SCENE_ARENA)
         {
             if (_rcsHomeScene == null)
             {
@@ -295,7 +295,7 @@ public class SceneManager : MonoBehaviour
     }
 	void OnSceneRefreshNotice(SceneRefreshNotice notice)
 	{
-		Facade._sceneManager.RefreshEntityInfo(notice.entityInfos);
+		Facade._sceneManager.RefreshEntityInfo(notice.entityStates);
 		Facade._sceneManager.RefreshEntityMove(notice.entityMoves);
 	}
 	void OnAddEntityNotice(AddEntityNotice notice)
@@ -346,33 +346,33 @@ public class SceneManager : MonoBehaviour
             {
                 continue;
             }
-            Debug.Log("OnSceneEventNotice[" + e._info.baseInfo.avatarName + "] event=" + ev.ev);
-            if (ev.ev == (ushort)SceneEvent.SCENE_EVENT_REBIRTH)
+            Debug.Log("OnSceneEventNotice[" + e._info.state.avatarName + "] event=" + ev.ev);
+            if (ev.ev == (ushort)SCENE_EVENT.SCENE_EVENT_REBIRTH)
             {
                 var strPos = ev.mix.Split(',');
                 e._info.mv.position.x = double.Parse(strPos[0]);
                 e._info.mv.position.y = double.Parse(strPos[1]);
-                e._info.info.curHP = ev.val;
+                e._info.state.curHP = ev.val;
                 e.transform.position = new Vector3((float)e._info.mv.position.x, e.transform.position.y, (float)e._info.mv.position.y);
                 e.PlayFree();
                 StartCoroutine(e.CreateEffect("Effect/other/fuhuo", Vector3.zero, 0f, 5f));
             }
-            else if (ev.ev == (ushort) SceneEvent.SCENE_EVENT_LIE)
+            else if (ev.ev == (ushort)SCENE_EVENT.SCENE_EVENT_LIE)
             {
                 e.PlayDeath();
                 
             }
-            else if (ev.ev == (ushort) SceneEvent.SCENE_EVENT_HARM_ATTACK
-                || ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_HILL
-                || ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_CRITICAL
-                || ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_MISS)
+            else if (ev.ev == (ushort)SCENE_EVENT.SCENE_EVENT_HARM_ATTACK
+                || ev.ev == (ushort)SCENE_EVENT.SCENE_EVENT_HARM_HILL
+                || ev.ev == (ushort)SCENE_EVENT.SCENE_EVENT_HARM_CRITICAL
+                || ev.ev == (ushort)SCENE_EVENT.SCENE_EVENT_HARM_MISS)
             {
                 GameObject obj = new GameObject();
                 obj.name = "FightFloatingText";
                 obj.transform.position = e.transform.position;
                 obj.transform.localScale = e.transform.localScale;
                 var text = obj.AddComponent<FightFloatingText>();
-                if (ev.ev == (ushort)SceneEvent.SCENE_EVENT_HARM_HILL)
+                if (ev.ev == (ushort)SCENE_EVENT.SCENE_EVENT_HARM_HILL)
                 {
                     text._text = "+" + ev.val;
                     text._textColor = Color.blue;

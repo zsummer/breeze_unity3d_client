@@ -172,8 +172,8 @@ public class ServerProxy : MonoBehaviour
     void OnSceneGroupInfoNotice(SceneGroupInfoNotice notice)
     {
         if (Facade._groupInfo != null
-            && Facade._groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_ACTIVE
-            && notice.groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_NONE)
+            && Facade._groupInfo.sceneState == (UInt16)SCENE_STATE.SCENE_STATE_ACTIVE
+            && notice.groupInfo.sceneState == (UInt16)SCENE_STATE.SCENE_STATE_NONE)
         {
 			Facade._sceneManager.DestroyCurrentScene ();
             if (_sceneClient != null)
@@ -183,8 +183,8 @@ public class ServerProxy : MonoBehaviour
             }
         }
         if (Facade._groupInfo != null
-            && Facade._groupInfo.sceneState != (UInt16)SceneState.SCENE_STATE_WAIT
-            && notice.groupInfo.sceneState == (UInt16)SceneState.SCENE_STATE_WAIT)
+            && Facade._groupInfo.sceneState != (UInt16)SCENE_STATE.SCENE_STATE_WAIT
+            && notice.groupInfo.sceneState == (UInt16)SCENE_STATE.SCENE_STATE_WAIT)
         {
             CreateSceneSession(Facade._avatarInfo.avatarID, notice.groupInfo);
         }
@@ -224,9 +224,9 @@ public class ServerProxy : MonoBehaviour
         {
             return;
         }
-        if (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_MATCHING ||
-            (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_ACTIVE
-            && Facade._groupInfo.sceneType == (ushort)SceneType.SCENE_HOME))
+        if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_MATCHING ||
+            (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE
+            && Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_HOME))
         {
             _gameClient.Send(new SceneGroupCancelReq());
         }
@@ -240,7 +240,7 @@ public class ServerProxy : MonoBehaviour
         {
             return;
         }
-        if (Facade._groupInfo.sceneState != (ushort)SceneState.SCENE_STATE_NONE && Facade._groupInfo.sceneType != (ushort)SceneType.SCENE_HOME)
+        if (Facade._groupInfo.sceneState != (ushort)SCENE_STATE.SCENE_STATE_NONE && Facade._groupInfo.sceneType != (ushort)SCENE_TYPE.SCENE_HOME)
         {
             return;
         }
@@ -248,13 +248,13 @@ public class ServerProxy : MonoBehaviour
         {
             return;
         }
-        if (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_ACTIVE)
+        if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE)
         {
             CreateSceneSession(Facade._avatarInfo.avatarID, Facade._groupInfo);
         }
         else
         {
-            _gameClient.Send(new Proto4z.SceneGroupEnterReq((ushort)SceneType.SCENE_HOME, 0));
+            _gameClient.Send(new Proto4z.SceneGroupEnterReq((ushort)SCENE_TYPE.SCENE_HOME, 0));
         }
     }
     void OnArenaScene()
@@ -263,7 +263,7 @@ public class ServerProxy : MonoBehaviour
         {
             return;
         }
-        if (Facade._groupInfo.sceneState != (ushort)SceneState.SCENE_STATE_NONE && Facade._groupInfo.sceneType != (ushort)SceneType.SCENE_ARENA)
+        if (Facade._groupInfo.sceneState != (ushort)SCENE_STATE.SCENE_STATE_NONE && Facade._groupInfo.sceneType != (ushort)SCENE_TYPE.SCENE_ARENA)
         {
             return;
         }
@@ -271,13 +271,13 @@ public class ServerProxy : MonoBehaviour
         {
             return;
         }
-        if (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_ACTIVE)
+        if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE)
         {
             CreateSceneSession(Facade._avatarInfo.avatarID, Facade._groupInfo);
         }
         else
         {
-            _gameClient.Send(new Proto4z.SceneGroupEnterReq((ushort)SceneType.SCENE_ARENA, 0));
+            _gameClient.Send(new Proto4z.SceneGroupEnterReq((ushort)SCENE_TYPE.SCENE_ARENA, 0));
         }
     }
 
@@ -349,7 +349,7 @@ public class ServerProxy : MonoBehaviour
 
 		if (Facade._avatarInfo != null && Facade._entityID != 0) 
 		{
-			var modelID = Facade._sceneManager.GetEntity (Facade._entityID)._info.baseInfo.modelID;
+			var modelID = Facade._sceneManager.GetEntity (Facade._entityID)._info.state.modelID;
 			name = "当前模型[" + modelID +"]:" + Facade._modelDict.GetModelName(modelID);
 			nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
 			position.y += nameSize.y;
@@ -362,19 +362,19 @@ public class ServerProxy : MonoBehaviour
         {
             name = "当前位置:主界面";
         }
-        else if (Facade._groupInfo.sceneType == (ushort)SceneType.SCENE_NONE)
+        else if (Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_NONE)
         {
             name = "当前位置:主界面";
         }
-        else if (Facade._groupInfo.sceneType == (ushort)SceneType.SCENE_HOME)
+        else if (Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_HOME)
         {
             name = "当前位置:主城";
         }
-        else if (Facade._groupInfo.sceneType == (ushort)SceneType.SCENE_MELEE)
+        else if (Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_MELEE)
         {
             name = "当前位置:乱斗场";
         }
-        else if (Facade._groupInfo.sceneType == (ushort)SceneType.SCENE_ARENA)
+        else if (Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_ARENA)
         {
             name = "当前位置:竞技场";
         }
@@ -385,19 +385,19 @@ public class ServerProxy : MonoBehaviour
         nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
 		position.y += nameSize.y;
         GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
-        if (Facade._groupInfo == null || Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_NONE)
+        if (Facade._groupInfo == null || Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_NONE)
         {
             name = "当前状态:闲置";
         }
-        else if (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_MATCHING)
+        else if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_MATCHING)
         {
             name = "当前状态:匹配中";
         }
-        else if (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_ALLOCATE)
+        else if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ALLOCATE)
         {
             name = "当前状态:场景调度";
         }
-        else if (Facade._groupInfo.sceneState == (ushort)SceneState.SCENE_STATE_ACTIVE)
+        else if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE)
         {
             name = "当前状态:游戏中";
         }
