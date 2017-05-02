@@ -278,24 +278,36 @@ public class EntityModel : MonoBehaviour
 
         Vector3 worldPosition = new Vector3(transform.position.x, transform.position.y + _modelHeight, transform.position.z);
         Vector2 position = Camera.main.WorldToScreenPoint(worldPosition);
+        GUIStyle st = new GUIStyle();
+
+
         if (true)
         {
+
+            st.normal.textColor = Color.white;
+            if (_info.state.eid != Facade._entityID && Facade._entityID != 0)
+            {
+                EntityModel player = Facade._sceneManager.GetEntity(Facade._entityID);
+                if (player && player._info.state.foe == _info.state.eid)
+                {
+                    st.normal.textColor = Color.red;
+                }
+            }
             worldPosition = new Vector3(transform.position.x, transform.position.y, transform.position.z);
             position = _mainCamera.WorldToScreenPoint(worldPosition);
             position = new Vector2(position.x, Screen.height - position.y);
-            GUI.Box(new Rect(position, new Vector2(20, 20)), "c");
+            GUI.Box(new Rect(position, new Vector2(20, 20)), "c", st);
 
             worldPosition = new Vector3((float)_info.mv.position.x, transform.position.y, (float)_info.mv.position.y);
             
             position = _mainCamera.WorldToScreenPoint(worldPosition);
             position = new Vector2(position.x, Screen.height - position.y);
-            GUI.Box(new Rect(position, new Vector2(20, 20)), "s");
+            GUI.Box(new Rect(position, new Vector2(20, 20)), "s", st);
         }
         worldPosition = new Vector3(transform.position.x, transform.position.y + _modelHeight, transform.position.z);
         position = Camera.main.WorldToScreenPoint(worldPosition);
         position = new Vector2(position.x, Screen.height - position.y);
 
-        GUIStyle st = new GUIStyle();
         st.normal.textColor = Color.red;
         st.normal.background = null;
         st.fontSize = (int)(Screen.height * GameOption._fontSizeScreeHeightRate);
@@ -413,7 +425,7 @@ public class EntityModel : MonoBehaviour
             }
             if (_info.mv.waypoints.Count > 0)
             {
-                var face = new Vector3((float)_info.mv.waypoints[0].x, 0, (float)_info.mv.waypoints[0].y) - transform.position;
+                var face = new Vector3((float)_info.mv.waypoints[0].x, transform.position.y, (float)_info.mv.waypoints[0].y) - transform.position;
                 var euler = Vector3.Angle(face, Vector3.forward);
                 if (face.x < 0f)
                 {

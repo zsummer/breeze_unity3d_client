@@ -14,26 +14,25 @@ public class TouchPanel : MonoBehaviour
     public Image strick;
     Vector3 _originStrick;
     Vector3 _lastDirt;
-    bool _isStrick = false;
+    int _strickTouch = -1;
     EntityModel _control;
     float _lastSendMove = 0.0f;
-
     void Start ()
     {
         _event = UnityEngine.EventSystems.EventSystem.current;
     }
-    void BeginStrick(Vector3 position)
+    void BeginStrick(Vector3 position, int touch)
     {
-        _isStrick = true;
+        _strickTouch = touch;
         _originStrick = position;
         strick.gameObject.SetActive(true);
         strick.transform.position = position;
     }
     void EndStrick()
     {
-        if (_isStrick)
+        if (_strickTouch >= 0)
         {
-            _isStrick = false;
+            _strickTouch = -1;
             strick.gameObject.SetActive(false);
             var req = new MoveReq();
             req.eid = Facade._entityID;
@@ -47,9 +46,21 @@ public class TouchPanel : MonoBehaviour
 
 
 
-    void CheckStrick(Vector3 position)
+    void CheckStrick(int touchCount)
     {
-        var dist = Vector3.Distance(position, _originStrick);
+        if (_strickTouch < 0)
+        {
+            return;
+        }
+        if (touchCount == 0 
+            || Input.GetTouch(_strickTouch).phase == TouchPhase.Canceled
+            || Input.GetTouch(_strickTouch).phase == TouchPhase.Ended)
+        {
+            EndStrick();
+            return;
+        }
+
+        var dist = Vector3.Distance(Input.GetTouch(_strickTouch).position, _originStrick);
         if (dist < 0.3f)
         {
             return;
@@ -58,7 +69,7 @@ public class TouchPanel : MonoBehaviour
         {
             dist = Screen.width * GameOption._TouchRedius;
         }
-        var dir = Vector3.Normalize(position - _originStrick);
+        var dir = Vector3.Normalize((Vector3)Input.GetTouch(_strickTouch).position - _originStrick);
         strick.transform.position = _originStrick + (dir * dist);
 
 
@@ -112,9 +123,9 @@ public class TouchPanel : MonoBehaviour
                     break;
                 }
             }
-            _isStrick = false;
+            _strickTouch = -1;
         }
-            
+
         /*
         if (true)
         {
@@ -143,13 +154,27 @@ public class TouchPanel : MonoBehaviour
         }
         */
 
+        int touchCount = Input.touchCount;
+        if (_strickTouch < 0 && touchCount > 0)
+        {
+            for (int i = 0; i < touchCount; i++)
+            {
+                if(Input.GetTouch(i).phase == TouchPhase.Began 
+                    && RectTransformUtility.RectangleContainsScreenPoint((transform as RectTransform), new Vector2(Input.GetTouch(i).position.x, Input.GetTouch(i).position.y)))
+                {
+                    BeginStrick(Input.GetTouch(i).position, i);
+                    break;
+                }
+            }
+        }
+        if (_strickTouch >= 0 )
+        {
+            CheckStrick(touchCount);
+        }
+
         if (Input.GetMouseButtonDown(0))
         {
-            if (RectTransformUtility.RectangleContainsScreenPoint((transform as RectTransform), new Vector2(Input.mousePosition.x, Input.mousePosition.y)))
-            {
-                BeginStrick(Input.mousePosition);
-            }
-			else if(!_event.IsPointerOverGameObject())
+            if(!_event.IsPointerOverGameObject())
             {
 #if UNITY_EDITOR 
 
@@ -169,13 +194,7 @@ public class TouchPanel : MonoBehaviour
             }
 
         }
-        if (Input.GetMouseButtonUp(0))
-        {
-            EndStrick();
-        }
-        if (_isStrick)
-        {
-            CheckStrick(Input.mousePosition);
-        }
+
+
     }
 }

@@ -89,7 +89,17 @@ public class SceneManager : MonoBehaviour
             var entity = GetEntity(state.eid);
             if (entity != null)
             {
-                entity._info.state = state;
+                if(entity._info.state.modelID != state.modelID)
+                {
+                    entity._info.state = state;
+                    CreateEntity(entity._info);
+                }
+                else
+                {
+                    entity._info.state = state;
+                }
+                
+
             }
         }
     }
@@ -331,7 +341,8 @@ public class SceneManager : MonoBehaviour
 		{
 			return;
 		}
-		entity.PlayAttack();
+        entity.transform.LookAt(new Vector3((float)notice.skill.activeDst.x, entity.transform.position.y, (float)notice.skill.activeDst.y));
+        entity.PlayAttack();
 	}
 	void OnMoveResp(MoveResp resp)
 	{

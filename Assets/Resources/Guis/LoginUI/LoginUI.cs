@@ -77,7 +77,7 @@ public class LoginUI : MonoBehaviour {
             }
             else
             {
-                Facade._serverProxy.Login("192.168.1.216", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
+                Facade._serverProxy.Login("beijing.zhonglushicai.com", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
             }
 
         });
