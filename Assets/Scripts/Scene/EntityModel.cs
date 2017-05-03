@@ -185,8 +185,10 @@ public class EntityModel : MonoBehaviour
 
 
 
+    private float _lockedFaceTime = 0;
     private float _startMoveTime = 0;
     private Vector3 _startMovePosition;
+    
 
     private Camera _mainCamera;
 
@@ -244,12 +246,18 @@ public class EntityModel : MonoBehaviour
         var attack = Instantiate(Resources.Load<GameObject>(path));
         attack.transform.SetParent(gameObject.transform, false);
         attack.transform.localPosition += offset;
-        var childs = attack.GetComponentsInChildren<Transform>();
         DestroyObject(attack.gameObject, keep);
+
     }
 
+    public void LockedFace(float lockTime)
+    {
+        _lockedFaceTime = Time.realtimeSinceStartup + lockTime;
+    }
+    
     public void PlayAttack()
     {
+        LockedFace(1f);
         _anim.CrossFade(_attack.name);
         StartCoroutine(CreateEffect("Effect/skill/attack", Vector3.forward, 0.1f, 2f));
     }
@@ -283,7 +291,10 @@ public class EntityModel : MonoBehaviour
 
         if (true)
         {
-
+            if (_info == null)
+            {
+                return;
+            }
             st.normal.textColor = Color.white;
             if (_info.state.eid != Facade._entityID && Facade._entityID != 0)
             {
@@ -359,6 +370,10 @@ public class EntityModel : MonoBehaviour
     }
     void FixedUpdate()
     {
+        if (_info ==null)
+        {
+            return;
+        }
         //check main player 
         if (Facade._entityID != 0 && (_mainPlayer == null || _mainPlayer._info.state.eid != Facade._entityID))
         {
@@ -423,7 +438,7 @@ public class EntityModel : MonoBehaviour
             {
                 _anim.CrossFade(_runned.name, 0.2f);
             }
-            if (_info.mv.waypoints.Count > 0)
+            if (_info.mv.waypoints.Count > 0 && Time.realtimeSinceStartup > _lockedFaceTime)
             {
                 var face = new Vector3((float)_info.mv.waypoints[0].x, transform.position.y, (float)_info.mv.waypoints[0].y) - transform.position;
                 var euler = Vector3.Angle(face, Vector3.forward);
