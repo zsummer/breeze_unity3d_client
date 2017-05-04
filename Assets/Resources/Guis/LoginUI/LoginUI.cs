@@ -7,44 +7,32 @@ public class LoginUI : MonoBehaviour {
 
     // Use this for initialization
     public Button _loginButton;
-    public Toggle _devTonggle;
+    public InputField _hostInput;
+    public InputField _portInput;
     public InputField _accountInput;
     public InputField _passwdInput;
 
     private float _lastClickLogin = 0;
-    void Start ()
+    void setDefaultValue(ref InputField field, string key, string def)
     {
-        if (PlayerPrefs.GetString("account") != null)
+        string cache = PlayerPrefs.GetString(key);
+        if (cache != null && cache.Length> 0)
         {
-            _accountInput.text = PlayerPrefs.GetString("account");
+            field.text = cache;
         }
-        if (PlayerPrefs.GetString("passwd") != null)
+        if (field.text.Length == 0 && def.Length > 0)
         {
-            _passwdInput.text = PlayerPrefs.GetString("passwd");
+            field.text = def;
         }
 
-        _accountInput.onValueChanged.AddListener(delegate (string text)
-        {
-            if (text.Length > 0)
-            {
-                _accountInput.placeholder.enabled = false;
-            }
-            else
-            {
-                _accountInput.placeholder.enabled = true;
-            }
-        });
-        _passwdInput.onValueChanged.AddListener(delegate (string text)
-        {
-            if (text.Length > 0)
-            {
-                _passwdInput.placeholder.enabled = false;
-            }
-            else
-            {
-                _passwdInput.placeholder.enabled = true;
-            }
-        });
+    }
+    void Start ()
+    {
+        setDefaultValue(ref _hostInput, "login.host", "beijing.zhonglushicai.com");
+        setDefaultValue(ref _portInput, "login.port", "26001");
+        setDefaultValue(ref _accountInput, "login.account", "");
+        setDefaultValue(ref _passwdInput, "login.passwd", "");
+        
 
  
         _loginButton.onClick.AddListener(delegate () 
@@ -53,33 +41,26 @@ public class LoginUI : MonoBehaviour {
             {
                 return;
             }
-            if (_passwdInput.text.Trim().Length > 15 || _passwdInput.text.Trim().Length < 2)
-            {
-                return;
-            }
+
             float now = Time.realtimeSinceStartup;
             if (now - _lastClickLogin < 1f)
             {
                 return;
             }
-            _lastClickLogin = now;
-            if (_devTonggle == null)
+            ushort port = 0;
+            if (!ushort.TryParse(_portInput.text, out port))
             {
-                Debug.LogWarning("why tonggle is null?");
                 return;
             }
+            _lastClickLogin = now;
 
-            PlayerPrefs.SetString("account", _accountInput.text);
-            PlayerPrefs.SetString("passwd", _passwdInput.text);
-            if (_devTonggle.isOn)
-            {
-                Facade._serverProxy.Login("localhost", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
-            }
-            else
-            {
-                Facade._serverProxy.Login("beijing.zhonglushicai.com", (ushort)26001, _accountInput.text.Trim(), _passwdInput.text.Trim());
-            }
 
+            PlayerPrefs.SetString("login.host", _hostInput.text);
+            PlayerPrefs.SetString("login.port", _portInput.text);
+            PlayerPrefs.SetString("login.account", _accountInput.text);
+            PlayerPrefs.SetString("login.passwd", _passwdInput.text);
+
+            Facade._serverProxy.Login(_hostInput.text, port, _accountInput.text.Trim(), _passwdInput.text.Trim());
         });
 	}
 	
