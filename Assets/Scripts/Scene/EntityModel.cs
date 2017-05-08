@@ -432,7 +432,9 @@ public class EntityModel : MonoBehaviour
 
         if (_info.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_ACTIVE
             && (_info.mv.action == (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_FOLLOW
-            || _info.mv.action == (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_PATH))
+            || _info.mv.action == (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_PATH
+            || _info.mv.action == (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_PASV_PATH
+            || _info.mv.action == (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_FORCE_PATH))
         {
             if (_anim.IsPlaying(_free.name) || !_anim.isPlaying)
             {
