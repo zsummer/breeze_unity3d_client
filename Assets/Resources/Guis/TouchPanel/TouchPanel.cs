@@ -81,8 +81,21 @@ public class TouchPanel : MonoBehaviour
         {
             _lastDirt = dir;
         }
-        else if (Time.realtimeSinceStartup - _lastSendMove < 1f)
+        else if (Time.realtimeSinceStartup - _lastSendMove < 0.2f)
         {
+            return;
+        }
+        EntityModel player = Facade._sceneManager.GetEntity(Facade._entityID);
+        if (player == null ||  !player.isCanMove())
+        {
+            if (player._info.mv.action != (ushort)MOVE_ACTION.MOVE_ACTION_IDLE)
+            {
+                var stopMove = new MoveReq();
+                stopMove.eid = Facade._entityID;
+                stopMove.action = (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_IDLE;
+                stopMove.clientPos = new Proto4z.EPosition(_control.transform.position.x, _control.transform.position.z);
+                Facade._serverProxy.SendToScene(stopMove);
+            }
             return;
         }
 

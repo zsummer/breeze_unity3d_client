@@ -368,6 +368,18 @@ public class EntityModel : MonoBehaviour
         textSize = GUI.skin.label.CalcSize(new GUIContent(text)) * st.fontSize / GUI.skin.font.fontSize;
         GUI.Label(new Rect(position.x - (textSize.x / 2), position.y - textSize.y - textSize.y, textSize.x, textSize.y), text, st);
     }
+    public bool isCanMove()
+    {
+        if (_info.state.state != (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_ACTIVE)
+        {
+            return false;
+        }
+        if (_anim.IsPlaying(_attack.name))
+        {
+            return false;
+        }
+        return true;
+    }
     void FixedUpdate()
     {
         if (_info ==null)
