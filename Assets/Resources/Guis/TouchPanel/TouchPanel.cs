@@ -81,7 +81,7 @@ public class TouchPanel : MonoBehaviour
         {
             _lastDirt = dir;
         }
-        else if (Time.realtimeSinceStartup - _lastSendMove < 0.2f)
+        else if (Time.realtimeSinceStartup - _lastSendMove < 0.1f)
         {
             return;
         }
@@ -96,9 +96,14 @@ public class TouchPanel : MonoBehaviour
                 stopMove.clientPos = new Proto4z.EPosition(_control.transform.position.x, _control.transform.position.z);
                 Facade._serverProxy.SendToScene(stopMove);
             }
+            _lastSendMove = Time.realtimeSinceStartup;
             return;
         }
 
+        if (Time.realtimeSinceStartup - _lastSendMove < 0.5f)
+        {
+            return;
+        }
         Vector3 dst = _control.transform.position + _lastDirt;
         _lastSendMove = Time.realtimeSinceStartup;
 
