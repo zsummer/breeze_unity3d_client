@@ -81,12 +81,13 @@ public class TouchPanel : MonoBehaviour
         {
             _lastDirt = dir;
         }
-        else if (Time.realtimeSinceStartup - _lastSendMove < 0.1f)
+        else if (Time.realtimeSinceStartup - _lastSendMove < 0.5f)
         {
             return;
         }
         EntityModel player = Facade._sceneManager.GetEntity(Facade._entityID);
-        if (player == null ||  !player.isCanMove())
+        if(false)
+ //       if (player == null ||  !player.isCanMove())
         {
             if (player._info.mv.action != (ushort)MOVE_ACTION.MOVE_ACTION_IDLE)
             {
@@ -100,10 +101,7 @@ public class TouchPanel : MonoBehaviour
             return;
         }
 
-        if (Time.realtimeSinceStartup - _lastSendMove < 0.5f)
-        {
-            return;
-        }
+
         Vector3 dst = _control.transform.position + _lastDirt;
         _lastSendMove = Time.realtimeSinceStartup;
 
