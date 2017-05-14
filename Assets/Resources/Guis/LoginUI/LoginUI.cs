@@ -37,7 +37,7 @@ public class LoginUI : MonoBehaviour {
  
         _loginButton.onClick.AddListener(delegate () 
         {
-            if (_accountInput.text.Trim().Length > 15 || _accountInput.text.Trim().Length < 2)
+            if (_accountInput.text.Trim().Length > 15 || _accountInput.text.Trim().Length < 1)
             {
                 return;
             }

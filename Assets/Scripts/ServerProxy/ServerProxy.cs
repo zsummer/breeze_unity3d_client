@@ -53,6 +53,7 @@ public class ServerProxy : MonoBehaviour
 
         Facade._dispatcher.AddListener("OnArenaScene", (System.Action)OnArenaScene);
         Facade._dispatcher.AddListener("OnHomeScene", (System.Action)OnHomeScene);
+        Facade._dispatcher.AddListener("OnMeleeScene", (System.Action)OnMeleeScene);
         Facade._dispatcher.AddListener("OnExitScene", (System.Action)OnExitScene);
 
 
@@ -224,9 +225,12 @@ public class ServerProxy : MonoBehaviour
         {
             return;
         }
-        if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_MATCHING ||
-            (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE
-            && Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_HOME))
+        if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_MATCHING 
+            || ( Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE
+                        && (Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_HOME
+                               || Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_MELEE)
+                 )
+             )
         {
             _gameClient.Send(new SceneGroupCancelReq());
         }
@@ -257,6 +261,32 @@ public class ServerProxy : MonoBehaviour
             _gameClient.Send(new Proto4z.SceneGroupEnterReq((ushort)SCENE_TYPE.SCENE_HOME, 0));
         }
     }
+
+    void OnMeleeScene()
+    {
+        if (Facade._groupInfo == null)
+        {
+            return;
+        }
+        if (Facade._groupInfo.sceneState != (ushort)SCENE_STATE.SCENE_STATE_NONE && Facade._groupInfo.sceneType != (ushort)SCENE_TYPE.SCENE_MELEE)
+        {
+            return;
+        }
+        if (Facade._groupInfo.groupID == 0)
+        {
+            return;
+        }
+        if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE)
+        {
+            CreateSceneSession(Facade._avatarInfo.avatarID, Facade._groupInfo);
+        }
+        else
+        {
+            _gameClient.Send(new Proto4z.SceneGroupEnterReq((ushort)SCENE_TYPE.SCENE_MELEE, 0));
+        }
+    }
+
+
     void OnArenaScene()
     {
         if (Facade._groupInfo == null)
@@ -422,6 +452,14 @@ public class ServerProxy : MonoBehaviour
             nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
             position.y += nameSize.y;
             GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+
+
+            EntityModel em = Facade._sceneManager.GetEntity(Facade._entityID);
+            name = "坐标:" + em._info.mv.position.x.ToString("0.00") + ":" +em._info.mv.position.y.ToString("0.00");
+            nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
+            position.y += nameSize.y;
+            GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+
         }
         name = "about: zsummer";
         nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;

@@ -39,6 +39,8 @@ public class MainUI: MonoBehaviour
             delegate () { Facade._dispatcher.TriggerEvent("OnExitScene", null); });
         _selectScenePanel.Find("HomeScene").GetComponent<Button>().onClick.AddListener(
             delegate () { Facade._dispatcher.TriggerEvent("OnHomeScene", null); });
+        _selectScenePanel.Find("MeleeScene").GetComponent<Button>().onClick.AddListener(
+            delegate () { Facade._dispatcher.TriggerEvent("OnMeleeScene", null); });
         _selectScenePanel.Find("ArenaScene").GetComponent<Button>().onClick.AddListener(
             delegate () { Facade._dispatcher.TriggerEvent("OnArenaScene", null); });
 		_selectScenePanel.Find("ChangeModel").GetComponent<Button>().onClick.AddListener(

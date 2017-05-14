@@ -13,6 +13,9 @@ public class GameOption : MonoBehaviour
 	public static bool _EnbaleClickMove = false; // 开启点击移动  
     public static float _AudioVolume = 0.1f; //默认音量 
 
-
+    void Awake()
+    {
+        Application.targetFrameRate = 60;
+    }
 }
 

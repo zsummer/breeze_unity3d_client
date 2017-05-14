@@ -13,6 +13,7 @@ public class SceneManager : MonoBehaviour
 	float _sceneEndTime = 0f;
 
     GameObject _rcsHomeScene = null;
+    GameObject _rcsMeleeScene = null;
 
     void Awake()
 	{
@@ -279,8 +280,18 @@ public class SceneManager : MonoBehaviour
             if (_rcsHomeScene == null)
             {
                 _rcsHomeScene = Resources.Load<GameObject>("Scene/Home");
+                StartCoroutine(CreateRandomMap());
             }
             rcsScene = _rcsHomeScene;
+        }
+        else if (notice.section.sceneType == (ushort)SCENE_TYPE.SCENE_MELEE)
+        {
+            if (_rcsMeleeScene == null)
+            {
+                _rcsMeleeScene = Resources.Load<GameObject>("Scene/Melee");
+                StartCoroutine(CreateRandomMap());
+            }
+            rcsScene = _rcsMeleeScene;
         }
         else if (notice.section.sceneType == (ushort)SCENE_TYPE.SCENE_ARENA)
         {
@@ -296,14 +307,26 @@ public class SceneManager : MonoBehaviour
             return;
         }
         Debug.Log("create scene");
-        _scene = Instantiate(_rcsHomeScene).transform;
+        _scene = Instantiate(rcsScene).transform;
         _scene.gameObject.SetActive(true);
         Facade._mainUI.SetActiveBG(false);
         Facade._mainUI._touchPanel.gameObject.SetActive(true);
         Facade._mainUI._skillPanel.gameObject.SetActive(true);
         Facade._audioManager._welcome.Play(0);
     }
-	void OnSceneRefreshNotice(SceneRefreshNotice notice)
+
+    private IEnumerator CreateRandomMap()
+    {
+        GameObject  go = new GameObject("_Spawner___");
+        go.AddComponent<Spawner>();
+        while (!Spawner.isComplete)
+        {
+            yield return null;
+        }
+        yield break;
+    }
+
+    void OnSceneRefreshNotice(SceneRefreshNotice notice)
 	{
 		Facade._sceneManager.RefreshEntityInfo(notice.entityStates);
 		Facade._sceneManager.RefreshEntityMove(notice.entityMoves);
