@@ -460,6 +460,27 @@ public class ServerProxy : MonoBehaviour
             position.y += nameSize.y;
             GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
 
+            if (em._info.mv.action == (ushort)MOVE_ACTION.MOVE_ACTION_IDLE)
+            {
+                name = "静止";
+            }
+            else if (em._info.mv.action == (ushort)MOVE_ACTION.MOVE_ACTION_FOLLOW)
+            {
+                name = "跟随";
+            }
+            else if (em._info.mv.action == (ushort)MOVE_ACTION.MOVE_ACTION_PATH)
+            {
+                name = "移动";
+            }
+            else 
+            {
+                name = "被动位移";
+            }
+            name += ": real:" + em._info.mv.realSpeed.ToString("0.00") + " , expect" + em._info.mv.expectSpeed.ToString("0.00");
+            nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
+            position.y += nameSize.y;
+            GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+
         }
         name = "about: zsummer";
         nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
