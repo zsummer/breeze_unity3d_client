@@ -280,7 +280,6 @@ public class SceneManager : MonoBehaviour
             if (_rcsHomeScene == null)
             {
                 _rcsHomeScene = Resources.Load<GameObject>("Scene/Home");
-                StartCoroutine(CreateRandomMap());
             }
             rcsScene = _rcsHomeScene;
         }
@@ -289,7 +288,7 @@ public class SceneManager : MonoBehaviour
             if (_rcsMeleeScene == null)
             {
                 _rcsMeleeScene = Resources.Load<GameObject>("Scene/Melee");
-                StartCoroutine(CreateRandomMap());
+                //StartCoroutine(CreateRandomMap());
             }
             rcsScene = _rcsMeleeScene;
         }
