@@ -6,7 +6,7 @@ using UnityEngine;
 
 public static class MainScreenLabel
 {
-    static GradientColor gradient = new GradientColor();
+    static GradientColor gradient = new GradientColor(0.2f, 0.00f, 0.1f);
     static GUIStyle guiStyle = new GUIStyle();
     static Vector2 labelSize = new Vector2();
 
@@ -22,7 +22,6 @@ public static class MainScreenLabel
         guiStyle.fontSize = (int)(Screen.height * GameOption._fontSizeScreeHeightRate);
         labelSize.x = guiStyle.fontSize;
         labelSize.y = guiStyle.fontSize;
-
         for (int i = 0; i < bulletins.Count; i++)
         {
             Label(bulletins.ElementAt(i).Value);
