@@ -343,54 +343,39 @@ public class ServerProxy : MonoBehaviour
 
 	void OnAttachSceneResp(AttachSceneResp resp)
 	{
-		
-	}
+        
+    }
 
 
     void OnGUI()
     {
         string name;
-        GUIStyle st = new GUIStyle();
-        st.richText = true;
-        MainGradientColor.refresh();
-        st.normal.textColor = MainGradientColor.fetchChange();
-        //st.normal.textColor = new Color(0, 180, 0);
-        st.normal.background = null;
-        st.fontSize = (int)(Screen.height * GameOption._fontSizeScreeHeightRate);
-        Vector2 nameSize;
-        Vector2 position = new Vector2(st.fontSize, st.fontSize);
+        MainScreenLabel.Preprocess();
 
 		name = "屏幕大小:" + Screen.width + "*" + Screen.height;
-		nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-		GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+        MainScreenLabel.Label(ref name);
+
+
 
 		name = "系统日期:" + System.DateTime.Now;
-		nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-		position.y += nameSize.y;
-		GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+        MainScreenLabel.Label(ref name);
 
-		name = "FPS:" + _fpsValue;
-		nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-		position.y += nameSize.y;
-		GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+        name = "FPS:" + _fpsValue;
+        MainScreenLabel.Label(ref name);
 
-		if (Facade._avatarInfo != null) 
+        if (Facade._avatarInfo != null) 
 		{
 			var modelID = Facade._avatarInfo.modeID;
 			name = "角色模型[" + modelID +"]:" + Facade._modelDict.GetModelName(modelID);
-			nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-			position.y += nameSize.y;
-			GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
-		}
+            MainScreenLabel.Label(ref name);
+        }
 
 		if (Facade._avatarInfo != null && Facade._entityID != 0) 
 		{
 			var modelID = Facade._sceneManager.GetEntity (Facade._entityID)._info.state.modelID;
 			name = "当前模型[" + modelID +"]:" + Facade._modelDict.GetModelName(modelID);
-			nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-			position.y += nameSize.y;
-			GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
-		}
+            MainScreenLabel.Label(ref name);
+        }
 
 
 
@@ -418,9 +403,8 @@ public class ServerProxy : MonoBehaviour
         {
             name = "当前位置:未命名战场";
         }
-        nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-		position.y += nameSize.y;
-        GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+        MainScreenLabel.Label(ref name);
+
         if (Facade._groupInfo == null || Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_NONE)
         {
             name = "当前状态:闲置";
@@ -441,30 +425,22 @@ public class ServerProxy : MonoBehaviour
         {
             name = "当前状态:其他状态";
         }
-        nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-        position.y += nameSize.y;
-        GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+        MainScreenLabel.Label(ref name);
 
 
 
         if (Facade._entityID != 0)
         {
             name = "Ping:" + _scenePingValue +"秒";
-            nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-            position.y += nameSize.y;
-            GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+            MainScreenLabel.Label(ref name);
 
-			name = "场景过期:" + Facade._sceneManager.GetSceneCountdown() + "秒" ;
-            nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-            position.y += nameSize.y;
-            GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+            name = "场景过期:" + Facade._sceneManager.GetSceneCountdown() + "秒" ;
+            MainScreenLabel.Label(ref name);
 
 
             EntityModel em = Facade._sceneManager.GetEntity(Facade._entityID);
             name = "坐标:" + em._info.mv.position.x.ToString("0.00") + ":" +em._info.mv.position.y.ToString("0.00");
-            nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-            position.y += nameSize.y;
-            GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+            MainScreenLabel.Label(ref name);
 
             if (em._info.mv.action == (ushort)MOVE_ACTION.MOVE_ACTION_IDLE)
             {
@@ -483,15 +459,11 @@ public class ServerProxy : MonoBehaviour
                 name = "被动位移";
             }
             name += ": real:" + em._info.mv.realSpeed.ToString("0.00") + " , expect" + em._info.mv.expectSpeed.ToString("0.00");
-            nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-            position.y += nameSize.y;
-            GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+            MainScreenLabel.Label(ref name);
 
         }
         name = "about: zsummer";
-        nameSize = GUI.skin.label.CalcSize(new GUIContent(name)) * st.fontSize / GUI.skin.font.fontSize;
-        position.y += nameSize.y;
-        GUI.Label(new Rect(position.x, position.y, nameSize.x, nameSize.y), name, st);
+        MainScreenLabel.Label(ref name);
     }
 
 	void OnClientPingTestResp(ClientPingTestResp resp)
