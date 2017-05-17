@@ -150,6 +150,7 @@ public class ServerProxy : MonoBehaviour
         {
             Facade._mainUI._selectScenePanel.gameObject.SetActive(true);
         }
+        MainScreenLabel.Bulletin(1, "登录时间:" + DateTime.Now.ToString());
     }
     void CreateSceneSession(ulong avatarID, Proto4z.SceneGroupInfo groupInfo)
     {
@@ -353,28 +354,28 @@ public class ServerProxy : MonoBehaviour
         MainScreenLabel.Preprocess();
 
 		name = "屏幕大小:" + Screen.width + "*" + Screen.height;
-        MainScreenLabel.Label(ref name);
+        MainScreenLabel.Label(name);
 
 
 
 		name = "系统日期:" + System.DateTime.Now;
-        MainScreenLabel.Label(ref name);
+        MainScreenLabel.Label(name);
 
         name = "FPS:" + _fpsValue;
-        MainScreenLabel.Label(ref name);
+        MainScreenLabel.Label(name);
 
         if (Facade._avatarInfo != null) 
 		{
 			var modelID = Facade._avatarInfo.modeID;
 			name = "角色模型[" + modelID +"]:" + Facade._modelDict.GetModelName(modelID);
-            MainScreenLabel.Label(ref name);
+            MainScreenLabel.Label(name);
         }
 
 		if (Facade._avatarInfo != null && Facade._entityID != 0) 
 		{
 			var modelID = Facade._sceneManager.GetEntity (Facade._entityID)._info.state.modelID;
 			name = "当前模型[" + modelID +"]:" + Facade._modelDict.GetModelName(modelID);
-            MainScreenLabel.Label(ref name);
+            MainScreenLabel.Label(name);
         }
 
 
@@ -403,7 +404,7 @@ public class ServerProxy : MonoBehaviour
         {
             name = "当前位置:未命名战场";
         }
-        MainScreenLabel.Label(ref name);
+        MainScreenLabel.Label(name);
 
         if (Facade._groupInfo == null || Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_NONE)
         {
@@ -425,22 +426,22 @@ public class ServerProxy : MonoBehaviour
         {
             name = "当前状态:其他状态";
         }
-        MainScreenLabel.Label(ref name);
+        MainScreenLabel.Label(name);
 
 
 
         if (Facade._entityID != 0)
         {
             name = "Ping:" + _scenePingValue +"秒";
-            MainScreenLabel.Label(ref name);
+            MainScreenLabel.Label(name);
 
             name = "场景过期:" + Facade._sceneManager.GetSceneCountdown() + "秒" ;
-            MainScreenLabel.Label(ref name);
+            MainScreenLabel.Label(name);
 
 
             EntityModel em = Facade._sceneManager.GetEntity(Facade._entityID);
             name = "坐标:" + em._info.mv.position.x.ToString("0.00") + ":" +em._info.mv.position.y.ToString("0.00");
-            MainScreenLabel.Label(ref name);
+            MainScreenLabel.Label(name);
 
             if (em._info.mv.action == (ushort)MOVE_ACTION.MOVE_ACTION_IDLE)
             {
@@ -459,11 +460,11 @@ public class ServerProxy : MonoBehaviour
                 name = "被动位移";
             }
             name += ": real:" + em._info.mv.realSpeed.ToString("0.00") + " , expect" + em._info.mv.expectSpeed.ToString("0.00");
-            MainScreenLabel.Label(ref name);
+            MainScreenLabel.Label(name);
 
         }
         name = "about: zsummer";
-        MainScreenLabel.Label(ref name);
+        MainScreenLabel.Label(name);
     }
 
 	void OnClientPingTestResp(ClientPingTestResp resp)
