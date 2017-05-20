@@ -201,14 +201,23 @@ public class EntityModel : MonoBehaviour
         _anim = _model.GetComponent<Animation>();
         _free = _anim["free"];
         _free.wrapMode = WrapMode.Loop;
+        _free.blendMode = AnimationBlendMode.Additive;
+        _free.weight = 1;
 
         _runned = _anim["walk"];
         _runned.wrapMode = WrapMode.Loop;
+        _free.blendMode = AnimationBlendMode.Blend;
+        _free.weight = 5;
 
         _attack = _anim["attack"];
+        _free.blendMode = AnimationBlendMode.Blend;
+        _free.weight = 5;
+
+
         _death = _anim["death"];
-        
-        
+        _free.blendMode = AnimationBlendMode.Blend;
+        _free.weight = 10;
+
         _startMoveTime = Time.realtimeSinceStartup;
         _startMovePosition = transform.position;
 
@@ -258,7 +267,16 @@ public class EntityModel : MonoBehaviour
     public void PlayAttack()
     {
         LockedFace(1f);
-        _anim.CrossFade(_attack.name);
+        if (_info.mv.action != (ushort)MOVE_ACTION.MOVE_ACTION_IDLE )
+        {
+            _anim.Blend(_attack.name);
+        }
+        else
+        {
+            _anim.CrossFade(_attack.name);
+        }
+        
+
         StartCoroutine(CreateEffect("Effect/skill/attack", Vector3.forward, 0.1f, 2f));
     }
     public void PlayDeath()
@@ -443,10 +461,7 @@ public class EntityModel : MonoBehaviour
 
 
         if (_info.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_ACTIVE
-            && (_info.mv.action == (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_FOLLOW
-            || _info.mv.action == (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_PATH
-            || _info.mv.action == (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_PASV_PATH
-            || _info.mv.action == (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_FORCE_PATH))
+            && (_info.mv.action != (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_IDLE))
         {
             if (_anim.IsPlaying(_free.name) || !_anim.isPlaying)
             {
