@@ -11,6 +11,7 @@ public class MainUI: MonoBehaviour
     public Transform _skillPanel = null;
     public Transform _selectScenePanel = null;
     public Transform _touchPanel = null;
+    public Transform _miniMap = null;
 
     RawImage _bgImg = null;
     public void SetActiveBG(bool enable)
@@ -47,6 +48,8 @@ public class MainUI: MonoBehaviour
 			delegate () { Facade._dispatcher.TriggerEvent("OnChangeAvatarModel", null); });
 
         _touchPanel = LoadUI("TouchPanel", "Guis/TouchPanel/TouchPanel");
+
+        _miniMap = LoadUI("Minimap", "Guis/Minimap/Minimap");
     }
 
     void Start()

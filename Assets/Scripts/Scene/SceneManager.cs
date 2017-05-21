@@ -66,6 +66,7 @@ public class SceneManager : MonoBehaviour
 			_scene = null;
 			Facade._mainUI._skillPanel.gameObject.SetActive(false);
 			Facade._mainUI._touchPanel.gameObject.SetActive(false);
+            Facade._mainUI._miniMap.gameObject.SetActive(false);
 			Facade._mainUI.SetActiveBG(true);
             Facade._audioManager._byebye.Play(0);
         }
@@ -109,6 +110,10 @@ public class SceneManager : MonoBehaviour
         EntityModel ret = null;
         _entitys.TryGetValue(entityID, out ret);
         return ret;
+    }
+    public System.Collections.Generic.Dictionary<ulong, EntityModel> GetEntity()
+    {
+        return _entitys;
     }
     public EntityModel GetPlayer(ulong avatarID)
     {
@@ -311,6 +316,7 @@ public class SceneManager : MonoBehaviour
         Facade._mainUI.SetActiveBG(false);
         Facade._mainUI._touchPanel.gameObject.SetActive(true);
         Facade._mainUI._skillPanel.gameObject.SetActive(true);
+        Facade._mainUI._miniMap.gameObject.SetActive(true);
         Facade._audioManager._welcome.Play(0);
     }
 
