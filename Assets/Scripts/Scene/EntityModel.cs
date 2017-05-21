@@ -266,7 +266,7 @@ public class EntityModel : MonoBehaviour
     
     public void PlayAttack()
     {
-        LockedFace(1f);
+        LockedFace(_attack.length);
         if (_info.mv.action != (ushort)MOVE_ACTION.MOVE_ACTION_IDLE )
         {
             _anim.Blend(_attack.name);

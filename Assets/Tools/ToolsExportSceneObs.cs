@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using System.IO;
+#if UNITY_EDITOR 
+using UnityEditor;
 
 public class  ToolsExportSceneObs: MonoBehaviour {
 
@@ -66,3 +67,5 @@ public class  ToolsExportSceneObs: MonoBehaviour {
         fs.Close();
     }
 }
+#endif
+
