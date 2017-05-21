@@ -46,16 +46,16 @@ public class  ToolsExportSceneObs: MonoBehaviour {
             if (redius > 0f)
             {
                 string str = (go.transform.position.x - redius).ToString() + ",";
-                str += (go.transform.position.y - redius).ToString() + " ";
+                str += (go.transform.position.z - redius).ToString() + " ";
 
                 str += (go.transform.position.x + redius).ToString() + ",";
-                str += (go.transform.position.y - redius).ToString() + " ";
+                str += (go.transform.position.z - redius).ToString() + " ";
 
                 str += (go.transform.position.x + redius).ToString() + ",";
-                str += (go.transform.position.y + redius).ToString() + " ";
+                str += (go.transform.position.z + redius).ToString() + " ";
 
                 str += (go.transform.position.x - redius).ToString() + ",";
-                str += (go.transform.position.y + redius).ToString() + " ";
+                str += (go.transform.position.z + redius).ToString() + " ";
                 sw.WriteLine(str);
             }
 
