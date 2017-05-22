@@ -60,7 +60,7 @@ public class LoginUI : MonoBehaviour {
             PlayerPrefs.SetString("login.account", _accountInput.text);
             PlayerPrefs.SetString("login.passwd", _passwdInput.text);
 
-            Facade._serverProxy.Login(_hostInput.text, port, _accountInput.text.Trim(), _passwdInput.text.Trim());
+            Facade.serverProxy.Login(_hostInput.text, port, _accountInput.text.Trim(), _passwdInput.text.Trim());
         });
 	}
 	

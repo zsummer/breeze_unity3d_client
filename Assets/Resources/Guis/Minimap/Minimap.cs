@@ -18,28 +18,43 @@ public class Minimap : MonoBehaviour
     {
         return new Vector2((float)ep.x, (float)ep.y);
     }
+    public Rect GetSpaceRect(RectTransform rect)
+    {
+        Rect spaceRect = rect.rect;
+        spaceRect.x = spaceRect.x * rect.lossyScale.x + rect.position.x;
+        spaceRect.y = spaceRect.y * rect.lossyScale.y + rect.position.y;
+        spaceRect.width = spaceRect.width * rect.lossyScale.x;
+        spaceRect.height = spaceRect.height * rect.lossyScale.y;
+        return spaceRect;
+    }
+
 
     void OnGUI()
     {
         RectTransform rt = transform as RectTransform;
-        if (Facade._entityID == 0 )
+
+        Vector2 org = new Vector2(rt.position.x, Screen.height - rt.position.y);
+
+
+
+        if (Facade.entityID == 0 )
         {
             return;
         }
-        EntityModel player = Facade._sceneManager.GetEntity(Facade._entityID);
+        EntityShell player = Facade.sceneManager.GetEntity(Facade.entityID);
         if (player == null)
         {
             return;
         }
 
-        Vector2 org = new Vector2(Screen.width / 2.0f, rt.sizeDelta.y/2.0f);
+    
 
         GUIStyle st = new GUIStyle();
         st.normal.textColor = Color.green;
         
         GUI.Box(new Rect(org, new Vector2(20, 20)), "*", st);
 
-        foreach (var e in Facade._sceneManager.GetEntity())
+        foreach (var e in Facade.sceneManager.GetEntity())
         {
             if (e.Value._info.state.eid == player._info.state.eid)
             {
@@ -49,7 +64,7 @@ public class Minimap : MonoBehaviour
             vt /= 1.0f;
             vt.y = -vt.y;
             vt = org + vt;
-            if (vt.y > rt.sizeDelta.y || vt.x < org.x - rt.sizeDelta.x/2.0f || vt.x > org.x + rt.sizeDelta.x/2.0f)
+            if (!GetSpaceRect(rt).Contains(new Vector2(vt.x, Screen.height - vt.y)))
             {
                 continue;
             }

@@ -172,11 +172,14 @@ public class SyncCheck
     }
 }
 
-public class EntityModel : MonoBehaviour
+
+
+public class EntityShell : MonoBehaviour
 {
     public Proto4z.EntityFullData _info;
     public float _modelHeight = 2;
     public Transform _model = null;
+
     private AnimationState _free;
     private AnimationState _runned;
     private AnimationState _attack;
@@ -192,7 +195,7 @@ public class EntityModel : MonoBehaviour
 
     private Camera _mainCamera;
 
-    private EntityModel _mainPlayer;
+    private EntityShell _mainPlayer;
 
 
    private SyncCheck _check = new SyncCheck();
@@ -240,7 +243,7 @@ public class EntityModel : MonoBehaviour
         _startMovePosition = transform.position;
         _startMoveTime = Time.realtimeSinceStartup;
         _info.mv = mv;
-        if (Facade._entityID == _info.state.eid)
+        if (Facade.entityID == _info.state.eid)
         {
             _check.whenSync((float)_info.mv.realSpeed, (float)_info.mv.expectSpeed);
         }
@@ -297,7 +300,7 @@ public class EntityModel : MonoBehaviour
         src.y += 0.2f;
         Debug.DrawLine(src, target, Color.yellow, 1.0f);
 
-        Facade._serverProxy.SendToScene(new UseSkillReq(Facade._entityID, 1, new EPosition(target.x, target.z), 1));
+        Facade.serverProxy.SendToScene(new UseSkillReq(Facade.entityID, 1, new EPosition(target.x, target.z), 1));
     }
     void OnGUI()
     {
@@ -314,9 +317,9 @@ public class EntityModel : MonoBehaviour
                 return;
             }
             st.normal.textColor = Color.white;
-            if (_info.state.eid != Facade._entityID && Facade._entityID != 0)
+            if (_info.state.eid != Facade.entityID && Facade.entityID != 0)
             {
-                EntityModel player = Facade._sceneManager.GetEntity(Facade._entityID);
+                EntityShell player = Facade.sceneManager.GetEntity(Facade.entityID);
                 if (player && player._info.state.foe == _info.state.eid)
                 {
                     st.normal.textColor = Color.red;
@@ -346,7 +349,7 @@ public class EntityModel : MonoBehaviour
 
         if (_info.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
         {
-            if (Facade._entityID == _info.state.eid)
+            if (Facade.entityID == _info.state.eid)
             {
                 st.normal.textColor = Color.yellow;
             }
@@ -378,7 +381,7 @@ public class EntityModel : MonoBehaviour
         }
         st.normal.textColor = Color.red;
         st.fontSize = st.fontSize * 7 /10;
-        if (Facade._entityID == _info.state.eid)
+        if (Facade.entityID == _info.state.eid)
         {
             st.normal.textColor = Color.yellow;
         }
@@ -405,12 +408,12 @@ public class EntityModel : MonoBehaviour
             return;
         }
         //check main player 
-        if (Facade._entityID != 0 && (_mainPlayer == null || _mainPlayer._info.state.eid != Facade._entityID))
+        if (Facade.entityID != 0 && (_mainPlayer == null || _mainPlayer._info.state.eid != Facade.entityID))
         {
-            _mainPlayer = Facade._sceneManager.GetEntity(Facade._entityID);
+            _mainPlayer = Facade.sceneManager.GetEntity(Facade.entityID);
         }
 
-        if (Facade._entityID == _info.state.eid)
+        if (Facade.entityID == _info.state.eid)
         {
             _check.FixedUpdate(_info.state.eid);
         }

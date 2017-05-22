@@ -6,8 +6,8 @@ using System;
 
 public class SceneManager : MonoBehaviour
 {
-    private static System.Collections.Generic.Dictionary<ulong, EntityModel> _entitys = new System.Collections.Generic.Dictionary<ulong, EntityModel>();
-    private static System.Collections.Generic.Dictionary<ulong, EntityModel> _players = new System.Collections.Generic.Dictionary<ulong, EntityModel>();
+    private static System.Collections.Generic.Dictionary<ulong, EntityShell> _entitys = new System.Collections.Generic.Dictionary<ulong, EntityShell>();
+    private static System.Collections.Generic.Dictionary<ulong, EntityShell> _players = new System.Collections.Generic.Dictionary<ulong, EntityShell>();
 
 	Transform _scene = null;
 	float _sceneEndTime = 0f;
@@ -17,22 +17,22 @@ public class SceneManager : MonoBehaviour
 
     void Awake()
 	{
-		Facade._dispatcher.AddListener("OnChangeAvatarModel", (System.Action)OnChangeAvatarModel);
-		Facade._dispatcher.AddListener("ChangeModeIDResp", (System.Action<ChangeModeIDResp>)OnChangeModeIDResp);
+		Facade.dispatcher.AddListener("OnChangeAvatarModel", (System.Action)OnChangeAvatarModel);
+		Facade.dispatcher.AddListener("ChangeModeIDResp", (System.Action<ChangeModeIDResp>)OnChangeModeIDResp);
 
-		Facade._dispatcher.AddListener("SceneSectionNotice", (System.Action<SceneSectionNotice>)OnSceneSectionNotice);
-		Facade._dispatcher.AddListener("SceneRefreshNotice", (System.Action<SceneRefreshNotice>)OnSceneRefreshNotice);
-		Facade._dispatcher.AddListener("AddEntityNotice", (System.Action<AddEntityNotice>)OnAddEntityNotice);
-		Facade._dispatcher.AddListener("RemoveEntityNotice", (System.Action<RemoveEntityNotice>)OnRemoveEntityNotice);
-		Facade._dispatcher.AddListener("MoveNotice", (System.Action<MoveNotice>)OnMoveNotice);
-		Facade._dispatcher.AddListener("AddBuffNotice", (System.Action<AddBuffNotice>)OnAddBuffNotice);
-		Facade._dispatcher.AddListener("RemoveBuffNotice", (System.Action<RemoveBuffNotice>)OnRemoveBuffNotice);
-		Facade._dispatcher.AddListener("UseSkillNotice", (System.Action<UseSkillNotice>)OnUseSkillNotice);
-		Facade._dispatcher.AddListener("MoveResp", (System.Action<MoveResp>)OnMoveResp);
-        Facade._dispatcher.AddListener("UseSkillResp", (System.Action<UseSkillResp>)OnUseSkillResp);
-        Facade._dispatcher.AddListener("SceneEventNotice", (System.Action<SceneEventNotice>)OnSceneEventNotice);
+		Facade.dispatcher.AddListener("SceneSectionNotice", (System.Action<SceneSectionNotice>)OnSceneSectionNotice);
+		Facade.dispatcher.AddListener("SceneRefreshNotice", (System.Action<SceneRefreshNotice>)OnSceneRefreshNotice);
+		Facade.dispatcher.AddListener("AddEntityNotice", (System.Action<AddEntityNotice>)OnAddEntityNotice);
+		Facade.dispatcher.AddListener("RemoveEntityNotice", (System.Action<RemoveEntityNotice>)OnRemoveEntityNotice);
+		Facade.dispatcher.AddListener("MoveNotice", (System.Action<MoveNotice>)OnMoveNotice);
+		Facade.dispatcher.AddListener("AddBuffNotice", (System.Action<AddBuffNotice>)OnAddBuffNotice);
+		Facade.dispatcher.AddListener("RemoveBuffNotice", (System.Action<RemoveBuffNotice>)OnRemoveBuffNotice);
+		Facade.dispatcher.AddListener("UseSkillNotice", (System.Action<UseSkillNotice>)OnUseSkillNotice);
+		Facade.dispatcher.AddListener("MoveResp", (System.Action<MoveResp>)OnMoveResp);
+        Facade.dispatcher.AddListener("UseSkillResp", (System.Action<UseSkillResp>)OnUseSkillResp);
+        Facade.dispatcher.AddListener("SceneEventNotice", (System.Action<SceneEventNotice>)OnSceneEventNotice);
 
-        Facade._dispatcher.AddListener("ButtonAttack", (System.Action)OnButtonAttack);
+        Facade.dispatcher.AddListener("ButtonAttack", (System.Action)OnButtonAttack);
 
 	}
 
@@ -64,11 +64,11 @@ public class SceneManager : MonoBehaviour
 			CleanEntity();
 			GameObject.Destroy(_scene.gameObject);
 			_scene = null;
-			Facade._mainUI._skillPanel.gameObject.SetActive(false);
-			Facade._mainUI._touchPanel.gameObject.SetActive(false);
-            Facade._mainUI._miniMap.gameObject.SetActive(false);
-			Facade._mainUI.SetActiveBG(true);
-            Facade._audioManager._byebye.Play(0);
+			Facade.mainUI._skillPanel.gameObject.SetActive(false);
+			Facade.mainUI._touchPanel.gameObject.SetActive(false);
+            Facade.mainUI._miniMap.gameObject.SetActive(false);
+			Facade.mainUI.SetActiveBG(true);
+            Facade.audioManager._byebye.Play(0);
         }
 
 	}
@@ -105,19 +105,19 @@ public class SceneManager : MonoBehaviour
             }
         }
     }
-    public EntityModel GetEntity(ulong entityID)
+    public EntityShell GetEntity(ulong entityID)
     {
-        EntityModel ret = null;
+        EntityShell ret = null;
         _entitys.TryGetValue(entityID, out ret);
         return ret;
     }
-    public System.Collections.Generic.Dictionary<ulong, EntityModel> GetEntity()
+    public System.Collections.Generic.Dictionary<ulong, EntityShell> GetEntity()
     {
         return _entitys;
     }
-    public EntityModel GetPlayer(ulong avatarID)
+    public EntityShell GetPlayer(ulong avatarID)
     {
-        EntityModel ret = null;
+        EntityShell ret = null;
         _players.TryGetValue(avatarID, out ret);
         return ret;
     }
@@ -125,9 +125,9 @@ public class SceneManager : MonoBehaviour
 	{
         foreach (var e in _entitys)
         {
-			if (e.Value._info.state.eid == Facade._entityID) 
+			if (e.Value._info.state.eid == Facade.entityID) 
 			{
-				Facade._entityID = 0;
+				Facade.entityID = 0;
 			}
             GameObject.Destroy(e.Value.gameObject);
         }
@@ -141,9 +141,9 @@ public class SceneManager : MonoBehaviour
         {
             return;
         }
-        if (entity._info.state.eid == Facade._entityID)
+        if (entity._info.state.eid == Facade.entityID)
         {
-            Facade._entityID = 0;
+            Facade.entityID = 0;
         }
         if (entity._info.state.avatarID != 0)
         {
@@ -173,7 +173,7 @@ public class SceneManager : MonoBehaviour
     }
     public void CreateEntity(Proto4z.EntityFullData data)
     {
-        EntityModel oldEnity = GetEntity(data.state.eid);
+        EntityShell oldEnity = GetEntity(data.state.eid);
         
         Vector3 spawnpoint = new Vector3((float)data.mv.position.x, -13.198f, (float)data.mv.position.y);
         Quaternion rotation = new Quaternion();
@@ -183,7 +183,7 @@ public class SceneManager : MonoBehaviour
             rotation = oldEnity.gameObject.transform.rotation;
         }
 
-        string modelName = Facade._modelDict.GetModelName(data.state.modelID);
+        string modelName = Facade.modelDict.GetModelName(data.state.modelID);
         if (modelName == null)
         {
             modelName = "jing_ling_nv_001_ty";
@@ -218,7 +218,7 @@ public class SceneManager : MonoBehaviour
         model.transform.SetParent(entity.transform);
 
 
-        var entityScrpt = entity.AddComponent<EntityModel>();
+        var entityScrpt = entity.AddComponent<EntityShell>();
         entityScrpt._model = model.transform;
         entityScrpt._info = data;
         entity.transform.position = spawnpoint;
@@ -245,10 +245,10 @@ public class SceneManager : MonoBehaviour
         {
             _players[data.state.avatarID] = entityScrpt;
         }
-        if (entityScrpt._info.state.avatarID == Facade._avatarInfo.avatarID 
+        if (entityScrpt._info.state.avatarID == Facade.avatarInfo.avatarID 
             && entityScrpt._info.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
         {
-            Facade._entityID = entityScrpt._info.state.eid;
+            Facade.entityID = entityScrpt._info.state.eid;
             var selected = Instantiate(Resources.Load<GameObject>("Effect/other/selected"));
             selected.transform.SetParent(entity.transform,false);
         }
@@ -267,7 +267,7 @@ public class SceneManager : MonoBehaviour
 	}
 	void OnChangeAvatarModel()
 	{
-		Facade._serverProxy.SendToGame(new ChangeModeIDReq(Facade._avatarInfo.modeID%45+1));
+		Facade.serverProxy.SendToGame(new ChangeModeIDReq(Facade.avatarInfo.modeID%45+1));
 	}
 
 	void OnSceneSectionNotice(SceneSectionNotice notice)
@@ -313,11 +313,11 @@ public class SceneManager : MonoBehaviour
         Debug.Log("create scene");
         _scene = Instantiate(rcsScene).transform;
         _scene.gameObject.SetActive(true);
-        Facade._mainUI.SetActiveBG(false);
-        Facade._mainUI._touchPanel.gameObject.SetActive(true);
-        Facade._mainUI._skillPanel.gameObject.SetActive(true);
-        Facade._mainUI._miniMap.gameObject.SetActive(true);
-        Facade._audioManager._welcome.Play(0);
+        Facade.mainUI.SetActiveBG(false);
+        Facade.mainUI._touchPanel.gameObject.SetActive(true);
+        Facade.mainUI._skillPanel.gameObject.SetActive(true);
+        Facade.mainUI._miniMap.gameObject.SetActive(true);
+        Facade.audioManager._welcome.Play(0);
     }
 
     private IEnumerator CreateRandomMap()
@@ -333,15 +333,15 @@ public class SceneManager : MonoBehaviour
 
     void OnSceneRefreshNotice(SceneRefreshNotice notice)
 	{
-		Facade._sceneManager.RefreshEntityInfo(notice.entityStates);
-		Facade._sceneManager.RefreshEntityMove(notice.entityMoves);
+		Facade.sceneManager.RefreshEntityInfo(notice.entityStates);
+		Facade.sceneManager.RefreshEntityMove(notice.entityMoves);
 	}
 	void OnAddEntityNotice(AddEntityNotice notice)
 	{
 		Debug.Log(notice);
 		foreach (var entity in notice.entitys)
 		{
-			Facade._sceneManager.CreateEntity(entity);
+			Facade.sceneManager.CreateEntity(entity);
 		}
 	}
 	void OnRemoveEntityNotice(RemoveEntityNotice notice)
@@ -434,7 +434,7 @@ public class SceneManager : MonoBehaviour
 
 	void OnButtonAttack()
 	{
-        var et = Facade._sceneManager.GetEntity(Facade._entityID);
+        var et = Facade.sceneManager.GetEntity(Facade.entityID);
         if (et == null)
         {
             return;

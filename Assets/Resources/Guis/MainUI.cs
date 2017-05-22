@@ -24,7 +24,7 @@ public class MainUI: MonoBehaviour
         Debug.Log("MainUI Awake.");
         DontDestroyOnLoad(gameObject);
 
-        Facade._mainUI = this;
+        Facade.mainUI = this;
         _bgImg = gameObject.GetComponent<RawImage>();
 
         _busyTips = LoadUI("BusyTips", "Guis/BusyTips/BusyTips");
@@ -33,19 +33,19 @@ public class MainUI: MonoBehaviour
 
         _skillPanel = LoadUI("SkillPanel", "Guis/SkillPanel/SkillPanel");
         _skillPanel.Find("Attack").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade._dispatcher.TriggerEvent("ButtonAttack", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("ButtonAttack", null); });
 
         _selectScenePanel = LoadUI("SelectScenePanel", "Guis/SelectScenePanel/SelectScenePanel");
         _selectScenePanel.Find("ExitScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade._dispatcher.TriggerEvent("OnExitScene", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("OnExitScene", null); });
         _selectScenePanel.Find("HomeScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade._dispatcher.TriggerEvent("OnHomeScene", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("OnHomeScene", null); });
         _selectScenePanel.Find("MeleeScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade._dispatcher.TriggerEvent("OnMeleeScene", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("OnMeleeScene", null); });
         _selectScenePanel.Find("ArenaScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade._dispatcher.TriggerEvent("OnArenaScene", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("OnArenaScene", null); });
 		_selectScenePanel.Find("ChangeModel").GetComponent<Button>().onClick.AddListener(
-			delegate () { Facade._dispatcher.TriggerEvent("OnChangeAvatarModel", null); });
+			delegate () { Facade.dispatcher.TriggerEvent("OnChangeAvatarModel", null); });
 
         _touchPanel = LoadUI("TouchPanel", "Guis/TouchPanel/TouchPanel");
 

@@ -13,9 +13,9 @@ public class SceneCamera : MonoBehaviour
 
      void Update()
      {
-        if (_target == null && Facade._entityID != 0)
+        if (_target == null && Facade.entityID != 0)
         {
-            _target = Facade._sceneManager.GetEntity(Facade._entityID).gameObject.transform;
+            _target = Facade.sceneManager.GetEntity(Facade.entityID).gameObject.transform;
 			_targetInitHeight = _target.position.y;
 			//var target = new Vector3(_target.position.x, _targetInitHeight, _target.position.z);
 			//transform.position = target - Vector3.forward * 30.0f + Vector3.up * 40.0f;

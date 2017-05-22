@@ -34,31 +34,31 @@ public class ServerProxy : MonoBehaviour
     {
         Debug.Log("ServerProxy Awake");
         DontDestroyOnLoad(gameObject);
-        Facade._dispatcher.AddListener("ClientAuthResp", (System.Action<ClientAuthResp>)OnClientAuthResp);
-        Facade._dispatcher.AddListener("CreateAvatarResp", (System.Action<CreateAvatarResp>)OnCreateAvatarResp);
-        Facade._dispatcher.AddListener("AttachAvatarResp", (System.Action<AttachAvatarResp>)OnAttachAvatarResp);
-        Facade._dispatcher.AddListener("AvatarBaseInfoNotice", (System.Action<AvatarBaseInfoNotice>)OnAvatarBaseInfoNotice);
-        Facade._dispatcher.AddListener("PingPongResp", (System.Action<PingPongResp>)OnPingPongResp);
-        Facade._dispatcher.AddListener("ClientPulse", (System.Action<ClientPulse>)OnClientPulse);
+        Facade.dispatcher.AddListener("ClientAuthResp", (System.Action<ClientAuthResp>)OnClientAuthResp);
+        Facade.dispatcher.AddListener("CreateAvatarResp", (System.Action<CreateAvatarResp>)OnCreateAvatarResp);
+        Facade.dispatcher.AddListener("AttachAvatarResp", (System.Action<AttachAvatarResp>)OnAttachAvatarResp);
+        Facade.dispatcher.AddListener("AvatarBaseInfoNotice", (System.Action<AvatarBaseInfoNotice>)OnAvatarBaseInfoNotice);
+        Facade.dispatcher.AddListener("PingPongResp", (System.Action<PingPongResp>)OnPingPongResp);
+        Facade.dispatcher.AddListener("ClientPulse", (System.Action<ClientPulse>)OnClientPulse);
 
-		Facade._dispatcher.AddListener("SceneClientPulse", (System.Action<SceneClientPulse>)OnSceneClientPulse);
-		Facade._dispatcher.AddListener("ClientPingTestResp", (System.Action<ClientPingTestResp>)OnClientPingTestResp);
+		Facade.dispatcher.AddListener("SceneClientPulse", (System.Action<SceneClientPulse>)OnSceneClientPulse);
+		Facade.dispatcher.AddListener("ClientPingTestResp", (System.Action<ClientPingTestResp>)OnClientPingTestResp);
 
-        Facade._dispatcher.AddListener("SceneGroupInfoNotice", (System.Action<SceneGroupInfoNotice>)OnSceneGroupInfoNotice);
-        Facade._dispatcher.AddListener("SceneGroupGetResp", (System.Action<SceneGroupGetResp>)OnSceneGroupGetResp);
-        Facade._dispatcher.AddListener("SceneGroupEnterResp", (System.Action<SceneGroupEnterResp>)OnSceneGroupEnterResp);
-        Facade._dispatcher.AddListener("SceneGroupCancelResp", (System.Action<SceneGroupCancelResp>)OnSceneGroupCancelResp);
+        Facade.dispatcher.AddListener("SceneGroupInfoNotice", (System.Action<SceneGroupInfoNotice>)OnSceneGroupInfoNotice);
+        Facade.dispatcher.AddListener("SceneGroupGetResp", (System.Action<SceneGroupGetResp>)OnSceneGroupGetResp);
+        Facade.dispatcher.AddListener("SceneGroupEnterResp", (System.Action<SceneGroupEnterResp>)OnSceneGroupEnterResp);
+        Facade.dispatcher.AddListener("SceneGroupCancelResp", (System.Action<SceneGroupCancelResp>)OnSceneGroupCancelResp);
 
-        Facade._dispatcher.AddListener("SceneGroupCreateResp", (System.Action<SceneGroupCreateResp>)OnSceneGroupCreateResp);
-        Facade._dispatcher.AddListener("SceneGroupLeaveResp", (System.Action<SceneGroupLeaveResp>)OnSceneGroupLeaveResp);
+        Facade.dispatcher.AddListener("SceneGroupCreateResp", (System.Action<SceneGroupCreateResp>)OnSceneGroupCreateResp);
+        Facade.dispatcher.AddListener("SceneGroupLeaveResp", (System.Action<SceneGroupLeaveResp>)OnSceneGroupLeaveResp);
 
 
-        Facade._dispatcher.AddListener("AttachSceneResp", (System.Action<AttachSceneResp>)OnAttachSceneResp);
+        Facade.dispatcher.AddListener("AttachSceneResp", (System.Action<AttachSceneResp>)OnAttachSceneResp);
 
-        Facade._dispatcher.AddListener("OnArenaScene", (System.Action)OnArenaScene);
-        Facade._dispatcher.AddListener("OnHomeScene", (System.Action)OnHomeScene);
-        Facade._dispatcher.AddListener("OnMeleeScene", (System.Action)OnMeleeScene);
-        Facade._dispatcher.AddListener("OnExitScene", (System.Action)OnExitScene);
+        Facade.dispatcher.AddListener("OnArenaScene", (System.Action)OnArenaScene);
+        Facade.dispatcher.AddListener("OnHomeScene", (System.Action)OnHomeScene);
+        Facade.dispatcher.AddListener("OnMeleeScene", (System.Action)OnMeleeScene);
+        Facade.dispatcher.AddListener("OnExitScene", (System.Action)OnExitScene);
 
 
 
@@ -135,20 +135,20 @@ public class ServerProxy : MonoBehaviour
             return;
         }
 
-        Facade._avatarInfo = resp.baseInfo;
+        Facade.avatarInfo = resp.baseInfo;
         _gameClient.Send(new SceneGroupGetReq());
 
-        if (Facade._mainUI._loginUI.gameObject.activeSelf)
+        if (Facade.mainUI._loginUI.gameObject.activeSelf)
         {
-            Facade._mainUI._loginUI.gameObject.SetActive(false);
+            Facade.mainUI._loginUI.gameObject.SetActive(false);
         }
-        if (!Facade._mainUI._chatUI.gameObject.activeSelf)
+        if (!Facade.mainUI._chatUI.gameObject.activeSelf)
         {
-            Facade._mainUI._chatUI.gameObject.SetActive(true);
+            Facade.mainUI._chatUI.gameObject.SetActive(true);
         }
-        if (!Facade._mainUI._selectScenePanel.gameObject.activeSelf)
+        if (!Facade.mainUI._selectScenePanel.gameObject.activeSelf)
         {
-            Facade._mainUI._selectScenePanel.gameObject.SetActive(true);
+            Facade.mainUI._selectScenePanel.gameObject.SetActive(true);
         }
         MainScreenLabel.Bulletin(1, "登录时间:" + DateTime.Now.ToString());
     }
@@ -177,27 +177,27 @@ public class ServerProxy : MonoBehaviour
     }
     void OnSceneGroupInfoNotice(SceneGroupInfoNotice notice)
     {
-        if (Facade._groupInfo != null
-            && Facade._groupInfo.sceneState == (UInt16)SCENE_STATE.SCENE_STATE_ACTIVE
+        if (Facade.sceneState != null
+            && Facade.sceneState.sceneState == (UInt16)SCENE_STATE.SCENE_STATE_ACTIVE
             && notice.groupInfo.sceneState == (UInt16)SCENE_STATE.SCENE_STATE_NONE)
         {
-			Facade._sceneManager.DestroyCurrentScene ();
+			Facade.sceneManager.DestroyCurrentScene ();
             if (_sceneClient != null)
             {
                 _sceneClient.Close();
                 _sceneClient = null;
             }
         }
-        if (Facade._groupInfo != null
-            && Facade._groupInfo.sceneState != (UInt16)SCENE_STATE.SCENE_STATE_WAIT
+        if (Facade.sceneState != null
+            && Facade.sceneState.sceneState != (UInt16)SCENE_STATE.SCENE_STATE_WAIT
             && notice.groupInfo.sceneState == (UInt16)SCENE_STATE.SCENE_STATE_WAIT)
         {
-            CreateSceneSession(Facade._avatarInfo.avatarID, notice.groupInfo);
+            CreateSceneSession(Facade.avatarInfo.avatarID, notice.groupInfo);
         }
 
-        Facade._groupInfo = notice.groupInfo;
+        Facade.sceneState = notice.groupInfo;
         Debug.Log(notice);
-        if (Facade._groupInfo.groupID == 0)
+        if (Facade.sceneState.groupID == 0)
         {
             _gameClient.Send(new Proto4z.SceneGroupCreateReq());
         }
@@ -226,14 +226,14 @@ public class ServerProxy : MonoBehaviour
 
     void OnExitScene()
     {
-        if (Facade._groupInfo == null)
+        if (Facade.sceneState == null)
         {
             return;
         }
-        if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_MATCHING 
-            || ( Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE
-                        && (Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_HOME
-                               || Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_MELEE)
+        if (Facade.sceneState.sceneState == (ushort)SCENE_STATE.SCENE_STATE_MATCHING 
+            || ( Facade.sceneState.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE
+                        && (Facade.sceneState.sceneType == (ushort)SCENE_TYPE.SCENE_HOME
+                               || Facade.sceneState.sceneType == (ushort)SCENE_TYPE.SCENE_MELEE)
                  )
              )
         {
@@ -245,21 +245,21 @@ public class ServerProxy : MonoBehaviour
 
     void OnHomeScene()
     {
-        if (Facade._groupInfo == null)
+        if (Facade.sceneState == null)
         {
             return;
         }
-        if (Facade._groupInfo.sceneState != (ushort)SCENE_STATE.SCENE_STATE_NONE && Facade._groupInfo.sceneType != (ushort)SCENE_TYPE.SCENE_HOME)
+        if (Facade.sceneState.sceneState != (ushort)SCENE_STATE.SCENE_STATE_NONE && Facade.sceneState.sceneType != (ushort)SCENE_TYPE.SCENE_HOME)
         {
             return;
         }
-        if (Facade._groupInfo.groupID == 0)
+        if (Facade.sceneState.groupID == 0)
         {
             return;
         }
-        if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE)
+        if (Facade.sceneState.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE)
         {
-            CreateSceneSession(Facade._avatarInfo.avatarID, Facade._groupInfo);
+            CreateSceneSession(Facade.avatarInfo.avatarID, Facade.sceneState);
         }
         else
         {
@@ -269,21 +269,21 @@ public class ServerProxy : MonoBehaviour
 
     void OnMeleeScene()
     {
-        if (Facade._groupInfo == null)
+        if (Facade.sceneState == null)
         {
             return;
         }
-        if (Facade._groupInfo.sceneState != (ushort)SCENE_STATE.SCENE_STATE_NONE && Facade._groupInfo.sceneType != (ushort)SCENE_TYPE.SCENE_MELEE)
+        if (Facade.sceneState.sceneState != (ushort)SCENE_STATE.SCENE_STATE_NONE && Facade.sceneState.sceneType != (ushort)SCENE_TYPE.SCENE_MELEE)
         {
             return;
         }
-        if (Facade._groupInfo.groupID == 0)
+        if (Facade.sceneState.groupID == 0)
         {
             return;
         }
-        if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE)
+        if (Facade.sceneState.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE)
         {
-            CreateSceneSession(Facade._avatarInfo.avatarID, Facade._groupInfo);
+            CreateSceneSession(Facade.avatarInfo.avatarID, Facade.sceneState);
         }
         else
         {
@@ -294,21 +294,21 @@ public class ServerProxy : MonoBehaviour
 
     void OnArenaScene()
     {
-        if (Facade._groupInfo == null)
+        if (Facade.sceneState == null)
         {
             return;
         }
-        if (Facade._groupInfo.sceneState != (ushort)SCENE_STATE.SCENE_STATE_NONE && Facade._groupInfo.sceneType != (ushort)SCENE_TYPE.SCENE_ARENA)
+        if (Facade.sceneState.sceneState != (ushort)SCENE_STATE.SCENE_STATE_NONE && Facade.sceneState.sceneType != (ushort)SCENE_TYPE.SCENE_ARENA)
         {
             return;
         }
-        if (Facade._groupInfo.groupID == 0)
+        if (Facade.sceneState.groupID == 0)
         {
             return;
         }
-        if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE)
+        if (Facade.sceneState.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE)
         {
-            CreateSceneSession(Facade._avatarInfo.avatarID, Facade._groupInfo);
+            CreateSceneSession(Facade.avatarInfo.avatarID, Facade.sceneState);
         }
         else
         {
@@ -319,9 +319,9 @@ public class ServerProxy : MonoBehaviour
     void OnAvatarBaseInfoNotice(AvatarBaseInfoNotice resp)
     {
         Debug.logger.Log("ServerProxy::AvatarBaseInfoNotice " + resp.baseInfo.avatarName);
-        if (resp.baseInfo.avatarID == Facade._avatarInfo.avatarID)
+        if (resp.baseInfo.avatarID == Facade.avatarInfo.avatarID)
         {
-            Facade._avatarInfo = resp.baseInfo;
+            Facade.avatarInfo = resp.baseInfo;
         }
     }
     void OnPingPongResp(PingPongResp resp)
@@ -364,39 +364,39 @@ public class ServerProxy : MonoBehaviour
         name = "FPS:" + _fpsValue;
         MainScreenLabel.Label(name);
 
-        if (Facade._avatarInfo != null) 
+        if (Facade.avatarInfo != null) 
 		{
-			var modelID = Facade._avatarInfo.modeID;
-			name = "角色模型[" + modelID +"]:" + Facade._modelDict.GetModelName(modelID);
+			var modelID = Facade.avatarInfo.modeID;
+			name = "角色模型[" + modelID +"]:" + Facade.modelDict.GetModelName(modelID);
             MainScreenLabel.Label(name);
         }
 
-		if (Facade._avatarInfo != null && Facade._entityID != 0) 
+		if (Facade.avatarInfo != null && Facade.entityID != 0) 
 		{
-			var modelID = Facade._sceneManager.GetEntity (Facade._entityID)._info.state.modelID;
-			name = "当前模型[" + modelID +"]:" + Facade._modelDict.GetModelName(modelID);
+			var modelID = Facade.sceneManager.GetEntity (Facade.entityID)._info.state.modelID;
+			name = "当前模型[" + modelID +"]:" + Facade.modelDict.GetModelName(modelID);
             MainScreenLabel.Label(name);
         }
 
 
 
-        if (Facade._groupInfo == null)
+        if (Facade.sceneState == null)
         {
             name = "当前位置:主界面";
         }
-        else if (Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_NONE)
+        else if (Facade.sceneState.sceneType == (ushort)SCENE_TYPE.SCENE_NONE)
         {
             name = "当前位置:主界面";
         }
-        else if (Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_HOME)
+        else if (Facade.sceneState.sceneType == (ushort)SCENE_TYPE.SCENE_HOME)
         {
             name = "当前位置:主城";
         }
-        else if (Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_MELEE)
+        else if (Facade.sceneState.sceneType == (ushort)SCENE_TYPE.SCENE_MELEE)
         {
             name = "当前位置:乱斗场";
         }
-        else if (Facade._groupInfo.sceneType == (ushort)SCENE_TYPE.SCENE_ARENA)
+        else if (Facade.sceneState.sceneType == (ushort)SCENE_TYPE.SCENE_ARENA)
         {
             name = "当前位置:竞技场";
         }
@@ -406,19 +406,19 @@ public class ServerProxy : MonoBehaviour
         }
         MainScreenLabel.Label(name);
 
-        if (Facade._groupInfo == null || Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_NONE)
+        if (Facade.sceneState == null || Facade.sceneState.sceneState == (ushort)SCENE_STATE.SCENE_STATE_NONE)
         {
             name = "当前状态:闲置";
         }
-        else if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_MATCHING)
+        else if (Facade.sceneState.sceneState == (ushort)SCENE_STATE.SCENE_STATE_MATCHING)
         {
             name = "当前状态:匹配中";
         }
-        else if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ALLOCATE)
+        else if (Facade.sceneState.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ALLOCATE)
         {
             name = "当前状态:场景调度";
         }
-        else if (Facade._groupInfo.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE)
+        else if (Facade.sceneState.sceneState == (ushort)SCENE_STATE.SCENE_STATE_ACTIVE)
         {
             name = "当前状态:游戏中";
         }
@@ -430,16 +430,16 @@ public class ServerProxy : MonoBehaviour
 
 
 
-        if (Facade._entityID != 0)
+        if (Facade.entityID != 0)
         {
             name = "Ping:" + _scenePingValue +"秒";
             MainScreenLabel.Label(name);
 
-            name = "场景过期:" + Facade._sceneManager.GetSceneCountdown() + "秒" ;
+            name = "场景过期:" + Facade.sceneManager.GetSceneCountdown() + "秒" ;
             MainScreenLabel.Label(name);
 
 
-            EntityModel em = Facade._sceneManager.GetEntity(Facade._entityID);
+            EntityShell em = Facade.sceneManager.GetEntity(Facade.entityID);
             name = "坐标:" + em._info.mv.position.x.ToString("0.00") + ":" +em._info.mv.position.y.ToString("0.00");
             MainScreenLabel.Label(name);
 
@@ -512,14 +512,14 @@ public class ServerProxy : MonoBehaviour
             || (_sceneClient != null && (_sceneClient.Status == SessionStatus.SS_CONNECTING || _sceneClient.Status == SessionStatus.SS_INITING))
             )
         {
-            if (!Facade._mainUI._busyTips.gameObject.activeSelf)
+            if (!Facade.mainUI._busyTips.gameObject.activeSelf)
             {
-                Facade._mainUI._busyTips.gameObject.SetActive(true);
+                Facade.mainUI._busyTips.gameObject.SetActive(true);
             }
         }
-        else if (Facade._mainUI._busyTips.gameObject.activeSelf)
+        else if (Facade.mainUI._busyTips.gameObject.activeSelf)
         {
-            Facade._mainUI._busyTips.gameObject.SetActive(false);
+            Facade.mainUI._busyTips.gameObject.SetActive(false);
         }
 
     }
