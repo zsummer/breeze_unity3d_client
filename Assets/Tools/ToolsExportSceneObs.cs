@@ -32,7 +32,7 @@ public class  ToolsExportSceneObs: MonoBehaviour {
 
 
 
-
+        sw.WriteLine("obs:");
         foreach (GameObject go in Object.FindObjectsOfType(typeof(GameObject)))
         {
             float redius = 0f;
@@ -61,6 +61,19 @@ public class  ToolsExportSceneObs: MonoBehaviour {
             }
 
         }
+
+        sw.WriteLine("ai:");
+        foreach (GameObject go in Object.FindObjectsOfType(typeof(GameObject)))
+        {
+            if (go.name == "jitan004")
+            {
+                string str = go.transform.position.x.ToString("F2") + ",";
+                str += go.transform.position.z.ToString("F2") + " ";
+                sw.WriteLine(str);
+            }
+
+        }
+
 
         sw.Flush();
         sw.Close();

@@ -37,13 +37,13 @@ public class MainUI: MonoBehaviour
 
         _selectScenePanel = LoadUI("SelectScenePanel", "Guis/SelectScenePanel/SelectScenePanel");
         _selectScenePanel.Find("ExitScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade.dispatcher.TriggerEvent("OnExitScene", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("ClickExitScene", null); });
         _selectScenePanel.Find("HomeScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade.dispatcher.TriggerEvent("OnHomeScene", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("ClickHomeScene", null); });
         _selectScenePanel.Find("MeleeScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade.dispatcher.TriggerEvent("OnMeleeScene", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("ClickMeleeScene", null); });
         _selectScenePanel.Find("ArenaScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade.dispatcher.TriggerEvent("OnArenaScene", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("ClickArenaScene", null); });
 		_selectScenePanel.Find("ChangeModel").GetComponent<Button>().onClick.AddListener(
 			delegate () { Facade.dispatcher.TriggerEvent("OnChangeAvatarModel", null); });
 

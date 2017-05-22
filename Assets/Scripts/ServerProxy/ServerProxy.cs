@@ -12,6 +12,7 @@ public class ServerProxy : MonoBehaviour
 {
 
     Session _gameClient;
+    string _gameHost;
 	float _gameLastPulse = 0.0f;
 
 
@@ -55,10 +56,10 @@ public class ServerProxy : MonoBehaviour
 
         Facade.dispatcher.AddListener("AttachSceneResp", (System.Action<AttachSceneResp>)OnAttachSceneResp);
 
-        Facade.dispatcher.AddListener("OnArenaScene", (System.Action)OnArenaScene);
-        Facade.dispatcher.AddListener("OnHomeScene", (System.Action)OnHomeScene);
-        Facade.dispatcher.AddListener("OnMeleeScene", (System.Action)OnMeleeScene);
-        Facade.dispatcher.AddListener("OnExitScene", (System.Action)OnExitScene);
+        Facade.dispatcher.AddListener("ClickArenaScene", (System.Action)ClickArenaScene);
+        Facade.dispatcher.AddListener("ClickHomeScene", (System.Action)ClickHomeScene);
+        Facade.dispatcher.AddListener("ClickMeleeScene", (System.Action)ClickMeleeScene);
+        Facade.dispatcher.AddListener("ClickExitScene", (System.Action)ClickExitScene);
 
 
 
@@ -73,10 +74,12 @@ public class ServerProxy : MonoBehaviour
     {
         _account = account;
         _passwd = pwd;
+        _gameHost = host;
         if (_gameClient != null)
         {
             _gameClient.Close();
         }
+
         _gameClient = new Session();
         _gameClient._onConnect = (Action)OnConnect;
         _gameClient.Init(host, port, "");
@@ -192,6 +195,14 @@ public class ServerProxy : MonoBehaviour
             && Facade.sceneState.sceneState != (UInt16)SCENE_STATE.SCENE_STATE_WAIT
             && notice.groupInfo.sceneState == (UInt16)SCENE_STATE.SCENE_STATE_WAIT)
         {
+            //check debug mode  
+            if (notice.groupInfo.host.Length == 0 || notice.groupInfo.host == "localhost" || notice.groupInfo.host == "127.0.0.1")
+            {
+                if (_gameHost != null && _gameHost.Length > 0)
+                {
+                    notice.groupInfo.host = _gameHost;
+                }
+            }
             CreateSceneSession(Facade.avatarInfo.avatarID, notice.groupInfo);
         }
 
@@ -213,7 +224,10 @@ public class ServerProxy : MonoBehaviour
     }
     void OnSceneGroupCancelResp(SceneGroupCancelResp resp)
     {
-        
+        if (resp.retCode != (ushort)ERROR_CODE.EC_SUCCESS)
+        {
+
+        }
     }
     void OnSceneGroupCreateResp(SceneGroupCreateResp resp)
     {
@@ -224,7 +238,7 @@ public class ServerProxy : MonoBehaviour
         
     }
 
-    void OnExitScene()
+    void ClickExitScene()
     {
         if (Facade.sceneState == null)
         {
@@ -243,7 +257,7 @@ public class ServerProxy : MonoBehaviour
        
     }
 
-    void OnHomeScene()
+    void ClickHomeScene()
     {
         if (Facade.sceneState == null)
         {
@@ -267,7 +281,7 @@ public class ServerProxy : MonoBehaviour
         }
     }
 
-    void OnMeleeScene()
+    void ClickMeleeScene()
     {
         if (Facade.sceneState == null)
         {
@@ -292,7 +306,7 @@ public class ServerProxy : MonoBehaviour
     }
 
 
-    void OnArenaScene()
+    void ClickArenaScene()
     {
         if (Facade.sceneState == null)
         {
@@ -344,6 +358,14 @@ public class ServerProxy : MonoBehaviour
 
 	void OnAttachSceneResp(AttachSceneResp resp)
 	{
+        if (resp.retCode == (ushort)Proto4z.ERROR_CODE.EC_SUCCESS)
+        {
+            Debug.logger.Log("ServerProxy::OnAttachSceneResp sucess. sceneID=" +  resp.sceneID.ToString());
+        }
+        else
+        {
+            Debug.logger.Log("ServerProxy::OnAttachSceneResp sucess. error code=" + resp.retCode.ToString() + ", sceneID=" + resp.sceneID.ToString());
+        }
         
     }
 
