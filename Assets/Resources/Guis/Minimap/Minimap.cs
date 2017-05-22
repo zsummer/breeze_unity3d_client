@@ -35,13 +35,12 @@ public class Minimap : MonoBehaviour
 
         Vector2 org = new Vector2(rt.position.x, Screen.height - rt.position.y);
 
-
-
         if (Facade.entityID == 0 )
         {
             return;
         }
-        EntityShell player = Facade.sceneManager.GetEntity(Facade.entityID);
+
+        EntityShell player = Facade.sceneManager.GetEntityShell(Facade.entityID);
         if (player == null)
         {
             return;
@@ -54,7 +53,7 @@ public class Minimap : MonoBehaviour
         
         GUI.Box(new Rect(org, new Vector2(20, 20)), "*", st);
 
-        foreach (var e in Facade.sceneManager.GetEntity())
+        foreach (var e in Facade.sceneManager.GetEntityShell())
         {
             if (e.Value.ghost.state.eid == player.ghost.state.eid)
             {

@@ -373,7 +373,7 @@ public class ServerProxy : MonoBehaviour
 
 		if (Facade.avatarInfo != null && Facade.entityID != 0) 
 		{
-			var modelID = Facade.sceneManager.GetEntity (Facade.entityID).ghost.state.modelID;
+			var modelID = Facade.sceneManager.GetEntityShell (Facade.entityID).ghost.state.modelID;
 			name = "当前模型[" + modelID +"]:" + Facade.modelDict.GetModelName(modelID);
             MainScreenLabel.Label(name);
         }
@@ -439,7 +439,7 @@ public class ServerProxy : MonoBehaviour
             MainScreenLabel.Label(name);
 
 
-            EntityShell em = Facade.sceneManager.GetEntity(Facade.entityID);
+            EntityShell em = Facade.sceneManager.GetEntityShell(Facade.entityID);
             name = "坐标:" + em.ghost.mv.position.x.ToString("0.00") + ":" +em.ghost.mv.position.y.ToString("0.00");
             MainScreenLabel.Label(name);
 

@@ -85,7 +85,7 @@ public class TouchPanel : MonoBehaviour
         {
             return;
         }
-        EntityShell player = Facade.sceneManager.GetEntity(Facade.entityID);
+        EntityShell player = Facade.sceneManager.GetEntityShell(Facade.entityID);
         if(false)
  //       if (player == null ||  !player.isCanMove())
         {
@@ -130,7 +130,7 @@ public class TouchPanel : MonoBehaviour
         }
         if (_control == null)
         {
-            _control = Facade.sceneManager.GetEntity(Facade.entityID);
+            _control = Facade.sceneManager.GetEntityShell(Facade.entityID);
             foreach(Camera camera in Camera.allCameras)
             {
                 if (camera.name == "SceneCamera")

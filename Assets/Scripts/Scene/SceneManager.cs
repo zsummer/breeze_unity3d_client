@@ -77,24 +77,24 @@ public class SceneManager : MonoBehaviour
     {
         foreach (var mv in moves)
         {
-            var entity = GetEntity(mv.eid);
-            if (entity != null)
+            var shell = GetEntityShell(mv.eid);
+            if (shell != null)
             {
-                entity.RefreshMoveInfo(mv);
+                shell.RefreshMoveInfo(mv);
             }
         }
     }
-    public void RefreshEntityInfo(Proto4z.EntityStateArray states)
+    public void RefreshEntityState(Proto4z.EntityStateArray states)
     {
         foreach (var state in states)
         {
-            var entity = GetEntity(state.eid);
+            var entity = GetEntityShell(state.eid);
             if (entity != null)
             {
                 if(entity.ghost.state.modelID != state.modelID)
                 {
                     entity.ghost.state = state;
-                    CreateEntity(entity.ghost);
+                    BuildShell(entity.ghost);
                 }
                 else
                 {
@@ -105,13 +105,13 @@ public class SceneManager : MonoBehaviour
             }
         }
     }
-    public EntityShell GetEntity(ulong entityID)
+    public EntityShell GetEntityShell(ulong entityID)
     {
         EntityShell ret = null;
         _entitys.TryGetValue(entityID, out ret);
         return ret;
     }
-    public System.Collections.Generic.Dictionary<ulong, EntityShell> GetEntity()
+    public System.Collections.Generic.Dictionary<ulong, EntityShell> GetEntityShell()
     {
         return _entitys;
     }
@@ -136,7 +136,7 @@ public class SceneManager : MonoBehaviour
 	}
     public void DestroyEntity(ulong entityID)
     {
-        var entity = GetEntity(entityID);
+        var entity = GetEntityShell(entityID);
         if (entity == null)
         {
             return;
@@ -169,13 +169,13 @@ public class SceneManager : MonoBehaviour
             Debug.LogError("CreateAvatarByAvatarID not found full data");
             return;
         }
-        CreateEntity(entity.ghost);
+        BuildShell(entity.ghost);
     }
-    public void CreateEntity(Proto4z.EntityFullData data)
+    public void BuildShell(Proto4z.EntityFullData ghost)
     {
-        EntityShell oldEnity = GetEntity(data.state.eid);
+        EntityShell oldEnity = GetEntityShell(ghost.state.eid);
         
-        Vector3 spawnpoint = new Vector3((float)data.mv.position.x, -13.198f, (float)data.mv.position.y);
+        Vector3 spawnpoint = new Vector3((float)ghost.mv.position.x, -13.198f, (float)ghost.mv.position.y);
         Quaternion rotation = new Quaternion();
         if (oldEnity != null && oldEnity != null)
         {
@@ -183,7 +183,7 @@ public class SceneManager : MonoBehaviour
             rotation = oldEnity.gameObject.transform.rotation;
         }
 
-        string modelName = Facade.modelDict.GetModelName(data.state.modelID);
+        string modelName = Facade.modelDict.GetModelName(ghost.state.modelID);
         if (modelName == null)
         {
             modelName = "jing_ling_nv_001_ty";
@@ -214,17 +214,17 @@ public class SceneManager : MonoBehaviour
         lt.intensity = 8.0f;
 
         var entity = new GameObject();
-        entity.name = data.state.avatarName;
+        entity.name = ghost.state.avatarName;
         model.transform.SetParent(entity.transform);
 
 
         var entityScrpt = entity.AddComponent<EntityShell>();
         entityScrpt._model = model.transform;
-        entityScrpt.ghost = data;
+        entityScrpt.ghost = ghost;
         entity.transform.position = spawnpoint;
         entity.transform.rotation = rotation;
 
-        if (data.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
+        if (ghost.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
         {
             entity.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
             entityScrpt._modelHeight *= 2.5f;
@@ -237,13 +237,13 @@ public class SceneManager : MonoBehaviour
 
 
 
-        DestroyEntity(data.state.eid);
+        DestroyEntity(ghost.state.eid);
 
 
-        _entitys[data.state.eid] = entityScrpt;
-        if (data.state.avatarID != 0)
+        _entitys[ghost.state.eid] = entityScrpt;
+        if (ghost.state.avatarID != 0)
         {
-            _players[data.state.avatarID] = entityScrpt;
+            _players[ghost.state.avatarID] = entityScrpt;
         }
         if (entityScrpt.ghost.state.avatarID == Facade.avatarInfo.avatarID 
             && entityScrpt.ghost.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
@@ -333,7 +333,7 @@ public class SceneManager : MonoBehaviour
 
     void OnSceneRefreshNotice(SceneRefreshNotice notice)
 	{
-		Facade.sceneManager.RefreshEntityInfo(notice.entityStates);
+		Facade.sceneManager.RefreshEntityState(notice.entityStates);
 		Facade.sceneManager.RefreshEntityMove(notice.entityMoves);
 	}
 	void OnAddEntityNotice(AddEntityNotice notice)
@@ -341,7 +341,7 @@ public class SceneManager : MonoBehaviour
 		Debug.Log(notice);
 		foreach (var entity in notice.entitys)
 		{
-			Facade.sceneManager.CreateEntity(entity);
+			Facade.sceneManager.BuildShell(entity);
 		}
 	}
 	void OnRemoveEntityNotice(RemoveEntityNotice notice)
@@ -364,7 +364,7 @@ public class SceneManager : MonoBehaviour
 	}
 	void OnUseSkillNotice(UseSkillNotice notice)
 	{
-		var entity = GetEntity (notice.eid);
+		var entity = GetEntityShell (notice.eid);
 		if (entity == null)
 		{
 			return;
@@ -380,7 +380,7 @@ public class SceneManager : MonoBehaviour
 	{
         foreach (var ev in notice.info)
         {
-            var e = GetEntity(ev.dst);
+            var e = GetEntityShell(ev.dst);
             if (e == null)
             {
                 continue;
@@ -434,7 +434,7 @@ public class SceneManager : MonoBehaviour
 
 	void OnButtonAttack()
 	{
-        var et = Facade.sceneManager.GetEntity(Facade.entityID);
+        var et = Facade.sceneManager.GetEntityShell(Facade.entityID);
         if (et == null)
         {
             return;

@@ -319,7 +319,7 @@ public class EntityShell : MonoBehaviour
             st.normal.textColor = Color.white;
             if (ghost.state.eid != Facade.entityID && Facade.entityID != 0)
             {
-                EntityShell player = Facade.sceneManager.GetEntity(Facade.entityID);
+                EntityShell player = Facade.sceneManager.GetEntityShell(Facade.entityID);
                 if (player && player.ghost.state.foe == ghost.state.eid)
                 {
                     st.normal.textColor = Color.red;
@@ -410,7 +410,7 @@ public class EntityShell : MonoBehaviour
         //check main player 
         if (Facade.entityID != 0 && (_mainPlayer == null || _mainPlayer.ghost.state.eid != Facade.entityID))
         {
-            _mainPlayer = Facade.sceneManager.GetEntity(Facade.entityID);
+            _mainPlayer = Facade.sceneManager.GetEntityShell(Facade.entityID);
         }
 
         if (Facade.entityID == ghost.state.eid)
