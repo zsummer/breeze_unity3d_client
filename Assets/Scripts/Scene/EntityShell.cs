@@ -176,7 +176,7 @@ public class SyncCheck
 
 public class EntityShell : MonoBehaviour
 {
-    public Proto4z.EntityFullData _info;
+    public Proto4z.EntityFullData ghost;
     public float _modelHeight = 2;
     public Transform _model = null;
 
@@ -242,10 +242,10 @@ public class EntityShell : MonoBehaviour
     {
         _startMovePosition = transform.position;
         _startMoveTime = Time.realtimeSinceStartup;
-        _info.mv = mv;
-        if (Facade.entityID == _info.state.eid)
+        ghost.mv = mv;
+        if (Facade.entityID == ghost.state.eid)
         {
-            _check.whenSync((float)_info.mv.realSpeed, (float)_info.mv.expectSpeed);
+            _check.whenSync((float)ghost.mv.realSpeed, (float)ghost.mv.expectSpeed);
         }
         
     }
@@ -270,7 +270,7 @@ public class EntityShell : MonoBehaviour
     public void PlayAttack()
     {
         LockedFace(_attack.length);
-        if (_info.mv.action != (ushort)MOVE_ACTION.MOVE_ACTION_IDLE )
+        if (ghost.mv.action != (ushort)MOVE_ACTION.MOVE_ACTION_IDLE )
         {
             _anim.Blend(_attack.name);
         }
@@ -312,15 +312,15 @@ public class EntityShell : MonoBehaviour
 
         if (true)
         {
-            if (_info == null)
+            if (ghost == null)
             {
                 return;
             }
             st.normal.textColor = Color.white;
-            if (_info.state.eid != Facade.entityID && Facade.entityID != 0)
+            if (ghost.state.eid != Facade.entityID && Facade.entityID != 0)
             {
                 EntityShell player = Facade.sceneManager.GetEntity(Facade.entityID);
-                if (player && player._info.state.foe == _info.state.eid)
+                if (player && player.ghost.state.foe == ghost.state.eid)
                 {
                     st.normal.textColor = Color.red;
                 }
@@ -330,7 +330,7 @@ public class EntityShell : MonoBehaviour
             position = new Vector2(position.x, Screen.height - position.y);
             GUI.Box(new Rect(position, new Vector2(20, 20)), "c", st);
 
-            worldPosition = new Vector3((float)_info.mv.position.x, transform.position.y, (float)_info.mv.position.y);
+            worldPosition = new Vector3((float)ghost.mv.position.x, transform.position.y, (float)ghost.mv.position.y);
             
             position = _mainCamera.WorldToScreenPoint(worldPosition);
             position = new Vector2(position.x, Screen.height - position.y);
@@ -347,28 +347,28 @@ public class EntityShell : MonoBehaviour
         string text = "";
         Vector2 textSize = new Vector2();
 
-        if (_info.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
+        if (ghost.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
         {
-            if (Facade.entityID == _info.state.eid)
+            if (Facade.entityID == ghost.state.eid)
             {
                 st.normal.textColor = Color.yellow;
             }
-            else if (_mainPlayer != null && _mainPlayer._info.state.camp != _info.state.camp)
+            else if (_mainPlayer != null && _mainPlayer.ghost.state.camp != ghost.state.camp)
             {
                 st.normal.textColor = Color.red;
             }
-            text = _info.state.avatarName;
+            text = ghost.state.avatarName;
             textSize = GUI.skin.label.CalcSize(new GUIContent(text)) * st.fontSize / GUI.skin.font.fontSize;
             GUI.Label(new Rect(position.x - (textSize.x / 2), position.y - textSize.y, textSize.x, textSize.y), text, st);
         }
 
         int hpGridCount = 10;
-        int curHpGrid = (int)(_info.state.curHP /_info.props.hp * hpGridCount);
+        int curHpGrid = (int)(ghost.state.curHP /ghost.props.hp * hpGridCount);
         if (curHpGrid > hpGridCount)
         {
             curHpGrid = hpGridCount;
         }
-        //text = _info.info.curHP.ToString();
+        //text = ghost.info.curHP.ToString();
         //text += ":";
         text = "hp:";
         for (int i = 0; i < curHpGrid; i++)
@@ -381,7 +381,7 @@ public class EntityShell : MonoBehaviour
         }
         st.normal.textColor = Color.red;
         st.fontSize = st.fontSize * 7 /10;
-        if (Facade.entityID == _info.state.eid)
+        if (Facade.entityID == ghost.state.eid)
         {
             st.normal.textColor = Color.yellow;
         }
@@ -391,7 +391,7 @@ public class EntityShell : MonoBehaviour
     }
     public bool isCanMove()
     {
-        if (_info.state.state != (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_ACTIVE)
+        if (ghost.state.state != (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_ACTIVE)
         {
             return false;
         }
@@ -403,30 +403,30 @@ public class EntityShell : MonoBehaviour
     }
     void FixedUpdate()
     {
-        if (_info ==null)
+        if (ghost ==null)
         {
             return;
         }
         //check main player 
-        if (Facade.entityID != 0 && (_mainPlayer == null || _mainPlayer._info.state.eid != Facade.entityID))
+        if (Facade.entityID != 0 && (_mainPlayer == null || _mainPlayer.ghost.state.eid != Facade.entityID))
         {
             _mainPlayer = Facade.sceneManager.GetEntity(Facade.entityID);
         }
 
-        if (Facade.entityID == _info.state.eid)
+        if (Facade.entityID == ghost.state.eid)
         {
-            _check.FixedUpdate(_info.state.eid);
+            _check.FixedUpdate(ghost.state.eid);
         }
 
-        if (_info.state.state == (ushort) Proto4z.ENTITY_STATE.ENTITY_STATE_ACTIVE 
-            &&_info.mv.action == (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_IDLE
+        if (ghost.state.state == (ushort) Proto4z.ENTITY_STATE.ENTITY_STATE_ACTIVE 
+            &&ghost.mv.action == (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_IDLE
             && (_anim.IsPlaying(_runned.name) || (_anim.clip.name != _death.name  &&!_anim.isPlaying)))
         {
             PlayFree();
         }
 
-        Vector3 serverPosition = new Vector3((float)_info.mv.position.x, transform.position.y, (float)_info.mv.position.y);
-        if (_info.mv.action == (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_IDLE)
+        Vector3 serverPosition = new Vector3((float)ghost.mv.position.x, transform.position.y, (float)ghost.mv.position.y);
+        if (ghost.mv.action == (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_IDLE)
         {
             if (Vector3.Distance(transform.position, serverPosition) < 0.1f)
             {
@@ -434,45 +434,45 @@ public class EntityShell : MonoBehaviour
             }
             else
             {
-                _info.mv.realSpeed = _info.mv.expectSpeed = 10.0f;
+                ghost.mv.realSpeed = ghost.mv.expectSpeed = 10.0f;
             }
         }
 
 
         Vector3 serverWaypointPosition = serverPosition;
-        if (_info.mv.waypoints.Count > 0)
+        if (ghost.mv.waypoints.Count > 0)
         {
-            serverWaypointPosition = new Vector3((float)_info.mv.waypoints[0].x, transform.position.y, (float)_info.mv.waypoints[0].y);
+            serverWaypointPosition = new Vector3((float)ghost.mv.waypoints[0].x, transform.position.y, (float)ghost.mv.waypoints[0].y);
         }
         
-        if (_info.state.state != (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_ACTIVE)
+        if (ghost.state.state != (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_ACTIVE)
         {
             transform.position = serverPosition;
             return;
         }
 
 
-        if (Vector3.Distance(transform.position, serverPosition) < 0.2 * (float)_info.mv.expectSpeed && _info.mv.realSpeed / _info.mv.expectSpeed > 0.9)
+        if (Vector3.Distance(transform.position, serverPosition) < 0.2 * (float)ghost.mv.expectSpeed && ghost.mv.realSpeed / ghost.mv.expectSpeed > 0.9)
         {
-            transform.position = Vector3.MoveTowards(transform.position, serverWaypointPosition, (float)_info.mv.realSpeed * Time.fixedDeltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, serverWaypointPosition, (float)ghost.mv.realSpeed * Time.fixedDeltaTime);
         }
         else
         {
-            transform.position = Vector3.MoveTowards(transform.position, serverPosition, (float)_info.mv.realSpeed * Time.fixedDeltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, serverPosition, (float)ghost.mv.realSpeed * Time.fixedDeltaTime);
         }
 
 
 
-        if (_info.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_ACTIVE
-            && (_info.mv.action != (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_IDLE))
+        if (ghost.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_ACTIVE
+            && (ghost.mv.action != (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_IDLE))
         {
             if (_anim.IsPlaying(_free.name) || !_anim.isPlaying)
             {
                 _anim.CrossFade(_runned.name, 0.2f);
             }
-            if (_info.mv.waypoints.Count > 0 && Time.realtimeSinceStartup > _lockedFaceTime)
+            if (ghost.mv.waypoints.Count > 0 && Time.realtimeSinceStartup > _lockedFaceTime)
             {
-                var face = new Vector3((float)_info.mv.waypoints[0].x, transform.position.y, (float)_info.mv.waypoints[0].y) - transform.position;
+                var face = new Vector3((float)ghost.mv.waypoints[0].x, transform.position.y, (float)ghost.mv.waypoints[0].y) - transform.position;
                 var euler = Vector3.Angle(face, Vector3.forward);
                 if (face.x < 0f)
                 {

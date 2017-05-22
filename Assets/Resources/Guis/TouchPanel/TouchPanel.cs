@@ -89,7 +89,7 @@ public class TouchPanel : MonoBehaviour
         if(false)
  //       if (player == null ||  !player.isCanMove())
         {
-            if (player._info.mv.action != (ushort)MOVE_ACTION.MOVE_ACTION_IDLE)
+            if (player.ghost.mv.action != (ushort)MOVE_ACTION.MOVE_ACTION_IDLE)
             {
                 var stopMove = new MoveReq();
                 stopMove.eid = Facade.entityID;
@@ -124,7 +124,7 @@ public class TouchPanel : MonoBehaviour
         {
             return;
         }
-        if (_control != null && _control._info.state.eid != Facade.entityID)
+        if (_control != null && _control.ghost.state.eid != Facade.entityID)
         {
             _control = null;
         }
@@ -161,7 +161,7 @@ public class TouchPanel : MonoBehaviour
                 req.dstPos.y += v * 10;
                 Facade.serverProxy.SendToScene(req);
             }
-            else if (_isHandle && _control._info.mv.action != (ushort) Proto4z.MOVE_ACTION.MOVE_ACTION_IDLE)
+            else if (_isHandle && _control.ghost.mv.action != (ushort) Proto4z.MOVE_ACTION.MOVE_ACTION_IDLE)
             {
                 _isHandle = false;
                 req.action = (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_IDLE;

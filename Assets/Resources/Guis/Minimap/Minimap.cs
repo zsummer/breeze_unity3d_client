@@ -56,11 +56,11 @@ public class Minimap : MonoBehaviour
 
         foreach (var e in Facade.sceneManager.GetEntity())
         {
-            if (e.Value._info.state.eid == player._info.state.eid)
+            if (e.Value.ghost.state.eid == player.ghost.state.eid)
             {
                 continue;
             }
-            Vector2 vt = toVector2(e.Value._info.mv.position) - toVector2(player._info.mv.position);
+            Vector2 vt = toVector2(e.Value.ghost.mv.position) - toVector2(player.ghost.mv.position);
             vt /= 1.0f;
             vt.y = -vt.y;
             vt = org + vt;
@@ -68,12 +68,12 @@ public class Minimap : MonoBehaviour
             {
                 continue;
             }
-            if (e.Value._info.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_AI)
+            if (e.Value.ghost.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_AI)
             {
                 st.normal.textColor = Color.yellow;
                 GUI.Box(new Rect(vt, new Vector2(20, 20)), "+", st);
             }
-            else if (e.Value._info.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
+            else if (e.Value.ghost.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
             {
                 st.normal.textColor = Color.red;
                 GUI.Box(new Rect(vt, new Vector2(20, 20)), "*", st);

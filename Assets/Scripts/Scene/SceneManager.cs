@@ -91,14 +91,14 @@ public class SceneManager : MonoBehaviour
             var entity = GetEntity(state.eid);
             if (entity != null)
             {
-                if(entity._info.state.modelID != state.modelID)
+                if(entity.ghost.state.modelID != state.modelID)
                 {
-                    entity._info.state = state;
-                    CreateEntity(entity._info);
+                    entity.ghost.state = state;
+                    CreateEntity(entity.ghost);
                 }
                 else
                 {
-                    entity._info.state = state;
+                    entity.ghost.state = state;
                 }
                 
 
@@ -125,7 +125,7 @@ public class SceneManager : MonoBehaviour
 	{
         foreach (var e in _entitys)
         {
-			if (e.Value._info.state.eid == Facade.entityID) 
+			if (e.Value.ghost.state.eid == Facade.entityID) 
 			{
 				Facade.entityID = 0;
 			}
@@ -141,13 +141,13 @@ public class SceneManager : MonoBehaviour
         {
             return;
         }
-        if (entity._info.state.eid == Facade.entityID)
+        if (entity.ghost.state.eid == Facade.entityID)
         {
             Facade.entityID = 0;
         }
-        if (entity._info.state.avatarID != 0)
+        if (entity.ghost.state.avatarID != 0)
         {
-            _players.Remove(entity._info.state.avatarID);
+            _players.Remove(entity.ghost.state.avatarID);
         }
         _entitys.Remove(entityID);
         GameObject.Destroy(entity.gameObject);
@@ -157,7 +157,7 @@ public class SceneManager : MonoBehaviour
         var entity = GetPlayer(avatarID);
         if (entity != null)
         {
-            DestroyEntity(entity._info.state.eid);
+            DestroyEntity(entity.ghost.state.eid);
         }
     }
 
@@ -169,7 +169,7 @@ public class SceneManager : MonoBehaviour
             Debug.LogError("CreateAvatarByAvatarID not found full data");
             return;
         }
-        CreateEntity(entity._info);
+        CreateEntity(entity.ghost);
     }
     public void CreateEntity(Proto4z.EntityFullData data)
     {
@@ -220,7 +220,7 @@ public class SceneManager : MonoBehaviour
 
         var entityScrpt = entity.AddComponent<EntityShell>();
         entityScrpt._model = model.transform;
-        entityScrpt._info = data;
+        entityScrpt.ghost = data;
         entity.transform.position = spawnpoint;
         entity.transform.rotation = rotation;
 
@@ -245,15 +245,15 @@ public class SceneManager : MonoBehaviour
         {
             _players[data.state.avatarID] = entityScrpt;
         }
-        if (entityScrpt._info.state.avatarID == Facade.avatarInfo.avatarID 
-            && entityScrpt._info.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
+        if (entityScrpt.ghost.state.avatarID == Facade.avatarInfo.avatarID 
+            && entityScrpt.ghost.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
         {
-            Facade.entityID = entityScrpt._info.state.eid;
+            Facade.entityID = entityScrpt.ghost.state.eid;
             var selected = Instantiate(Resources.Load<GameObject>("Effect/other/selected"));
             selected.transform.SetParent(entity.transform,false);
         }
-        if (entityScrpt._info.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_DIED
-            || entityScrpt._info.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_LIE)
+        if (entityScrpt.ghost.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_DIED
+            || entityScrpt.ghost.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_LIE)
         {
             entityScrpt.PlayDeath();
         }
@@ -385,14 +385,14 @@ public class SceneManager : MonoBehaviour
             {
                 continue;
             }
-            Debug.Log("OnSceneEventNotice[" + e._info.state.avatarName + "] event=" + ev.ev);
+            Debug.Log("OnSceneEventNotice[" + e.ghost.state.avatarName + "] event=" + ev.ev);
             if (ev.ev == (ushort)SCENE_EVENT.SCENE_EVENT_REBIRTH)
             {
                 var strPos = ev.mix.Split(',');
-                e._info.mv.position.x = double.Parse(strPos[0]);
-                e._info.mv.position.y = double.Parse(strPos[1]);
-                e._info.state.curHP = ev.val;
-                e.transform.position = new Vector3((float)e._info.mv.position.x, e.transform.position.y, (float)e._info.mv.position.y);
+                e.ghost.mv.position.x = double.Parse(strPos[0]);
+                e.ghost.mv.position.y = double.Parse(strPos[1]);
+                e.ghost.state.curHP = ev.val;
+                e.transform.position = new Vector3((float)e.ghost.mv.position.x, e.transform.position.y, (float)e.ghost.mv.position.y);
                 e.PlayFree();
                 StartCoroutine(e.CreateEffect("Effect/other/fuhuo", Vector3.zero, 0f, 5f));
             }

@@ -373,7 +373,7 @@ public class ServerProxy : MonoBehaviour
 
 		if (Facade.avatarInfo != null && Facade.entityID != 0) 
 		{
-			var modelID = Facade.sceneManager.GetEntity (Facade.entityID)._info.state.modelID;
+			var modelID = Facade.sceneManager.GetEntity (Facade.entityID).ghost.state.modelID;
 			name = "当前模型[" + modelID +"]:" + Facade.modelDict.GetModelName(modelID);
             MainScreenLabel.Label(name);
         }
@@ -440,18 +440,18 @@ public class ServerProxy : MonoBehaviour
 
 
             EntityShell em = Facade.sceneManager.GetEntity(Facade.entityID);
-            name = "坐标:" + em._info.mv.position.x.ToString("0.00") + ":" +em._info.mv.position.y.ToString("0.00");
+            name = "坐标:" + em.ghost.mv.position.x.ToString("0.00") + ":" +em.ghost.mv.position.y.ToString("0.00");
             MainScreenLabel.Label(name);
 
-            if (em._info.mv.action == (ushort)MOVE_ACTION.MOVE_ACTION_IDLE)
+            if (em.ghost.mv.action == (ushort)MOVE_ACTION.MOVE_ACTION_IDLE)
             {
                 name = "静止";
             }
-            else if (em._info.mv.action == (ushort)MOVE_ACTION.MOVE_ACTION_FOLLOW)
+            else if (em.ghost.mv.action == (ushort)MOVE_ACTION.MOVE_ACTION_FOLLOW)
             {
                 name = "跟随";
             }
-            else if (em._info.mv.action == (ushort)MOVE_ACTION.MOVE_ACTION_PATH)
+            else if (em.ghost.mv.action == (ushort)MOVE_ACTION.MOVE_ACTION_PATH)
             {
                 name = "移动";
             }
@@ -459,7 +459,7 @@ public class ServerProxy : MonoBehaviour
             {
                 name = "被动位移";
             }
-            name += ": real:" + em._info.mv.realSpeed.ToString("0.00") + " , expect" + em._info.mv.expectSpeed.ToString("0.00");
+            name += ": real:" + em.ghost.mv.realSpeed.ToString("0.00") + " , expect" + em.ghost.mv.expectSpeed.ToString("0.00");
             MainScreenLabel.Label(name);
 
         }
