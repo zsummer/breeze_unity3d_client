@@ -37,7 +37,7 @@ public class LoginUI : MonoBehaviour {
  
         _loginButton.onClick.AddListener(delegate () 
         {
-            if (_accountInput.text.Trim().Length > 15 || _accountInput.text.Trim().Length < 2)
+            if (_accountInput.text.Trim().Length > 15 || _accountInput.text.Trim().Length < 1)
             {
                 return;
             }
@@ -60,7 +60,7 @@ public class LoginUI : MonoBehaviour {
             PlayerPrefs.SetString("login.account", _accountInput.text);
             PlayerPrefs.SetString("login.passwd", _passwdInput.text);
 
-            Facade._serverProxy.Login(_hostInput.text, port, _accountInput.text.Trim(), _passwdInput.text.Trim());
+            Facade.serverProxy.Login(_hostInput.text, port, _accountInput.text.Trim(), _passwdInput.text.Trim());
         });
 	}
 	

@@ -8,17 +8,17 @@ using UnityEngine;
 
 public class Facade: MonoBehaviour
 {
-    public static Proto4z.SceneGroupInfo _groupInfo = null;
-    public static Proto4z.AvatarBaseInfo _avatarInfo = null;
-    public static ulong _entityID = 0;
+    public static Proto4z.SceneGroupInfo sceneState = null;
+    public static Proto4z.AvatarBaseInfo avatarInfo = null;
+    public static ulong entityID = 0;
 
-    public static ModelDict _modelDict = null;
-    public static Dispatcher _dispatcher = null;
-    public static SceneManager _sceneManager = null;
-    public static ServerProxy _serverProxy = null;
-    public static AudioManager _audioManager = null;
+    public static ModelDict modelDict = null;
+    public static Dispatcher dispatcher = null;
+    public static SceneManager sceneManager = null;
+    public static ServerProxy serverProxy = null;
+    public static AudioManager audioManager = null;
 
-    public static MainUI _mainUI = null;
+    public static MainUI mainUI = null;
     
  
     private static System.Collections.Generic.Dictionary<string, object> _singletons;
@@ -51,12 +51,12 @@ public class Facade: MonoBehaviour
         _facade.SetActive(true);
         _facade.AddComponent(typeof(Facade));
 
-        _dispatcher = Facade.AddSingleton<Dispatcher>();
+        dispatcher = Facade.AddSingleton<Dispatcher>();
         Facade.AddSingleton<GameOption>();
-        _modelDict = Facade.AddSingleton<ModelDict>();
-        _serverProxy =  Facade.AddSingleton<ServerProxy>();
-        _sceneManager = Facade.AddSingleton<SceneManager>();
-        _audioManager = Facade.AddSingleton<AudioManager>();
+        modelDict = Facade.AddSingleton<ModelDict>();
+        serverProxy =  Facade.AddSingleton<ServerProxy>();
+        sceneManager = Facade.AddSingleton<SceneManager>();
+        audioManager = Facade.AddSingleton<AudioManager>();
     }
     void Awake()
     {

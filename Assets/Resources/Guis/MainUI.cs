@@ -11,6 +11,7 @@ public class MainUI: MonoBehaviour
     public Transform _skillPanel = null;
     public Transform _selectScenePanel = null;
     public Transform _touchPanel = null;
+    public Transform _miniMap = null;
 
     RawImage _bgImg = null;
     public void SetActiveBG(bool enable)
@@ -23,7 +24,7 @@ public class MainUI: MonoBehaviour
         Debug.Log("MainUI Awake.");
         DontDestroyOnLoad(gameObject);
 
-        Facade._mainUI = this;
+        Facade.mainUI = this;
         _bgImg = gameObject.GetComponent<RawImage>();
 
         _busyTips = LoadUI("BusyTips", "Guis/BusyTips/BusyTips");
@@ -32,19 +33,23 @@ public class MainUI: MonoBehaviour
 
         _skillPanel = LoadUI("SkillPanel", "Guis/SkillPanel/SkillPanel");
         _skillPanel.Find("Attack").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade._dispatcher.TriggerEvent("ButtonAttack", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("ButtonAttack", null); });
 
         _selectScenePanel = LoadUI("SelectScenePanel", "Guis/SelectScenePanel/SelectScenePanel");
         _selectScenePanel.Find("ExitScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade._dispatcher.TriggerEvent("OnExitScene", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("ClickExitScene", null); });
         _selectScenePanel.Find("HomeScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade._dispatcher.TriggerEvent("OnHomeScene", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("ClickHomeScene", null); });
+        _selectScenePanel.Find("MeleeScene").GetComponent<Button>().onClick.AddListener(
+            delegate () { Facade.dispatcher.TriggerEvent("ClickMeleeScene", null); });
         _selectScenePanel.Find("ArenaScene").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade._dispatcher.TriggerEvent("OnArenaScene", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("ClickArenaScene", null); });
 		_selectScenePanel.Find("ChangeModel").GetComponent<Button>().onClick.AddListener(
-			delegate () { Facade._dispatcher.TriggerEvent("OnChangeAvatarModel", null); });
+			delegate () { Facade.dispatcher.TriggerEvent("OnChangeAvatarModel", null); });
 
         _touchPanel = LoadUI("TouchPanel", "Guis/TouchPanel/TouchPanel");
+
+        _miniMap = LoadUI("Minimap", "Guis/Minimap/Minimap");
     }
 
     void Start()

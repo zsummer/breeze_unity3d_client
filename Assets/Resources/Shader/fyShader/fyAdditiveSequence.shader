@@ -1,4 +1,6 @@
-﻿Shader "fyShader/AdditiveSequence" 
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "fyShader/AdditiveSequence" 
 {
 		Properties 
 		{		
@@ -46,7 +48,7 @@
             fragmentInput vert(vertexInput i)
 			{
                 fragmentInput o;
-                o.position = mul (UNITY_MATRIX_MVP, i.vertex);			
+                o.position = UnityObjectToClipPos (i.vertex);			
                 o.texcoord0 = i.texcoord0;
 				o.color0 = i.color0;
                 return o;
