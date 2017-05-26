@@ -35,7 +35,7 @@ public class TouchPanel : MonoBehaviour
             _strickTouch = -1;
             strick.gameObject.SetActive(false);
             var req = new MoveReq();
-            req.eid = Facade.entityID;
+            req.eid = Facade.myShell;
             req.action = (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_IDLE;
             req.clientPos = new Proto4z.EPosition(_control.transform.position.x, _control.transform.position.z);
 			req.waypoints.Add (new EPosition (_control.transform.position.x, _control.transform.position.z));
@@ -85,14 +85,14 @@ public class TouchPanel : MonoBehaviour
         {
             return;
         }
-        EntityShell player = Facade.sceneManager.GetEntityShell(Facade.entityID);
+        EntityShell player = Facade.sceneManager.GetShell(Facade.myShell);
         if(false)
  //       if (player == null ||  !player.isCanMove())
         {
             if (player.ghost.mv.action != (ushort)MOVE_ACTION.MOVE_ACTION_IDLE)
             {
                 var stopMove = new MoveReq();
-                stopMove.eid = Facade.entityID;
+                stopMove.eid = Facade.myShell;
                 stopMove.action = (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_IDLE;
                 stopMove.clientPos = new Proto4z.EPosition(_control.transform.position.x, _control.transform.position.z);
                 Facade.serverProxy.SendToScene(stopMove);
@@ -107,7 +107,7 @@ public class TouchPanel : MonoBehaviour
 
         //Debug.Log("Send Move");
         var req = new MoveReq();
-        req.eid = Facade.entityID;
+        req.eid = Facade.myShell;
         req.action = (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_PATH;
         req.clientPos = new Proto4z.EPosition(_control.transform.position.x, _control.transform.position.z);
 		req.waypoints.Add (new EPosition (dst.x, dst.z));
@@ -120,17 +120,17 @@ public class TouchPanel : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (Facade.entityID == 0)
+        if (Facade.myShell == 0)
         {
             return;
         }
-        if (_control != null && _control.ghost.state.eid != Facade.entityID)
+        if (_control != null && _control.ghost.state.eid != Facade.myShell)
         {
             _control = null;
         }
         if (_control == null)
         {
-            _control = Facade.sceneManager.GetEntityShell(Facade.entityID);
+            _control = Facade.sceneManager.GetShell(Facade.myShell);
             foreach(Camera camera in Camera.allCameras)
             {
                 if (camera.name == "SceneCamera")
@@ -148,7 +148,7 @@ public class TouchPanel : MonoBehaviour
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
             var req = new MoveReq();
-            req.eid = Facade.entityID;
+            req.eid = Facade.myShell;
             req.clientPos = new Proto4z.EPoint(_control.transform.position.x, _control.transform.position.z);
             req.dstPos.x = _control.transform.position.x;
             req.dstPos.y = _control.transform.position.z;
@@ -200,7 +200,7 @@ public class TouchPanel : MonoBehaviour
                 if (hit3D.transform != null && hit3D.transform.name == "Terrain")
                 {
                     var req = new MoveReq();
-                    req.eid = Facade.entityID;
+                    req.eid = Facade.myShell;
                     req.action = (ushort)Proto4z.MOVE_ACTION.MOVE_ACTION_PATH;
                     req.clientPos = new Proto4z.EPosition(_control.transform.position.x, _control.transform.position.z);
 					req.waypoints.Add (new EPosition (hit3D.point.x, hit3D.point.z));

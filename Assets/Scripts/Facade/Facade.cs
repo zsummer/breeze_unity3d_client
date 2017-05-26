@@ -10,7 +10,7 @@ public class Facade: MonoBehaviour
 {
     public static Proto4z.SceneGroupInfo sceneState = null;
     public static Proto4z.AvatarBaseInfo avatarInfo = null;
-    public static ulong entityID = 0;
+    public static ulong myShell = 0;
 
     public static ModelDict modelDict = null;
     public static Dispatcher dispatcher = null;

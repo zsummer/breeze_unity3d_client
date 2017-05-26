@@ -6,8 +6,7 @@ using System;
 
 public class SceneManager : MonoBehaviour
 {
-    private static System.Collections.Generic.Dictionary<ulong, EntityShell> _entitys = new System.Collections.Generic.Dictionary<ulong, EntityShell>();
-    private static System.Collections.Generic.Dictionary<ulong, EntityShell> _players = new System.Collections.Generic.Dictionary<ulong, EntityShell>();
+    private static System.Collections.Generic.Dictionary<ulong, EntityShell> _shells = new System.Collections.Generic.Dictionary<ulong, EntityShell>();
 
 	Transform _scene = null;
 	float _sceneEndTime = 0f;
@@ -17,10 +16,11 @@ public class SceneManager : MonoBehaviour
 
     void Awake()
 	{
-		Facade.dispatcher.AddListener("OnChangeAvatarModel", (System.Action)OnChangeAvatarModel);
+		Facade.dispatcher.AddListener("ClickChangeModel", (System.Action)ClickChangeModel);
 		Facade.dispatcher.AddListener("ChangeModeIDResp", (System.Action<ChangeModeIDResp>)OnChangeModeIDResp);
+        Facade.dispatcher.AddListener("ClickAttack", (System.Action)ClickAttack);
 
-		Facade.dispatcher.AddListener("SceneSectionNotice", (System.Action<SceneSectionNotice>)OnSceneSectionNotice);
+        Facade.dispatcher.AddListener("SceneSectionNotice", (System.Action<SceneSectionNotice>)OnSceneSectionNotice);
 		Facade.dispatcher.AddListener("SceneRefreshNotice", (System.Action<SceneRefreshNotice>)OnSceneRefreshNotice);
 		Facade.dispatcher.AddListener("AddEntityNotice", (System.Action<AddEntityNotice>)OnAddEntityNotice);
 		Facade.dispatcher.AddListener("RemoveEntityNotice", (System.Action<RemoveEntityNotice>)OnRemoveEntityNotice);
@@ -32,7 +32,7 @@ public class SceneManager : MonoBehaviour
         Facade.dispatcher.AddListener("UseSkillResp", (System.Action<UseSkillResp>)OnUseSkillResp);
         Facade.dispatcher.AddListener("SceneEventNotice", (System.Action<SceneEventNotice>)OnSceneEventNotice);
 
-        Facade.dispatcher.AddListener("ButtonAttack", (System.Action)OnButtonAttack);
+        
 
 	}
 
@@ -61,7 +61,7 @@ public class SceneManager : MonoBehaviour
 	{
 		if (_scene != null) 
 		{
-			CleanEntity();
+            CleanShells();
 			GameObject.Destroy(_scene.gameObject);
 			_scene = null;
 			Facade.mainUI._skillPanel.gameObject.SetActive(false);
@@ -77,7 +77,7 @@ public class SceneManager : MonoBehaviour
     {
         foreach (var mv in moves)
         {
-            var shell = GetEntityShell(mv.eid);
+            var shell = GetShell(mv.eid);
             if (shell != null)
             {
                 shell.RefreshMoveInfo(mv);
@@ -88,7 +88,7 @@ public class SceneManager : MonoBehaviour
     {
         foreach (var state in states)
         {
-            var entity = GetEntityShell(state.eid);
+            var entity = GetShell(state.eid);
             if (entity != null)
             {
                 if(entity.ghost.state.modelID != state.modelID)
@@ -105,82 +105,53 @@ public class SceneManager : MonoBehaviour
             }
         }
     }
-    public EntityShell GetEntityShell(ulong entityID)
+    public EntityShell GetShell(ulong entityID)
     {
         EntityShell ret = null;
-        _entitys.TryGetValue(entityID, out ret);
+        _shells.TryGetValue(entityID, out ret);
         return ret;
     }
-    public System.Collections.Generic.Dictionary<ulong, EntityShell> GetEntityShell()
+    public System.Collections.Generic.Dictionary<ulong, EntityShell> GetShells()
     {
-        return _entitys;
+        return _shells;
     }
-    public EntityShell GetPlayer(ulong avatarID)
-    {
-        EntityShell ret = null;
-        _players.TryGetValue(avatarID, out ret);
-        return ret;
-    }
-	public void CleanEntity()
+	public void CleanShells()
 	{
-        foreach (var e in _entitys)
+        foreach (var e in _shells)
         {
-			if (e.Value.ghost.state.eid == Facade.entityID) 
+			if (e.Value.ghost.state.eid == Facade.myShell) 
 			{
-				Facade.entityID = 0;
+				Facade.myShell = 0;
 			}
             GameObject.Destroy(e.Value.gameObject);
         }
-        _entitys.Clear();
-        _players.Clear();
+        _shells.Clear();
 	}
-    public void DestroyEntity(ulong entityID)
+    public void DestroyShell(ulong entityID)
     {
-        var entity = GetEntityShell(entityID);
+        var entity = GetShell(entityID);
         if (entity == null)
         {
             return;
         }
-        if (entity.ghost.state.eid == Facade.entityID)
+        if (entity.ghost.state.eid == Facade.myShell)
         {
-            Facade.entityID = 0;
+            Facade.myShell = 0;
         }
-        if (entity.ghost.state.avatarID != 0)
-        {
-            _players.Remove(entity.ghost.state.avatarID);
-        }
-        _entitys.Remove(entityID);
+        _shells.Remove(entityID);
         GameObject.Destroy(entity.gameObject);
     }
-    public void DestroyPlayer(ulong avatarID)
-    {
-        var entity = GetPlayer(avatarID);
-        if (entity != null)
-        {
-            DestroyEntity(entity.ghost.state.eid);
-        }
-    }
 
-    public void CreateEntityByAvatarID(ulong avatarID)
-    {
-        var entity = GetPlayer(avatarID);
-        if (entity != null)
-        {
-            Debug.LogError("CreateAvatarByAvatarID not found full data");
-            return;
-        }
-        BuildShell(entity.ghost);
-    }
     public void BuildShell(Proto4z.EntityFullData ghost)
     {
-        EntityShell oldEnity = GetEntityShell(ghost.state.eid);
+        EntityShell oldShell = GetShell(ghost.state.eid);
         
         Vector3 spawnpoint = new Vector3((float)ghost.mv.position.x, -13.198f, (float)ghost.mv.position.y);
         Quaternion rotation = new Quaternion();
-        if (oldEnity != null && oldEnity != null)
+        if (oldShell != null && oldShell != null)
         {
-            spawnpoint = oldEnity.gameObject.transform.position;
-            rotation = oldEnity.gameObject.transform.rotation;
+            spawnpoint = oldShell.gameObject.transform.position;
+            rotation = oldShell.gameObject.transform.rotation;
         }
 
         string modelName = Facade.modelDict.GetModelName(ghost.state.modelID);
@@ -209,53 +180,47 @@ public class SceneManager : MonoBehaviour
         }
         Rigidbody rd = model.GetComponent<Rigidbody>();
         rd.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
-        Light lt = model.AddComponent<Light>();
-        lt.range = 1.0f;
-        lt.intensity = 8.0f;
+//        Light lt = model.AddComponent<Light>();
+//        lt.range = 1.0f;
+//        lt.intensity = 8.0f;
 
-        var entity = new GameObject();
-        entity.name = ghost.state.avatarName;
-        model.transform.SetParent(entity.transform);
+        var newShellObj = new GameObject();
+        newShellObj.name = ghost.state.avatarName;
+        model.transform.SetParent(newShellObj.transform);
 
 
-        var entityScrpt = entity.AddComponent<EntityShell>();
-        entityScrpt._model = model.transform;
-        entityScrpt.ghost = ghost;
-        entity.transform.position = spawnpoint;
-        entity.transform.rotation = rotation;
+        var newShell = newShellObj.AddComponent<EntityShell>();
+        newShell._model = model.transform;
+        newShell.ghost = ghost;
+        newShellObj.transform.position = spawnpoint;
+        newShellObj.transform.rotation = rotation;
 
         if (ghost.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
         {
-            entity.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
-            entityScrpt._modelHeight *= 2.5f;
+            newShellObj.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
+            newShell._modelHeight *= 2.5f;
         }
         else
         {
-            entity.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
-            entityScrpt._modelHeight *= 1.5f;
+            newShellObj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+            newShell._modelHeight *= 1.5f;
         }
 
+        DestroyShell(ghost.state.eid);
 
 
-        DestroyEntity(ghost.state.eid);
-
-
-        _entitys[ghost.state.eid] = entityScrpt;
-        if (ghost.state.avatarID != 0)
+        _shells[ghost.state.eid] = newShell;
+        if (newShell.ghost.state.avatarID == Facade.avatarInfo.avatarID 
+            && newShell.ghost.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
         {
-            _players[ghost.state.avatarID] = entityScrpt;
-        }
-        if (entityScrpt.ghost.state.avatarID == Facade.avatarInfo.avatarID 
-            && entityScrpt.ghost.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
-        {
-            Facade.entityID = entityScrpt.ghost.state.eid;
+            Facade.myShell = newShell.ghost.state.eid;
             var selected = Instantiate(Resources.Load<GameObject>("Effect/other/selected"));
-            selected.transform.SetParent(entity.transform,false);
+            selected.transform.SetParent(newShellObj.transform,false);
         }
-        if (entityScrpt.ghost.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_DIED
-            || entityScrpt.ghost.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_LIE)
+        if (newShell.ghost.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_DIED
+            || newShell.ghost.state.state == (ushort)Proto4z.ENTITY_STATE.ENTITY_STATE_LIE)
         {
-            entityScrpt.PlayDeath();
+            newShell.PlayDeath();
         }
         Debug.Log("create avatar");
     }
@@ -265,7 +230,7 @@ public class SceneManager : MonoBehaviour
 	{
 		Debug.logger.Log("ServerProxy::OnChangeModeIDResp ret=" + resp.retCode + ", newModelID= " + resp.modeID );
 	}
-	void OnChangeAvatarModel()
+	void ClickChangeModel()
 	{
 		Facade.serverProxy.SendToGame(new ChangeModeIDReq(Facade.avatarInfo.modeID%45+1));
 	}
@@ -339,9 +304,9 @@ public class SceneManager : MonoBehaviour
 	void OnAddEntityNotice(AddEntityNotice notice)
 	{
 		Debug.Log(notice);
-		foreach (var entity in notice.entitys)
+		foreach (var ghost in notice.entitys)
 		{
-			Facade.sceneManager.BuildShell(entity);
+			Facade.sceneManager.BuildShell(ghost);
 		}
 	}
 	void OnRemoveEntityNotice(RemoveEntityNotice notice)
@@ -364,7 +329,7 @@ public class SceneManager : MonoBehaviour
 	}
 	void OnUseSkillNotice(UseSkillNotice notice)
 	{
-		var entity = GetEntityShell (notice.eid);
+		var entity = GetShell (notice.eid);
 		if (entity == null)
 		{
 			return;
@@ -380,7 +345,7 @@ public class SceneManager : MonoBehaviour
 	{
         foreach (var ev in notice.info)
         {
-            var e = GetEntityShell(ev.dst);
+            var e = GetShell(ev.dst);
             if (e == null)
             {
                 continue;
@@ -432,14 +397,14 @@ public class SceneManager : MonoBehaviour
 		
 	}	
 
-	void OnButtonAttack()
+	void ClickAttack()
 	{
-        var et = Facade.sceneManager.GetEntityShell(Facade.entityID);
-        if (et == null)
+        var shell = Facade.sceneManager.GetShell(Facade.myShell);
+        if (shell == null)
         {
             return;
         }
-        et.DoAttack();
+        shell.ClickAttack();
 
 	}
 

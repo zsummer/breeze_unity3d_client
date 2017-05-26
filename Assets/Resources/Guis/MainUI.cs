@@ -33,7 +33,7 @@ public class MainUI: MonoBehaviour
 
         _skillPanel = LoadUI("SkillPanel", "Guis/SkillPanel/SkillPanel");
         _skillPanel.Find("Attack").GetComponent<Button>().onClick.AddListener(
-            delegate () { Facade.dispatcher.TriggerEvent("ButtonAttack", null); });
+            delegate () { Facade.dispatcher.TriggerEvent("ClickAttack", null); });
 
         _selectScenePanel = LoadUI("SelectScenePanel", "Guis/SelectScenePanel/SelectScenePanel");
         _selectScenePanel.Find("ExitScene").GetComponent<Button>().onClick.AddListener(
@@ -45,7 +45,7 @@ public class MainUI: MonoBehaviour
         _selectScenePanel.Find("ArenaScene").GetComponent<Button>().onClick.AddListener(
             delegate () { Facade.dispatcher.TriggerEvent("ClickArenaScene", null); });
 		_selectScenePanel.Find("ChangeModel").GetComponent<Button>().onClick.AddListener(
-			delegate () { Facade.dispatcher.TriggerEvent("OnChangeAvatarModel", null); });
+			delegate () { Facade.dispatcher.TriggerEvent("ClickChangeModel", null); });
 
         _touchPanel = LoadUI("TouchPanel", "Guis/TouchPanel/TouchPanel");
 
