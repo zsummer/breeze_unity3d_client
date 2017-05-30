@@ -178,7 +178,7 @@ class Session
                 _socket.Close();
                 _socket = null;
             }
-            Debug.logger.Log(LogType.Error, "Session::Init had except. addr=" + _addr + ", port=" + _port + ",e=" + e);
+            Debug.logger.Log(LogType.Error, "Session::Connect had except. addr=" + _addr + ", port=" + _port + ",e=" + e);
         }
     }
     public void OnConnect(IAsyncResult result)
@@ -238,34 +238,26 @@ class Session
     public void OnRecv(ushort protoID, byte[] bin)
     {
         string protoName = Proto4z.Reflection.getProtoName(protoID);
-//        Debug.logger.Log("recv pack len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
+        Debug.logger.Log("recv pack len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
         _lastRecvTime = Time.realtimeSinceStartup;
-        try
+
+        var typeInfo = Type.GetType("Proto4z." + protoName);
+        if (typeInfo == null)
         {
-            var typeInfo = Type.GetType("Proto4z." + protoName);
-            if (typeInfo == null)
-            {
-                Debug.logger.Log(LogType.Error, "not found reflection type info. len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
-                return;
-            }
+            Debug.logger.Log(LogType.Error, "not found reflection type info. len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
+            return;
+        }
             
-            var methodInfo = typeInfo.GetMethod("__decode");
-            if (methodInfo == null)
-            {
-                Debug.logger.Log(LogType.Error, "not found reflection method info. len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
-                return;
-            }
-            var inst = Activator.CreateInstance(typeInfo);
-            int offset = 0;
-            methodInfo.Invoke(inst, new object[] { bin, offset });
-            Facade.dispatcher.TriggerEvent(protoName, new object[] { inst });
-        }
-        catch (Exception)
+        var methodInfo = typeInfo.GetMethod("__decode");
+        if (methodInfo == null)
         {
-            Debug.logger.Log(LogType.Error, "exception. len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
+            Debug.logger.Log(LogType.Error, "not found reflection method info. len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
+            return;
         }
-
-
+        var inst = Activator.CreateInstance(typeInfo);
+        int offset = 0;
+        methodInfo.Invoke(inst, new object[] { bin, offset });
+        Facade.dispatcher.TriggerEvent(protoName, new object[] { inst });
     }
     public void Close()
     {
@@ -307,7 +299,7 @@ class Session
         }
         catch (Exception e)
         {
-            Debug.LogError("Session run Async queue error. e=" + e);
+            Debug.LogError("Session Update process async func had except. e=" + e);
         }
 
         try
@@ -345,7 +337,7 @@ class Session
         }
         catch (Exception e)
         {
-            Debug.LogError("Session run Async queue error. e=" + e);
+            Debug.LogError("Session Update  reconnect flow had except. e=" + e);
         }
 
         try
@@ -372,18 +364,33 @@ class Session
                         _rc4Recv.encryption(_recvBuffer, _recvBufferLen, ret);
                     }
                     _recvBufferLen += ret;
-                    //check message 
                     int offset = 0;
+
                     while (_recvBufferLen - offset >= ProtoHeader.HeadLen)
                     {
                         ProtoHeader ph = new ProtoHeader();
-                        ph.__decode(_recvBuffer, ref offset);
-                        if (ph.packLen <= _recvBufferLen - (offset - ProtoHeader.HeadLen))
+                        int headTmp = offset;
+                        ph.__decode(_recvBuffer, ref headTmp);
+                        if (ph.packLen < ProtoHeader.HeadLen || headTmp != offset + ProtoHeader.HeadLen)
+                        {
+                            Debug.LogError("!!!Unintended!!! socket stream illegality. killed the socket. host=" + _addr
+                                + ", port=" + _port + ", status =" + _status + ", packLen=" + ph.packLen);
+                            Close();
+                            return;
+                        }
+                        if (ph.packLen  <= _recvBufferLen - offset )
                         {
                             var pack = new byte[ph.packLen - ProtoHeader.HeadLen];
-                            Array.Copy(_recvBuffer, offset, pack, 0,  ph.packLen - ProtoHeader.HeadLen);
-                            OnRecv(ph.protoID, pack);
-                            offset += (ph.packLen - ProtoHeader.HeadLen);
+                            Array.Copy(_recvBuffer, offset + ProtoHeader.HeadLen, pack, 0,  ph.packLen - ProtoHeader.HeadLen);
+                            try
+                            {
+                                OnRecv(ph.protoID, pack);
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.LogError("Session socket Receive  had except. e=" + e);
+                            }
+                            offset += ph.packLen;
                         }
                         else
                         {
@@ -403,12 +410,16 @@ class Session
                         }
                     }
                     
-                } while (true);
+                } while (false);
             }
+        }
+        catch (OverflowException e)
+        {
+            Debug.LogError("Session Update Receive had OverflowException except. e=" + e);
         }
         catch (Exception e)
         {
-            Debug.LogError("Session run Async queue error. e=" + e);
+            Debug.LogError("Session Update Receive had except . e=" + e);
         }
         try
         {

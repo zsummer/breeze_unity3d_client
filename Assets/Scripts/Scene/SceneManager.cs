@@ -237,7 +237,7 @@ public class SceneManager : MonoBehaviour
 
 	void OnSceneSectionNotice(SceneSectionNotice notice)
 	{
-		Debug.Log(notice);
+		Debug.Log("SceneSectionNotice");
 		if (_scene != null)
 		{
 			GameObject.Destroy(_scene.gameObject);

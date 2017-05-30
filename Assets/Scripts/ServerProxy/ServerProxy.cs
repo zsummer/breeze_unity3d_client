@@ -134,7 +134,7 @@ public class ServerProxy : MonoBehaviour
         Debug.logger.Log("ServerProxy::AttachAvatarResp ");
         if (resp.retCode != (ushort)ERROR_CODE.EC_SUCCESS)
         {
-            Debug.LogError("ServerProxy::AttachAvatarResp ");
+            Debug.LogError("ServerProxy::AttachAvatarResp resp.retCode=" + resp.retCode);
             return;
         }
 
@@ -360,11 +360,11 @@ public class ServerProxy : MonoBehaviour
 	{
         if (resp.retCode == (ushort)Proto4z.ERROR_CODE.EC_SUCCESS)
         {
-            Debug.logger.Log("ServerProxy::OnAttachSceneResp sucess. sceneID=" +  resp.sceneID.ToString());
+            Debug.Log("ServerProxy::OnAttachSceneResp sucess. sceneID=" +  resp.sceneID.ToString());
         }
         else
         {
-            Debug.logger.Log("ServerProxy::OnAttachSceneResp sucess. error code=" + resp.retCode.ToString() + ", sceneID=" + resp.sceneID.ToString());
+            Debug.LogError("ServerProxy::OnAttachSceneResp error code=" + resp.retCode.ToString() + ", sceneID=" + resp.sceneID.ToString());
         }
         
     }
