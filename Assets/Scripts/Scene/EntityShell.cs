@@ -141,12 +141,6 @@ public class SyncCheck
             showDev += ", _sumSmoothTime=" + _sumSmoothTime.ToString(".####");
             showDev += ", _sumDeltaTime=" + _sumDeltaTime.ToString(".####");
             showDev += ", _sumSyncTime=" + (_sumSyncMoveCount * 100.0f).ToString(".####");
-//             showDev += ", _devFixedDeltaTime=" + _devFixedDeltaTime.OutDeviationData(ref threshold);
-//             _devFixedDeltaTime.cleanBucket();
-//             showDev += ", _devSmoothTime=" + _devSmoothTime.OutDeviationData(ref threshold);
-//             _devSmoothTime.cleanBucket();
-//             showDev += ", _devDeltaTime=" + _devDeltaTime.OutDeviationData(ref threshold);
-//             _devDeltaTime.cleanBucket();
             showDev += ", _devPassTime=" + _devPassTime.OutDeviationData(ref threshold);
             _devPassTime.cleanBucket();
             showDev += ", _devSyncMoveTime=" + _devSyncMoveTime.OutDeviationData(ref threshold);
@@ -157,17 +151,12 @@ public class SyncCheck
 
             if (threshold > 1.2)
             {
-                Debug.LogError("eid:" + eid + " -> " + showDev);
+                Debug.LogWarning("eid:" + eid + " -> " + showDev);
             }
             else if (threshold > 0.6)
             {
                 Debug.LogWarning("eid:" + eid + " -> " + showDev);
             }
-//             else
-//             {
-//                 Debug.Log("eid:" + eid + " -> " + showDev);
-//             }
-//             
         }
     }
 }

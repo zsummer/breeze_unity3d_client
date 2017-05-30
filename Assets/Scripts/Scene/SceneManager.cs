@@ -64,9 +64,9 @@ public class SceneManager : MonoBehaviour
             CleanShells();
 			GameObject.Destroy(_scene.gameObject);
 			_scene = null;
-			Facade.mainUI._skillPanel.gameObject.SetActive(false);
-			Facade.mainUI._touchPanel.gameObject.SetActive(false);
-            Facade.mainUI._miniMap.gameObject.SetActive(false);
+			Facade.mainUI.skillPanel.gameObject.SetActive(false);
+			Facade.mainUI.touchPanel.gameObject.SetActive(false);
+            Facade.mainUI.miniMap.gameObject.SetActive(false);
 			Facade.mainUI.SetActiveBG(true);
             Facade.audioManager._byebye.Play(0);
         }
@@ -228,7 +228,6 @@ public class SceneManager : MonoBehaviour
 
 	void OnChangeModeIDResp(ChangeModeIDResp resp)
 	{
-		Debug.logger.Log("ServerProxy::OnChangeModeIDResp ret=" + resp.retCode + ", newModelID= " + resp.modeID );
 	}
 	void ClickChangeModel()
 	{
@@ -237,14 +236,15 @@ public class SceneManager : MonoBehaviour
 
 	void OnSceneSectionNotice(SceneSectionNotice notice)
 	{
-		Debug.Log("SceneSectionNotice");
 		if (_scene != null)
 		{
 			GameObject.Destroy(_scene.gameObject);
 		}
 		_sceneEndTime = Time.realtimeSinceStartup + (float)notice.section.sceneEndTime - (float)notice.section.serverTime;
+        Debug.Log("SceneManager::OnSceneSectionNotice begin Load scene.");
 
         GameObject rcsScene = null;
+        DateTime now =  DateTime.Now;
         if (notice.section.sceneType == (ushort)SCENE_TYPE.SCENE_HOME)
         {
             if (_rcsHomeScene == null)
@@ -272,17 +272,21 @@ public class SceneManager : MonoBehaviour
         }
         if (rcsScene == null)
         {
-            Debug.LogError("can not local scene. ");
+            Debug.LogError("SceneManager::OnSceneSectionNotice can not load scene.");
             return;
         }
-        Debug.Log("create scene");
+        Debug.Log("SceneManager::OnSceneSectionNotice Resources.Load time=" + (DateTime.Now - now).TotalMilliseconds.ToString(".#") + " ms");
+        Facade.mainUI.chatUI.GetComponent<ChatUI>().PushMessage("Resources.Load time=" + (DateTime.Now - now).TotalMilliseconds.ToString(".#") + " ms");
+        now = DateTime.Now;
         _scene = Instantiate(rcsScene).transform;
         _scene.gameObject.SetActive(true);
         Facade.mainUI.SetActiveBG(false);
-        Facade.mainUI._touchPanel.gameObject.SetActive(true);
-        Facade.mainUI._skillPanel.gameObject.SetActive(true);
-        Facade.mainUI._miniMap.gameObject.SetActive(true);
+        Facade.mainUI.touchPanel.gameObject.SetActive(true);
+        Facade.mainUI.skillPanel.gameObject.SetActive(true);
+        Facade.mainUI.miniMap.gameObject.SetActive(true);
         Facade.audioManager._welcome.Play(0);
+        Debug.Log("SceneManager::OnSceneSectionNotice Instantiate scene time=" + (DateTime.Now - now).TotalMilliseconds.ToString(".#") + " ms");
+        Facade.mainUI.chatUI.GetComponent<ChatUI>().PushMessage("Resources.Instantiate time=" + (DateTime.Now - now).TotalMilliseconds.ToString(".#") + " ms");
     }
 
     private IEnumerator CreateRandomMap()
@@ -303,7 +307,6 @@ public class SceneManager : MonoBehaviour
 	}
 	void OnAddEntityNotice(AddEntityNotice notice)
 	{
-		Debug.Log(notice);
 		foreach (var ghost in notice.entitys)
 		{
 			Facade.sceneManager.BuildShell(ghost);

@@ -4,7 +4,8 @@ using System.Collections;
 public class BusyTips : MonoBehaviour {
 
     // Use this for initialization
-    public float _speed = 7.0f;
+    public float speed = 7.0f;
+    public bool busy = false;
     void Start ()
     {
         gameObject.SetActive(false);
@@ -13,6 +14,9 @@ public class BusyTips : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        transform.localEulerAngles += new Vector3(0, 0, _speed);
+        if (busy)
+        {
+            transform.localEulerAngles += new Vector3(0, 0, speed);
+        }
     }
 }
