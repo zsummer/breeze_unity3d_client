@@ -405,26 +405,43 @@ class Session
         {
             do
             {
+                
                 int total = _socket.Available;
-                if (total == 0)
+                if (total == 0 && !_socket.Poll(0, SelectMode.SelectRead))
                 {
                     break; // 没有可读数据 
                 }
-                int ret = _socket.Receive(_recvBuffer, _recvBufferLen, MAX_BUFFER_SIZE - _recvBufferLen, SocketFlags.None);
-                if (ret == 0)
+                int ret = 0;
+                try
                 {
-                    Debug.LogWarning("Session[" + _sessionName + "]::ProcessReceive. remote socket closed. _recvBufferLen=" + _recvBufferLen + ", max=" + MAX_BUFFER_SIZE
-                            + ", addr = " + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
+                    SocketError se;
+                    ret = _socket.Receive(_recvBuffer, _recvBufferLen, MAX_BUFFER_SIZE - _recvBufferLen, SocketFlags.None, out se);
+                    if (se != SocketError.Success )
+                    {
+                        if (se == SocketError.WouldBlock)
+                        {
+                            return;
+                        }
+                        Debug.LogError("Session[" + _sessionName + "]::ProcessReceive socket SocketError . _recvBufferLen=" + _recvBufferLen + ", max=" + MAX_BUFFER_SIZE
+                             + ", addr = " + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" + se);
+                        Close();
+                        return;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError("Session[" + _sessionName + "]::ProcessReceive socket remote close.. _recvBufferLen=" + _recvBufferLen + ", max=" + MAX_BUFFER_SIZE
+                         + ", addr = " + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state +", e=" + e);
                     Close();
                     return;
                 }
-                else if (ret < 0)
+                if (ret <= 0)
                 {
-                    Debug.LogError("Session[" + _sessionName + "]::ProcessReceive. socket unusual closed. ret=" + ret + ", _recvBufferLen=" + _recvBufferLen + ", max=" + MAX_BUFFER_SIZE
-                        + ", addr = " + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
+                    Debug.LogError("Session[" + _sessionName + "]::ProcessReceive. impossibility event");
                     Close();
                     return;
                 }
+               
                 if (_encrypt.Length > 0)
                 {
                     _rc4Recv.encryption(_recvBuffer, _recvBufferLen, ret);
@@ -482,17 +499,13 @@ class Session
 
             } while (false);
         }
-        catch (OverflowException e)
-        {
-            Debug.LogError("Session[" + _sessionName + "]::ProcessReceive. had OverflowException . ph.packLen=" 
-                + ", _recvBufferLen=" + _recvBufferLen + ", max=" + MAX_BUFFER_SIZE
-                + ", addr = " + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" + e);
-        }
+
         catch (Exception e)
         {
             Debug.LogError("Session[" + _sessionName + "]::ProcessReceive. had except . ph.packLen="
                 + ", _recvBufferLen=" + _recvBufferLen + ", max=" + MAX_BUFFER_SIZE
                 + ", addr = " + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" + e);
+
         }
     }
 
