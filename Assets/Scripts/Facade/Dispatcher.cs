@@ -67,6 +67,7 @@ public  class Dispatcher : MonoBehaviour
             }
             err += ") had Exception:";
             err += e.Message;
+            Debug.LogException(e);
             Debug.LogError(err);
         }
         
