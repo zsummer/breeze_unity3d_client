@@ -142,7 +142,7 @@ public class SceneManager : MonoBehaviour
         GameObject.Destroy(entity.gameObject);
     }
 
-    public void BuildShell(Proto4z.EntityFullData ghost)
+    public void BuildShell(Proto4z.EntityClientSync ghost)
     {
         EntityShell oldShell = GetShell(ghost.state.eid);
         
@@ -307,7 +307,7 @@ public class SceneManager : MonoBehaviour
 	}
 	void OnAddEntityNotice(AddEntityNotice notice)
 	{
-		foreach (var ghost in notice.entitys)
+		foreach (var ghost in notice.syncs)
 		{
 			Facade.sceneManager.BuildShell(ghost);
 		}

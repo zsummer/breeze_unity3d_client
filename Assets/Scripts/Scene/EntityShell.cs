@@ -165,7 +165,7 @@ public class SyncCheck
 
 public class EntityShell : MonoBehaviour
 {
-    public Proto4z.EntityFullData ghost;
+    public Proto4z.EntityClientSync ghost;
     public float _modelHeight = 2;
     public Transform _model = null;
 
