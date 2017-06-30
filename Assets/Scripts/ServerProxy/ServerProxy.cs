@@ -114,7 +114,7 @@ public class ServerProxy : MonoBehaviour
         }
         else
         {
-            _gameClient.Send(new AttachAvatarReq("", resp.previews[0].avatarID));
+            SendAttachAvatarReq(resp.previews[0].avatarID);
         }
     }
 
@@ -126,9 +126,30 @@ public class ServerProxy : MonoBehaviour
             return;
         }
         Debug.Log("ServerProxy::OnCreateAvatarResp success. avatars=" + resp.previews.Count);
-        _gameClient.Send(new AttachAvatarReq("", resp.previews[0].avatarID));
+        SendAttachAvatarReq(resp.previews[0].avatarID);
     }
-
+    void SendAttachAvatarReq(ulong id)
+    {
+        AttachAvatarReq req = new AttachAvatarReq();
+        req.avatarID = id;
+        req.di.Add("batteryLevel", SystemInfo.batteryLevel.ToString("##.##"));
+        req.di.Add("batteryStatus", SystemInfo.batteryStatus.ToString());
+        req.di.Add("deviceModel", SystemInfo.deviceModel);
+        req.di.Add("deviceName", SystemInfo.deviceName);
+        req.di.Add("deviceType", SystemInfo.deviceType.ToString());
+        req.di.Add("graphicsDeviceName", SystemInfo.graphicsDeviceName);
+        req.di.Add("graphicsDeviceType", SystemInfo.graphicsDeviceType.ToString());
+        req.di.Add("graphicsDeviceVendor", SystemInfo.graphicsDeviceVendor);
+        req.di.Add("graphicsDeviceVersion", SystemInfo.graphicsDeviceVersion);
+        req.di.Add("graphicsMemorySize", SystemInfo.graphicsMemorySize.ToString());
+        req.di.Add("operatingSystem", SystemInfo.operatingSystem);
+        req.di.Add("operatingSystemFamily", SystemInfo.operatingSystemFamily.ToString());
+        req.di.Add("processorCount", SystemInfo.processorCount.ToString());
+        req.di.Add("processorFrequency", SystemInfo.processorFrequency.ToString());
+        req.di.Add("processorType", SystemInfo.processorType);
+        req.di.Add("systemMemorySize", SystemInfo.systemMemorySize.ToString());
+        _gameClient.Send(req);
+    }
     void OnAttachAvatarResp(AttachAvatarResp resp)
     {
         if (resp.retCode != (ushort)ERROR_CODE.EC_SUCCESS)
@@ -154,6 +175,8 @@ public class ServerProxy : MonoBehaviour
             Facade.mainUI.selectScenePanel.gameObject.SetActive(true);
         }
         MainScreenLabel.Bulletin(1, "登录时间:" + Utls.nowToString());
+
+
     }
     void CreateSceneSession(ulong avatarID, Proto4z.SceneGroupInfo groupInfo)
     {
