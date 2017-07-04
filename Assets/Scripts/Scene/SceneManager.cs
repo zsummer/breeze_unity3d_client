@@ -302,19 +302,22 @@ public class SceneManager : MonoBehaviour
 
     void OnSceneRefreshNotice(SceneRefreshNotice notice)
 	{
-		Facade.sceneManager.RefreshEntityState(notice.entityStates);
-		Facade.sceneManager.RefreshEntityMove(notice.entityMoves);
+		RefreshEntityState(notice.entityStates);
+		RefreshEntityMove(notice.entityMoves);
 	}
 	void OnAddEntityNotice(AddEntityNotice notice)
 	{
 		foreach (var ghost in notice.syncs)
 		{
-			Facade.sceneManager.BuildShell(ghost);
+			BuildShell(ghost);
 		}
 	}
 	void OnRemoveEntityNotice(RemoveEntityNotice notice)
 	{
-		Debug.Log(notice);
+        foreach (var eid in notice.eids)
+        {
+            DestroyShell(eid);
+        }
 	}
 	void OnMoveNotice(MoveNotice notice)
 	{
