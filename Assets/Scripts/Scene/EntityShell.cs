@@ -269,7 +269,7 @@ public class EntityShell : MonoBehaviour
         }
         
 
-        StartCoroutine(CreateEffect("Effect/skill/attack", Vector3.forward, 0.1f, 2f));
+        //StartCoroutine(CreateEffect("Effect/skill/attack", Vector3.forward, 0.1f, 2f));
     }
     public void PlayDeath()
     {
