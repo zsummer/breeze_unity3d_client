@@ -45,9 +45,10 @@ class ProtoHeader : IProtoObject
 class Session
 {
     Socket _socket;
-    SessionStatus _status = SessionStatus.SS_UNINIT;
-    public SessionStatus  Status{get{return _status;}}
-    public Action _onConnect;
+    string _sessionName;
+
+    public SessionStatus state = SessionStatus.SS_UNINIT;
+    public Action whenConnected;
 
     IPAddress _addr;
     ushort _port;
@@ -69,11 +70,11 @@ class Session
     private int _recvBufferLen = 0;
 
 
+    System.Collections.Generic.List<Delegate> _asyns = new System.Collections.Generic.List<Delegate>();
 
-
-    System.Collections.Generic.Queue<Delegate> _asyns = new System.Collections.Generic.Queue<Delegate>();
-    public Session()
+    public Session(string name)
     {
+        _sessionName = name;
         _sendBuffer = new byte[MAX_BUFFER_SIZE];
         _recvBuffer = new byte[MAX_BUFFER_SIZE];
         _sendQue = new System.Collections.Generic.Queue<byte[]>();
@@ -99,34 +100,40 @@ class Session
             }
             if (_addr == null)
             {
-                _status = SessionStatus.SS_UNINIT;
-                Debug.logger.Log(LogType.Error, "Session::OnGetDNS can't resolve host.");
+                state = SessionStatus.SS_UNINIT;
+                Debug.LogError("Session[" + _sessionName + "]::OnGetDNS can not resolve host. "
+                    + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
                 return;
             }
-            _status = SessionStatus.SS_INITED;
-            Debug.logger.Log(LogType.Log, "Session::OnGetDNS resolve dns=" + _addr);
+            state = SessionStatus.SS_INITED;
+            Debug.Log("Session[" + _sessionName + "]::OnGetDNS resolve host success. addr=" + _addr.ToString()
+               + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
         }
         catch (Exception e)
         {
-            _status = SessionStatus.SS_UNINIT;
-            Debug.logger.Log(LogType.Error, "Session::OnGetDNS had except. e=" + e);
+            state = SessionStatus.SS_UNINIT;
+            Debug.LogError("Session[" + _sessionName + "]::OnGetDNS resolve host had except. " 
+                + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" + e);
         }
     }
     public bool Init(string host, ushort port, string encrypt)
     {
+        Debug.Log("Session[" + _sessionName + "]::Init host=" + host + ", port=" + port + ", encrypt=" + encrypt + ", state=" + state);
         _encrypt = encrypt.Trim();
         host = host.Trim();
         if (host.Length == 0 || port == 0)
         {
-            Debug.logger.Log(LogType.Error, "Session::Init Session param error. host=" + host + ", port=" + port + ", status=" + _status);
+            Debug.LogError("Session[" + _sessionName + "]::Init error. host param illegality. "
+                + "host=" + host + ", port=" + port + ", encrypt=" + encrypt + ", state=" + state);
             return false;
         }
-        if (_status != SessionStatus.SS_UNINIT)
+        if (state != SessionStatus.SS_UNINIT)
         {
-            Debug.logger.Log(LogType.Error, "Session::Init Session status error. host=" + host + ", port=" + port + ", status=" + _status);
+            Debug.LogError("Session[" + _sessionName + "]::Init error. state not uninit. "
+                + "host=" + host + ", port=" + port + ", encrypt=" + encrypt + ", state=" + state);
             return false;
         }
-        _status = SessionStatus.SS_INITING;
+        state = SessionStatus.SS_INITING;
         _addr = null;
         _port = port;
 
@@ -136,26 +143,32 @@ class Session
             {
                 if (_addr != null)
                 {
-                    _status = SessionStatus.SS_INITED;
+                    state = SessionStatus.SS_INITED;
                     _addr = IPAddress.Parse(host);
+                    Debug.Log("Session[" + _sessionName + "]::Init parse addr success. addr=" + _addr.ToString() 
+                        + " host=" + host + ", port=" + port + ", encrypt=" + encrypt + ", state=" + state);
                     break;
                 }
             }
+            Debug.Log("Session[" + _sessionName + "]::Init try resolve host."
+                + " host=" + host + ", port=" + port + ", encrypt=" + encrypt + ", state=" + state);
             Dns.BeginGetHostEntry(host, new AsyncCallback(OnGetDNS), this);
         }
         while (false);
         return true;
     }
+
     public void Connect()
     {
-        Debug.logger.Log("Session::Connect addr=" + _addr + ", port=" + _port);
-        _lastConnectTime = Time.realtimeSinceStartup;
-        _lastRecvTime = Time.realtimeSinceStartup;
-        if (_status != SessionStatus.SS_INITED)
+        Debug.Log("Session[" + _sessionName + "]::Connect addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
+        if (state != SessionStatus.SS_INITED)
         {
-            Debug.logger.Log(LogType.Error, "BeginConnect Session status error. addr=" + _addr + ", port=" + _port +", status =" + _status);
+            Debug.LogError("Session[" + _sessionName + "]::Connect error. state not inited. addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
             return;
         }
+
+        _lastConnectTime = Time.realtimeSinceStartup;
+        _lastRecvTime = Time.realtimeSinceStartup;
 
         try
         {
@@ -163,161 +176,193 @@ class Session
             _rc4Recv.makeSBox(_encrypt);
             _rc4Send = new RC4Encryption();
             _rc4Send.makeSBox(_encrypt);
-            _status = SessionStatus.SS_CONNECTING;
+            state = SessionStatus.SS_CONNECTING;
             _socket = new Socket(_addr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _socket.Blocking = false;
             _socket.NoDelay = true;
-            _socket.BeginConnect(_addr, _port, new AsyncCallback(OnConnect), _socket);
+            _socket.BeginConnect(_addr, _port, new AsyncCallback(OnAsyncConnect), _socket);
 
         }
         catch (Exception e)
         {
-            _status = SessionStatus.SS_INITED;
+            state = SessionStatus.SS_INITED;
             if (_socket != null)
             {
                 _socket.Close();
                 _socket = null;
             }
-            Debug.logger.Log(LogType.Error, "Session::Init had except. addr=" + _addr + ", port=" + _port + ",e=" + e);
+            Debug.LogError("Session[" + _sessionName + "]::Connect had except. addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" + e);
         }
     }
-    public void OnConnect(IAsyncResult result)
+    void OnAsyncConnect(IAsyncResult result)
     {
+        Debug.Log("Session[" + _sessionName + "]::OnAsyncConnect addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
         try
         {
             Socket socket = result.AsyncState as Socket;
             socket.EndConnect(result);
             if (socket != _socket )
             {
-                Debug.logger.Log(LogType.Warning, "Session::onConnect _socket not AsyncState. host=" + _addr + ", port=" + _port + ", status =" + _status);
+                Debug.LogError("Session[" + _sessionName + "]::Connect error. callback socket not current socket."
+                    + " addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
                 return;
             }
-            if (_status != SessionStatus.SS_CONNECTING)
+            if (state != SessionStatus.SS_CONNECTING)
             {
-                Debug.logger.Log(LogType.Warning, "Session::onConnect status error . host=" + _addr + ", port=" + _port + ", status =" + _status);
+                Debug.LogError("Session[" + _sessionName + "]::Connect error. state not connecting. "
+                     + " addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
                 return;
             }
-            Debug.Log("Session::onConnect connected. host=" + _addr + ", port=" + _port );
-            _status = SessionStatus.SS_WORKING;
+
+            state = SessionStatus.SS_WORKING;
             _reconnect = 50;
-            if (_onConnect != null)
+
+            Debug.Log("Session[" + _sessionName + "]::Connect success. "
+                + " addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
+            if (whenConnected != null)
             {
-                _asyns.Enqueue(_onConnect);
+                PushAsync(whenConnected);
             }
         }
         catch (Exception e)
         {
-            Debug.logger.Log(LogType.Error, "Session::onConnect had except. host=" + _addr + ", port=" + _port + ",e=" + e);
-            _asyns.Enqueue((System.Action)delegate () { Close(); });
+            PushAsync((System.Action)delegate () { Close(); });
+            Debug.LogError("Session[" + _sessionName + "]::Connect had except."
+                + " addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" + e );
         }
     }
-    public void Send(byte[] data)
+    public void Send(byte[] data, string protoName)
     {
-        _sendQue.Enqueue(data);
+        Debug.Log("Session[" + _sessionName + "]::Send<" + protoName + "> data[" + data.Length + "] addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
+        try
+        {
+            if (state != SessionStatus.SS_WORKING)
+            {
+                Debug.LogError("Session[" + _sessionName + "]::Send<" + protoName + "> data[" + data.Length + "] Faild. status not working. addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
+                return;
+            }
+            if (_sendBufferLen >0 || _sendQue.Count > 0)
+            {
+                _sendQue.Enqueue(data);
+                Debug.Log("Session[" + _sessionName + "]::Send<" + protoName + "> data[" + data.Length + "] pushed queue. addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
+            }
+            else
+            {
+                data.CopyTo(_sendBuffer, 0);
+                if (_encrypt.Length > 0)
+                {
+                    _rc4Send.encryption(_sendBuffer, 0, data.Length);
+                }
+                _sendBufferLen = data.Length;
+
+                int ret = _socket.Send(_sendBuffer, 0, _sendBufferLen, SocketFlags.None);
+                if (ret == _sendBufferLen)
+                {
+                    _sendBufferLen = 0;
+                }
+                else if (ret > 0)
+                {
+                    Array.Copy(_sendBuffer, ret, _sendBuffer, 0, _sendBufferLen - ret);
+                    _sendBufferLen -= ret;
+                }
+                Debug.Log("Session[" + _sessionName + "]::Send<" + protoName + "> data[" + data.Length + "] direct. sent len=" + ret + ", addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Session[" + _sessionName + "]::Send<" + protoName + "> data[" + data.Length + "] had except. addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" +e);
+            Close();
+        }
     }
     public void  Send<Proto>(Proto proto) where Proto : Proto4z.IProtoObject
     {
-        ProtoHeader ph = new ProtoHeader();
-        ph.reserve = 0;
-        Type pType = proto.GetType();
-        var mi = pType.GetMethod("getProtoID");
-        if (mi == null)
-        {
-            Debug.logger.Log(LogType.Error, "Session::Send can not find method getProtoID. ");
-            return;
-        }
-        ph.protoID = (ushort)mi.Invoke(proto, null);
-        var bin = proto.__encode().ToArray();
-        ph.packLen = ProtoHeader.HeadLen + bin.Length;
-        var pack = ph.__encode();
-        pack.AddRange(bin);
-        Send(pack.ToArray());
-    }
-
-
-    public void OnRecv(ushort protoID, byte[] bin)
-    {
-        string protoName = Proto4z.Reflection.getProtoName(protoID);
-//        Debug.logger.Log("recv pack len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
-        _lastRecvTime = Time.realtimeSinceStartup;
         try
         {
-            var typeInfo = Type.GetType("Proto4z." + protoName);
-            if (typeInfo == null)
+            ProtoHeader ph = new ProtoHeader();
+            ph.reserve = 0;
+            Type pType = proto.GetType();
+            var mi = pType.GetMethod("getProtoID");
+            if (mi == null)
             {
-                Debug.logger.Log(LogType.Error, "not found reflection type info. len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
+                Debug.LogError("Session[" + _sessionName + "]::Send<Proto> error. class unsupport. addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
                 return;
             }
-            
-            var methodInfo = typeInfo.GetMethod("__decode");
-            if (methodInfo == null)
-            {
-                Debug.logger.Log(LogType.Error, "not found reflection method info. len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
-                return;
-            }
-            var inst = Activator.CreateInstance(typeInfo);
-            int offset = 0;
-            methodInfo.Invoke(inst, new object[] { bin, offset });
-            Facade.dispatcher.TriggerEvent(protoName, new object[] { inst });
+            ph.protoID = (ushort)mi.Invoke(proto, null);
+            var bin = proto.__encode().ToArray();
+            ph.packLen = ProtoHeader.HeadLen + bin.Length;
+            var pack = ph.__encode();
+            pack.AddRange(bin);
+            Send(pack.ToArray(), proto.ToString());
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            Debug.logger.Log(LogType.Error, "exception. len=" + bin.Length + ", protoID=" + protoID + ", protoName=" + protoName);
+            Debug.LogError("Session[" + _sessionName + "]::Send<Proto> had except. addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" + e);
         }
-
-
     }
     public void Close()
     {
-        if (_status == SessionStatus.SS_CLOSED)
+        Debug.Log("Session[" + _sessionName + "]::Close. addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", reconnect=" + _reconnect);
+        if (state == SessionStatus.SS_CLOSED)
         {
             return;
         }
-        if (_reconnect > 0 )
+        if (_reconnect > 0)
         {
             _reconnect--;
         }
-        
+
         _recvBufferLen = 0;
         _sendBufferLen = 0;
         _sendQue.Clear();
-        if(_socket != null)
+        if (_socket != null)
         {
             _socket.Close();
             _socket = null;
         }
-        if (_reconnect > 0 && _status != SessionStatus.SS_UNINIT)
+        if (_reconnect > 0 && state != SessionStatus.SS_UNINIT)
         {
-            _status = SessionStatus.SS_INITED;
+            state = SessionStatus.SS_INITED;
         }
         else
         {
-            _status = SessionStatus.SS_CLOSED;
+            state = SessionStatus.SS_CLOSED;
+        }
+        Debug.Log("Session[" + _sessionName + "]::Close finish. addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", reconnect=" + _reconnect);
+
+    }
+    public void PushAsync(Delegate dlg)
+    {
+        lock(_asyns)
+        {
+            _asyns.Add(dlg);
         }
     }
-    public void Update()
+    void ProcessAllAsync()
+    {
+        System.Collections.Generic.List<Delegate> tmp = new System.Collections.Generic.List<Delegate>();
+        lock (_asyns)
+        {
+            tmp.AddRange(_asyns);
+            _asyns.Clear();
+        }
+        foreach (var dlg in tmp)
+        {
+            try
+            {
+                dlg.DynamicInvoke(null);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Session[" + _sessionName + "]::ProcessAllAsync had except. addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" + e);
+            }
+        }
+    }
+
+    void CheckReconnect()
     {
         try
         {
-            while (_asyns.Count > 0)
-            {
-                var dele = _asyns.Dequeue();
-                dele.DynamicInvoke(null);
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.LogError("Session run Async queue error. e=" + e);
-        }
-
-        try
-        {
-            if (_status == SessionStatus.SS_UNINIT)
-            {
-                return;
-            }
-            //Debug.logger.Log("cur=" + Time.realtimeSinceStartup + ", last=" + _lastConnectTime);
-            if (_status == SessionStatus.SS_INITED)
+            if (state == SessionStatus.SS_INITED)
             {
                 //两次Connect间隔最短不能小于3秒  
                 if (Time.realtimeSinceStartup - _lastConnectTime > 3.0)
@@ -326,7 +371,7 @@ class Session
                 }
                 return;
             }
-            if (_status == SessionStatus.SS_CONNECTING)
+            if (state == SessionStatus.SS_CONNECTING)
             {
                 //Connect超过7秒还没成功就算超时.  
                 if (Time.realtimeSinceStartup - _lastConnectTime > 7.0)
@@ -336,80 +381,141 @@ class Session
                 return;
             }
 
-            if (_status != SessionStatus.SS_WORKING)
-            {
-                return;
-            }
-
-
         }
         catch (Exception e)
         {
-            Debug.LogError("Session run Async queue error. e=" + e);
+            Debug.LogError("Session[" + _sessionName + "]::CheckReconnect had except. addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" + e);
         }
+    }
 
+    void ProcessReceive()
+    {
+        if (state != SessionStatus.SS_WORKING)
+        {
+            return;
+        }
+        if (_recvBufferLen >= MAX_BUFFER_SIZE)
+        {
+            Debug.LogError("Session[" + _sessionName + "]::ProcessReceive error  _recvBufferLen overflow. _recvBufferLen=" + _recvBufferLen + ", max=" + MAX_BUFFER_SIZE 
+                + ", addr = " + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
+            Close();
+            return;
+        }
         try
         {
-            //Receive 每帧只读取一次, 每次都尽可能去读满缓冲.  
-            if (_recvBufferLen < MAX_BUFFER_SIZE)
+            do
             {
-                do
+                
+                int total = _socket.Available;
+                if (total == 0 && !_socket.Poll(0, SelectMode.SelectRead))
                 {
-                    int total = _socket.Available;
-                    if (total == 0)
+                    break; // 没有可读数据 
+                }
+                int ret = 0;
+                try
+                {
+                    SocketError se;
+                    ret = _socket.Receive(_recvBuffer, _recvBufferLen, MAX_BUFFER_SIZE - _recvBufferLen, SocketFlags.None, out se);
+                    if (se != SocketError.Success )
                     {
-                        break; // 没有可读数据 
-                    }
-                    int ret = _socket.Receive(_recvBuffer, _recvBufferLen, MAX_BUFFER_SIZE - _recvBufferLen, SocketFlags.None);
-                    if (ret <= 0)
-                    {
-                        Debug.logger.Log(LogType.Error, "!!!Unintended!!! remote closed socket. host=" + _addr + ", port=" + _port + ", status =" + _status);
+                        if (se == SocketError.WouldBlock)
+                        {
+                            return;
+                        }
+                        Debug.LogError("Session[" + _sessionName + "]::ProcessReceive socket SocketError . _recvBufferLen=" + _recvBufferLen + ", max=" + MAX_BUFFER_SIZE
+                             + ", addr = " + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" + se);
                         Close();
                         return;
                     }
-                    if (_encrypt.Length > 0)
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError("Session[" + _sessionName + "]::ProcessReceive socket remote close.. _recvBufferLen=" + _recvBufferLen + ", max=" + MAX_BUFFER_SIZE
+                         + ", addr = " + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state +", e=" + e);
+                    Close();
+                    return;
+                }
+                if (ret <= 0)
+                {
+                    Debug.LogError("Session[" + _sessionName + "]::ProcessReceive. impossibility event");
+                    Close();
+                    return;
+                }
+               
+                if (_encrypt.Length > 0)
+                {
+                    _rc4Recv.encryption(_recvBuffer, _recvBufferLen, ret);
+                }
+                _recvBufferLen += ret;
+                int offset = 0;
+
+                while (_recvBufferLen - offset >= ProtoHeader.HeadLen)
+                {
+                    ProtoHeader ph = new ProtoHeader();
+                    int headTmp = offset;
+                    ph.__decode(_recvBuffer, ref headTmp);
+                    if (ph.packLen < ProtoHeader.HeadLen || headTmp != offset + ProtoHeader.HeadLen)
                     {
-                        _rc4Recv.encryption(_recvBuffer, _recvBufferLen, ret);
+                        Debug.LogError("Session[" + _sessionName + "]::ProcessReceive. socket __decode wrong. ph.packLen=" + ph.packLen  +", offset=" + offset +", pack offset=" + headTmp
+                            + ", _recvBufferLen=" + _recvBufferLen + ", max=" + MAX_BUFFER_SIZE
+                            + ", addr = " + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
+                        Close();
+                        return;
                     }
-                    _recvBufferLen += ret;
-                    //check message 
-                    int offset = 0;
-                    while (_recvBufferLen - offset >= ProtoHeader.HeadLen)
+                    if (ph.packLen <= _recvBufferLen - offset)
                     {
-                        ProtoHeader ph = new ProtoHeader();
-                        ph.__decode(_recvBuffer, ref offset);
-                        if (ph.packLen <= _recvBufferLen - (offset - ProtoHeader.HeadLen))
+                        var pack = new byte[ph.packLen - ProtoHeader.HeadLen];
+                        Array.Copy(_recvBuffer, offset + ProtoHeader.HeadLen, pack, 0, ph.packLen - ProtoHeader.HeadLen);
+                        try
                         {
-                            var pack = new byte[ph.packLen - ProtoHeader.HeadLen];
-                            Array.Copy(_recvBuffer, offset, pack, 0,  ph.packLen - ProtoHeader.HeadLen);
-                            OnRecv(ph.protoID, pack);
-                            offset += (ph.packLen - ProtoHeader.HeadLen);
+                            ProcessPackage(ph.protoID, pack);
                         }
-                        else
+                        catch (Exception e)
                         {
-                            break;
+                            Debug.LogError("Session[" + _sessionName + "]::ProcessReceive. ProcessPackage had error. ph.packLen=" + ph.packLen + ", offset=" + offset 
+                                + ", _recvBufferLen=" + _recvBufferLen + ", max=" + MAX_BUFFER_SIZE
+                                + ", addr = " + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" + e);
                         }
+                        offset += ph.packLen;
                     }
-                    if (offset > 0)
+                    else
                     {
-                        if (_recvBufferLen == offset)
-                        {
-                            _recvBufferLen = 0;
-                        }
-                        else
-                        {
-                            Array.Copy(_recvBuffer, offset, _recvBuffer, 0, _recvBufferLen - offset);
-                            _recvBufferLen -= offset;
-                        }
+                        break;
                     }
-                    
-                } while (true);
-            }
+                }
+                if (offset > 0)
+                {
+                    if (_recvBufferLen == offset)
+                    {
+                        _recvBufferLen = 0;
+                    }
+                    else
+                    {
+                        Array.Copy(_recvBuffer, offset, _recvBuffer, 0, _recvBufferLen - offset);
+                        _recvBufferLen -= offset;
+                    }
+
+                }
+
+            } while (false);
         }
+
         catch (Exception e)
         {
-            Debug.LogError("Session run Async queue error. e=" + e);
+            Debug.LogError("Session[" + _sessionName + "]::ProcessReceive. had except . ph.packLen="
+                + ", _recvBufferLen=" + _recvBufferLen + ", max=" + MAX_BUFFER_SIZE
+                + ", addr = " + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" + e);
+
         }
+    }
+
+    void ProcessSendRemain()
+    {
+        if (state != SessionStatus.SS_WORKING)
+        {
+            return;
+        }
+
         try
         {
             //send 
@@ -446,13 +552,58 @@ class Session
                     }
                 }
             }
-            
+
         }
         catch (Exception e)
         {
-            Debug.logger.Log(LogType.Error, "Session::Update Receive or Send had except. host=" + _addr + ", port=" + _port + ",e=" + e);
+            Debug.LogError("Session[" + _sessionName + "]::ProcessSendRemain. had except . ph.packLen="
+                + ", _recvBufferLen=" + _recvBufferLen + ", max=" + MAX_BUFFER_SIZE
+                + ", addr = " + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state + ", e=" + e);
             Close();
         }
+    }
+
+    void ProcessPackage(ushort protoID, byte[] bin)
+    {
+        string protoName = Proto4z.Reflection.getProtoName(protoID);
+        Debug.Log("Session[" + _sessionName + "]::ProcessPackage<" + protoName + "> data[" + bin.Length + "] addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
+        _lastRecvTime = Time.realtimeSinceStartup;
+
+        var typeInfo = Type.GetType("Proto4z." + protoName);
+        if (typeInfo == null)
+        {
+            Debug.LogError("Session[" + _sessionName + "]::ProcessPackage<" + protoName + "> data[" + bin.Length + "] error. can not reflect the proto type. "
+                + ", addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
+            return;
+        }
+            
+        var methodInfo = typeInfo.GetMethod("__decode");
+        if (methodInfo == null)
+        {
+            Debug.LogError("Session[" + _sessionName + "]::ProcessPackage<" + protoName + "> data[" + bin.Length + "] error. reflect type hadn't __decode. "
+                + ", addr=" + _addr + ", port=" + _port + ", encrypt=" + _encrypt + ", state=" + state);
+            return;
+        }
+        var inst = Activator.CreateInstance(typeInfo);
+        int offset = 0;
+        methodInfo.Invoke(inst, new object[] { bin, offset });
+        Facade.dispatcher.TriggerEvent(protoName, new object[] { inst });
+    }
+
+    public void Update()
+    {
+        ProcessAllAsync();
+        if (state == SessionStatus.SS_UNINIT)
+        {
+            return;
+        }
+        CheckReconnect();
+        if (state != SessionStatus.SS_WORKING)
+        {
+            return;
+        }
+        ProcessReceive();
+        ProcessSendRemain();
     }
 }
 

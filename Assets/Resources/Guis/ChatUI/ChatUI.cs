@@ -33,6 +33,12 @@ public class ChatUI : MonoBehaviour
 	
 	}
 
+    public void PushMessage(string text)
+    {
+        ChatResp chat = new ChatResp((ushort)ChatChannelEnum.CC_SYSTEM, 0, "", 0, "", text, Utls.nowToUts());
+        OnChatResp(chat);
+    }
+
     void OnChatResp(ChatResp resp)
     {
         _msgs.Enqueue(resp);
@@ -46,15 +52,15 @@ public class ChatUI : MonoBehaviour
         {
             if (item.channelID == (ushort)ChatChannelEnum.CC_WORLD)
             {
-                buf += "<color=red>[世界]</color>:来自玩家<color=blue>[" + item.sourceName + "]</color>的发言: "; 
+                buf += "<color=red>[世界]</color>:来自玩家<color=blue>[" + item.sourceName + "]</color>[" + Utls.utsToString(item.chatTime, "HH:mm:ss") + "]的发言: "; 
             }
             else if (item.channelID == (ushort)ChatChannelEnum.CC_PRIVATE)
             {
-                buf += "<color=yellow>[私聊]</color>:来自玩家<color=blue>[" + item.sourceName + "]</color>的发言: ";
+                buf += "<color=yellow>[私聊]</color>:来自玩家<color=blue>[" + item.sourceName + "]</color>[" + Utls.utsToString(item.chatTime, "HH:mm:ss") + "]的发言: ";
             }
             else if (item.channelID == (ushort)ChatChannelEnum.CC_SYSTEM)
             {
-                buf += "<color=yellow>[系统]</color>: ";
+                buf += "<color=yellow>[系统]</color>[" + Utls.utsToString(item.chatTime, "HH:mm:ss") + "]: ";
             }
             else
             {

@@ -141,12 +141,6 @@ public class SyncCheck
             showDev += ", _sumSmoothTime=" + _sumSmoothTime.ToString(".####");
             showDev += ", _sumDeltaTime=" + _sumDeltaTime.ToString(".####");
             showDev += ", _sumSyncTime=" + (_sumSyncMoveCount * 100.0f).ToString(".####");
-//             showDev += ", _devFixedDeltaTime=" + _devFixedDeltaTime.OutDeviationData(ref threshold);
-//             _devFixedDeltaTime.cleanBucket();
-//             showDev += ", _devSmoothTime=" + _devSmoothTime.OutDeviationData(ref threshold);
-//             _devSmoothTime.cleanBucket();
-//             showDev += ", _devDeltaTime=" + _devDeltaTime.OutDeviationData(ref threshold);
-//             _devDeltaTime.cleanBucket();
             showDev += ", _devPassTime=" + _devPassTime.OutDeviationData(ref threshold);
             _devPassTime.cleanBucket();
             showDev += ", _devSyncMoveTime=" + _devSyncMoveTime.OutDeviationData(ref threshold);
@@ -157,17 +151,12 @@ public class SyncCheck
 
             if (threshold > 1.2)
             {
-                Debug.LogError("eid:" + eid + " -> " + showDev);
+                Debug.LogWarning("eid:" + eid + " -> " + showDev);
             }
             else if (threshold > 0.6)
             {
                 Debug.LogWarning("eid:" + eid + " -> " + showDev);
             }
-//             else
-//             {
-//                 Debug.Log("eid:" + eid + " -> " + showDev);
-//             }
-//             
         }
     }
 }
@@ -176,7 +165,7 @@ public class SyncCheck
 
 public class EntityShell : MonoBehaviour
 {
-    public Proto4z.EntityFullData ghost;
+    public Proto4z.EntityClientSync ghost;
     public float _modelHeight = 2;
     public Transform _model = null;
 
@@ -243,7 +232,7 @@ public class EntityShell : MonoBehaviour
         _startMovePosition = transform.position;
         _startMoveTime = Time.realtimeSinceStartup;
         ghost.mv = mv;
-        if (Facade.entityID == ghost.state.eid)
+        if (Facade.myShell == ghost.state.eid)
         {
             _check.whenSync((float)ghost.mv.realSpeed, (float)ghost.mv.expectSpeed);
         }
@@ -280,7 +269,7 @@ public class EntityShell : MonoBehaviour
         }
         
 
-        StartCoroutine(CreateEffect("Effect/skill/attack", Vector3.forward, 0.1f, 2f));
+        //StartCoroutine(CreateEffect("Effect/skill/attack", Vector3.forward, 0.1f, 2f));
     }
     public void PlayDeath()
     {
@@ -290,7 +279,7 @@ public class EntityShell : MonoBehaviour
     {
         _anim.CrossFade(_free.name);
     }
-    public void DoAttack()
+    public void ClickAttack()
     {
         float a = transform.rotation.eulerAngles.y;
         Vector3 dir = transform.rotation * Vector3.forward ;
@@ -300,7 +289,7 @@ public class EntityShell : MonoBehaviour
         src.y += 0.2f;
         Debug.DrawLine(src, target, Color.yellow, 1.0f);
 
-        Facade.serverProxy.SendToScene(new UseSkillReq(Facade.entityID, 1, new EPosition(target.x, target.z), 1));
+        Facade.serverProxy.SendToScene(new UseSkillReq(Facade.myShell, 1, new EPosition(target.x, target.z), 1));
     }
     void OnGUI()
     {
@@ -317,9 +306,9 @@ public class EntityShell : MonoBehaviour
                 return;
             }
             st.normal.textColor = Color.white;
-            if (ghost.state.eid != Facade.entityID && Facade.entityID != 0)
+            if (ghost.state.eid != Facade.myShell && Facade.myShell != 0)
             {
-                EntityShell player = Facade.sceneManager.GetEntityShell(Facade.entityID);
+                EntityShell player = Facade.sceneManager.GetShell(Facade.myShell);
                 if (player && player.ghost.state.foe == ghost.state.eid)
                 {
                     st.normal.textColor = Color.red;
@@ -349,7 +338,7 @@ public class EntityShell : MonoBehaviour
 
         if (ghost.state.etype == (ushort)Proto4z.ENTITY_TYPE.ENTITY_PLAYER)
         {
-            if (Facade.entityID == ghost.state.eid)
+            if (Facade.myShell == ghost.state.eid)
             {
                 st.normal.textColor = Color.yellow;
             }
@@ -381,7 +370,7 @@ public class EntityShell : MonoBehaviour
         }
         st.normal.textColor = Color.red;
         st.fontSize = st.fontSize * 7 /10;
-        if (Facade.entityID == ghost.state.eid)
+        if (Facade.myShell == ghost.state.eid)
         {
             st.normal.textColor = Color.yellow;
         }
@@ -408,12 +397,12 @@ public class EntityShell : MonoBehaviour
             return;
         }
         //check main player 
-        if (Facade.entityID != 0 && (_mainPlayer == null || _mainPlayer.ghost.state.eid != Facade.entityID))
+        if (Facade.myShell != 0 && (_mainPlayer == null || _mainPlayer.ghost.state.eid != Facade.myShell))
         {
-            _mainPlayer = Facade.sceneManager.GetEntityShell(Facade.entityID);
+            _mainPlayer = Facade.sceneManager.GetShell(Facade.myShell);
         }
 
-        if (Facade.entityID == ghost.state.eid)
+        if (Facade.myShell == ghost.state.eid)
         {
             _check.FixedUpdate(ghost.state.eid);
         }

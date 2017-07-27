@@ -33,7 +33,7 @@ public class ServerProxy : MonoBehaviour
 
     void Awake()
     {
-        Debug.Log("ServerProxy Awake");
+        Debug.Log("ServerProxy::Awake");
         DontDestroyOnLoad(gameObject);
         Facade.dispatcher.AddListener("ClientAuthResp", (System.Action<ClientAuthResp>)OnClientAuthResp);
         Facade.dispatcher.AddListener("CreateAvatarResp", (System.Action<CreateAvatarResp>)OnCreateAvatarResp);
@@ -80,12 +80,12 @@ public class ServerProxy : MonoBehaviour
             _gameClient.Close();
         }
 
-        _gameClient = new Session();
-        _gameClient._onConnect = (Action)OnConnect;
+        _gameClient = new Session("game");
+        _gameClient.whenConnected = (Action)OnConnect;
         _gameClient.Init(host, port, "");
         _gameLastPulse = Time.realtimeSinceStartup;
-
     }
+
     public void OnConnect()
     {
         _gameClient.Send(new ClientAuthReq(_account, _passwd));
@@ -104,17 +104,17 @@ public class ServerProxy : MonoBehaviour
         var account = resp.account;
         if (resp.retCode != (ushort)ERROR_CODE.EC_SUCCESS)
         {
-            Debug.logger.Log(LogType.Error, "ServerProxy::OnClientAuthResp account=" + account);
+            Debug.LogError("ServerProxy::OnClientAuthResp error. retCode=" + (ERROR_CODE)resp.retCode + ", account=" + account);
             return;
         }
-        Debug.logger.Log("ServerProxy::OnClientAuthResp account=" + account);
+        Debug.Log("ServerProxy::OnClientAuthResp success. account=" + account +", avatars=" + resp.previews.Count);
         if (resp.previews.Count == 0)
         {
             _gameClient.Send(new CreateAvatarReq("", _account));
         }
         else
         {
-            _gameClient.Send(new AttachAvatarReq("", resp.previews[0].avatarID));
+            SendAttachAvatarReq(resp.previews[0].avatarID);
         }
     }
 
@@ -122,42 +122,65 @@ public class ServerProxy : MonoBehaviour
     {
         if (resp.retCode != (ushort)ERROR_CODE.EC_SUCCESS || resp.previews.Count == 0)
         {
-            Debug.logger.Log(LogType.Error, "ServerProxy::OnCreateAvatarResp ");
+            Debug.LogError("ServerProxy::OnCreateAvatarResp error. retCode=" + (ERROR_CODE)resp.retCode + ", avatars=" + resp.previews.Count);
             return;
         }
-        Debug.logger.Log("ServerProxy::OnCreateAvatarResp ");
-        _gameClient.Send(new AttachAvatarReq("", resp.previews[0].avatarID));
+        Debug.Log("ServerProxy::OnCreateAvatarResp success. avatars=" + resp.previews.Count);
+        SendAttachAvatarReq(resp.previews[0].avatarID);
     }
-
+    void SendAttachAvatarReq(ulong id)
+    {
+        AttachAvatarReq req = new AttachAvatarReq();
+        req.avatarID = id;
+        req.di.Add("batteryLevel", SystemInfo.batteryLevel.ToString("##.##"));
+        req.di.Add("batteryStatus", SystemInfo.batteryStatus.ToString());
+        req.di.Add("deviceModel", SystemInfo.deviceModel);
+        req.di.Add("deviceName", SystemInfo.deviceName);
+        req.di.Add("deviceType", SystemInfo.deviceType.ToString());
+        req.di.Add("graphicsDeviceName", SystemInfo.graphicsDeviceName);
+        req.di.Add("graphicsDeviceType", SystemInfo.graphicsDeviceType.ToString());
+        req.di.Add("graphicsDeviceVendor", SystemInfo.graphicsDeviceVendor);
+        req.di.Add("graphicsDeviceVersion", SystemInfo.graphicsDeviceVersion);
+        req.di.Add("graphicsMemorySize", SystemInfo.graphicsMemorySize.ToString());
+        req.di.Add("operatingSystem", SystemInfo.operatingSystem);
+        req.di.Add("operatingSystemFamily", SystemInfo.operatingSystemFamily.ToString());
+        req.di.Add("processorCount", SystemInfo.processorCount.ToString());
+        req.di.Add("processorFrequency", SystemInfo.processorFrequency.ToString());
+        req.di.Add("processorType", SystemInfo.processorType);
+        req.di.Add("systemMemorySize", SystemInfo.systemMemorySize.ToString());
+        _gameClient.Send(req);
+    }
     void OnAttachAvatarResp(AttachAvatarResp resp)
     {
-        Debug.logger.Log("ServerProxy::AttachAvatarResp ");
         if (resp.retCode != (ushort)ERROR_CODE.EC_SUCCESS)
         {
-            Debug.LogError("ServerProxy::AttachAvatarResp ");
+            Debug.LogError("ServerProxy::OnAttachAvatarResp error. retCode=" + (ERROR_CODE)resp.retCode);
             return;
         }
+        Debug.Log("ServerProxy::OnAttachAvatarResp success. avatar=" + resp.baseInfo.avatarName + ", createDate=" + Utls.utsToString(resp.baseInfo.createTime));
 
         Facade.avatarInfo = resp.baseInfo;
         _gameClient.Send(new SceneGroupGetReq());
 
-        if (Facade.mainUI._loginUI.gameObject.activeSelf)
+        if (Facade.mainUI.loginUI.gameObject.activeSelf)
         {
-            Facade.mainUI._loginUI.gameObject.SetActive(false);
+            Facade.mainUI.loginUI.gameObject.SetActive(false);
         }
-        if (!Facade.mainUI._chatUI.gameObject.activeSelf)
+        if (!Facade.mainUI.chatUI.gameObject.activeSelf)
         {
-            Facade.mainUI._chatUI.gameObject.SetActive(true);
+            Facade.mainUI.chatUI.gameObject.SetActive(true);
         }
-        if (!Facade.mainUI._selectScenePanel.gameObject.activeSelf)
+        if (!Facade.mainUI.selectScenePanel.gameObject.activeSelf)
         {
-            Facade.mainUI._selectScenePanel.gameObject.SetActive(true);
+            Facade.mainUI.selectScenePanel.gameObject.SetActive(true);
         }
-        MainScreenLabel.Bulletin(1, "登录时间:" + DateTime.Now.ToString());
+        MainScreenLabel.Bulletin(1, "登录时间:" + Utls.nowToString());
+
+
     }
     void CreateSceneSession(ulong avatarID, Proto4z.SceneGroupInfo groupInfo)
     {
-        _sceneClient = new Session();
+        _sceneClient = new Session("scene");
         _sceneClient.Init(groupInfo.host, groupInfo.port, "");
         _sceneLastPulse = Time.realtimeSinceStartup;
         var token = "";
@@ -172,7 +195,7 @@ public class ServerProxy : MonoBehaviour
         {
             Debug.LogError("");
         }
-        _sceneClient._onConnect = (Action)delegate ()
+        _sceneClient.whenConnected = (Action)delegate ()
         {
             _sceneClient.Send(new Proto4z.AttachSceneReq(avatarID, groupInfo.sceneID, token));
         };
@@ -360,11 +383,11 @@ public class ServerProxy : MonoBehaviour
 	{
         if (resp.retCode == (ushort)Proto4z.ERROR_CODE.EC_SUCCESS)
         {
-            Debug.logger.Log("ServerProxy::OnAttachSceneResp sucess. sceneID=" +  resp.sceneID.ToString());
+            Debug.Log("ServerProxy::OnAttachSceneResp sucess. sceneID=" +  resp.sceneID);
         }
         else
         {
-            Debug.logger.Log("ServerProxy::OnAttachSceneResp sucess. error code=" + resp.retCode.ToString() + ", sceneID=" + resp.sceneID.ToString());
+            Debug.LogError("ServerProxy::OnAttachSceneResp error code=" + (ERROR_CODE)resp.retCode + ", sceneID=" + resp.sceneID);
         }
         
     }
@@ -380,7 +403,7 @@ public class ServerProxy : MonoBehaviour
 
 
 
-		name = "系统日期:" + System.DateTime.Now;
+		name = "系统日期:" + Utls.nowToString();
         MainScreenLabel.Label(name);
 
         name = "FPS:" + _fpsValue;
@@ -393,9 +416,9 @@ public class ServerProxy : MonoBehaviour
             MainScreenLabel.Label(name);
         }
 
-		if (Facade.avatarInfo != null && Facade.entityID != 0) 
+		if (Facade.avatarInfo != null && Facade.myShell != 0) 
 		{
-			var modelID = Facade.sceneManager.GetEntityShell (Facade.entityID).ghost.state.modelID;
+			var modelID = Facade.sceneManager.GetShell (Facade.myShell).ghost.state.modelID;
 			name = "当前模型[" + modelID +"]:" + Facade.modelDict.GetModelName(modelID);
             MainScreenLabel.Label(name);
         }
@@ -452,7 +475,7 @@ public class ServerProxy : MonoBehaviour
 
 
 
-        if (Facade.entityID != 0)
+        if (Facade.myShell != 0)
         {
             name = "Ping:" + _scenePingValue +"秒";
             MainScreenLabel.Label(name);
@@ -461,7 +484,7 @@ public class ServerProxy : MonoBehaviour
             MainScreenLabel.Label(name);
 
 
-            EntityShell em = Facade.sceneManager.GetEntityShell(Facade.entityID);
+            EntityShell em = Facade.sceneManager.GetShell(Facade.myShell);
             name = "坐标:" + em.ghost.mv.position.x.ToString("0.00") + ":" +em.ghost.mv.position.y.ToString("0.00");
             MainScreenLabel.Label(name);
 
@@ -530,18 +553,27 @@ public class ServerProxy : MonoBehaviour
 			}
         }
 
-        if ((_gameClient != null && (_gameClient.Status == SessionStatus.SS_CONNECTING || _gameClient.Status == SessionStatus.SS_INITING))
-            || (_sceneClient != null && (_sceneClient.Status == SessionStatus.SS_CONNECTING || _sceneClient.Status == SessionStatus.SS_INITING))
+        if ((_gameClient != null && _gameClient.state != SessionStatus.SS_WORKING )
+            || (_sceneClient != null && _sceneClient.state != SessionStatus.SS_WORKING)
             )
         {
-            if (!Facade.mainUI._busyTips.gameObject.activeSelf)
+            if (!Facade.mainUI.busyTips.gameObject.activeSelf)
             {
-                Facade.mainUI._busyTips.gameObject.SetActive(true);
+                Facade.mainUI.busyTips.gameObject.SetActive(true);
+            }
+            if (_gameClient != null && (_gameClient.state == SessionStatus.SS_CONNECTING || _gameClient.state == SessionStatus.SS_INITING)
+                || _sceneClient != null && (_sceneClient.state == SessionStatus.SS_CONNECTING || _sceneClient.state == SessionStatus.SS_INITING))
+            {
+                Facade.mainUI.busyTips.GetComponent<BusyTips>().busy = true;
+            }
+            else
+            {
+                Facade.mainUI.busyTips.GetComponent<BusyTips>().busy = false;
             }
         }
-        else if (Facade.mainUI._busyTips.gameObject.activeSelf)
+        else if (Facade.mainUI.busyTips.gameObject.activeSelf)
         {
-            Facade.mainUI._busyTips.gameObject.SetActive(false);
+            Facade.mainUI.busyTips.gameObject.SetActive(false);
         }
 
     }
